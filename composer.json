@@ -1,0 +1,33 @@
+{
+    "name": "wenbinye/tars",
+    "description": "tars php server",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ye Wenbin",
+            "email": "wenbinye@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "wenbinye\\tars\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "wenbinye\\tars\\": "tests/"
+        }
+    },
+    "require": {
+        "php": "^7.2",
+        "ext-phptars": "*"
+    },
+    "require-dev": {
+        "copyrenzhe/tars-ide-helper": "dev-master",
+        "phpunit/phpunit": "^8.4",
+        "winwin/composer-phpcs-plugin": "^0.1"
+    }
+}
