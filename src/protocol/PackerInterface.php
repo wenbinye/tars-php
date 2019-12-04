@@ -1,8 +1,6 @@
 <?php
 
-
 namespace wenbinye\tars\protocol;
-
 
 interface PackerInterface
 {

@@ -6,6 +6,7 @@ $finder = PhpCsFixer\Config::create()
 
 return PhpCsFixer\Config::create()
     ->setFinder($finder)
+    ->setRiskyAllowed(true)
     ->setRules([
         "@Symfony" => true,
         'strict_param' => true,
