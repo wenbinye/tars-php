@@ -1,0 +1,10 @@
+<?php
+
+declare(strict_types=1);
+
+namespace wenbinye\tars\rpc;
+
+interface RequestFactoryInterface
+{
+    public function createRequest(array $payload): RequestInterface;
+}

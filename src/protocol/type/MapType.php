@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace wenbinye\tars\protocol\type;
 
 class MapType extends AbstractType

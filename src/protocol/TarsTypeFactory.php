@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace wenbinye\tars\protocol;
 
 use Doctrine\Common\Annotations\Reader;

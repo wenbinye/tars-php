@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace wenbinye\tars\protocol\type;
 
 class GenericTarsStruct extends \TARS_Struct

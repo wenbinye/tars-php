@@ -10,6 +10,7 @@ return PhpCsFixer\Config::create()
     ->setRules([
         "@Symfony" => true,
         'strict_param' => true,
+        'declare_strict_types' => true,
         'array_syntax' => array('syntax' => 'short'),
         'ordered_imports' => true,
         'no_unused_imports' => true,
