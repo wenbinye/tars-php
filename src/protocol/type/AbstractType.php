@@ -1,6 +1,6 @@
 <?php
 
-namespace wenbinye\tars\protocol;
+namespace wenbinye\tars\protocol\type;
 
 abstract class AbstractType implements Type
 {

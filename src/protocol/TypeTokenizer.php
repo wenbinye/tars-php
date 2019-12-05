@@ -2,26 +2,31 @@
 
 namespace wenbinye\tars\protocol;
 
+use wenbinye\tars\protocol\exception\SyntaxErrorException;
+
 class TypeTokenizer
 {
-    /**
-     * @var string
-     */
-    private $input;
-    private $pos;
-    private $length;
-
-    const LEFT_BRAKET = '<';
-    const RIGHT_BRAKET = '>';
+    const LEFT_BRACKET = '<';
+    const RIGHT_BRACKET = '>';
     const COMMA = ',';
     const VECTOR = 'vector';
     const MAP = 'map';
     const VOID = 'void';
     const UNSIGNED = 'unsigned';
 
+    const T_VOID = 0;
+    const T_VECTOR = 1;
+    const T_MAP = 2;
+    const T_PRIMITIVE = 3;
+    const T_STRUCT = 4;
+
+    const T_LEFT_BRACKET = 10;
+    const T_RIGHT_BRACKET = 11;
+    const T_COMMA = 12;
+
     private static $STOP_CHARS = [
-        self::LEFT_BRAKET => self::T_LEFT_BRAKET,
-        self::RIGHT_BRAKET => self::T_RIGHT_BRAKET,
+        self::LEFT_BRACKET => self::T_LEFT_BRACKET,
+        self::RIGHT_BRACKET => self::T_RIGHT_BRACKET,
         self::COMMA => self::T_COMMA,
     ];
 
@@ -48,15 +53,18 @@ class TypeTokenizer
         'string' => \TARS::STRING,
     ];
 
-    const T_VOID = 0;
-    const T_VECTOR = 1;
-    const T_MAP = 2;
-    const T_PRIMITIVE = 3;
-    const T_STRUCT = 4;
-
-    const T_LEFT_BRAKET = 10;
-    const T_RIGHT_BRAKET = 11;
-    const T_COMMA = 12;
+    /**
+     * @var string
+     */
+    private $input;
+    /**
+     * @var int
+     */
+    private $pos;
+    /**
+     * @var int
+     */
+    private $length;
 
     public function __construct(string $input)
     {

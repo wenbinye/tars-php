@@ -1,6 +1,6 @@
 <?php
 
-namespace wenbinye\tars\protocol;
+namespace wenbinye\tars\protocol\type;
 
 interface Type
 {
@@ -21,4 +21,6 @@ interface Type
     public function asMapType(): MapType;
 
     public function asStructType(): StructType;
+
+    public function asTarsType(): int;
 }

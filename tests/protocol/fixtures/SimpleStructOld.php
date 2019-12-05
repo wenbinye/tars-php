@@ -1,6 +1,8 @@
 <?php
 
-class SimpleStruct extends \TARS_Struct
+namespace wenbinye\tars\protocol\fixtures;
+
+class SimpleStructOld extends \TARS_Struct
 {
     const ID = 0;
     const COUNT = 1;

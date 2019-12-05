@@ -2,9 +2,11 @@
 
 namespace wenbinye\tars\protocol;
 
+use wenbinye\tars\protocol\type\Type;
+
 interface PackerInterface
 {
-    public function pack($data, $type): string;
+    public function pack($name, $data, Type $type): string;
 
-    public function unpack(string $payload, $type);
+    public function unpack($name, string $payload, Type $type);
 }
