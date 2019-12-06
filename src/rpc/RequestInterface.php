@@ -12,5 +12,13 @@ interface RequestInterface
     const MESSAGE_TYPE = 0;
     const DEFAULT_TIMEOUT = 2000;
 
+    public function getVersion(): int;
+
+    public function getTimeout(): int;
+
+    public function getMessageType(): int;
+
+    public function getPacketType(): int;
+
     public function encode(): string;
 }
