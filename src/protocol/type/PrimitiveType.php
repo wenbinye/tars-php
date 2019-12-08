@@ -68,18 +68,18 @@ class PrimitiveType extends AbstractType
         return true;
     }
 
-    public function pack($name, $data)
+    public function pack($name, $data, int $version)
     {
         $method = 'put'.self::$PACK_METHODS[$this->tarsType];
 
-        return \TUPAPI::{$method}($name, $data);
+        return \TUPAPI::{$method}($name, $data, $version);
     }
 
-    public function unpack($name, string $payload)
+    public function unpack($name, string &$payload, int $version)
     {
         $method = 'get'.self::$PACK_METHODS[$this->tarsType];
 
-        return \TUPAPI::{$method}($name, $payload);
+        return \TUPAPI::{$method}($name, $payload, false, $version);
     }
 
     public function __toString()

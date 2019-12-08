@@ -4,18 +4,24 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\protocol\annotation;
 
+use Doctrine\Common\Annotations\Annotation\Required;
+
 /**
  * @Annotation
  * @Target({"PROPERTY"})
  */
-class TarsStructProperty
+final class TarsProperty
 {
     /**
+     * @Required()
+     *
      * @var string
      */
-    public $name;
+    public $type;
 
     /**
+     * @Required()
+     *
      * @var int
      */
     public $order;
@@ -24,9 +30,4 @@ class TarsStructProperty
      * @var bool
      */
     public $required;
-
-    /**
-     * @var string
-     */
-    public $type;
 }

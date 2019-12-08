@@ -8,7 +8,7 @@ use wenbinye\tars\protocol\type\Type;
 
 interface PackerInterface
 {
-    public function pack($name, $data, Type $type): string;
+    public function pack(Type $type, $name, $data, int $version): string;
 
-    public function unpack($name, string $payload, Type $type);
+    public function unpack(Type $type, $name, string &$payload, int $version);
 }

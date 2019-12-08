@@ -4,56 +4,96 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\registry;
 
-use wenbinye\tars\protocol\annotation\TarsParameterType;
-use wenbinye\tars\protocol\annotation\TarsReturnType;
+use wenbinye\tars\protocol\annotation\TarsClient;
+use wenbinye\tars\protocol\annotation\TarsParameter;
+use wenbinye\tars\protocol\annotation\TarsReturnValue;
 
+/**
+ * @TarsClient(servant="tars.tarsregistry.QueryObj")
+ */
 interface QueryFServant
 {
     /**
-     * @TarsParameterType(name = "id", type = "string", routeKey = false)
-     * @TarsReturnType(type = "vector<EndpointF>")
+     * @TarsParameter(name = "id", type = "string")
+     * @TarsReturnValue(type = "vector<EndpointF>")
+     *
+     * @param string $id
+     *
+     * @return array
      */
-    public function findObjectById(string $id);
+    public function findObjectById($id);
 
     /**
-     * @TarsParameterType(name = "id", type = "string", routeKey = false)
-     * @TarsParameterType(name = "activeEp", type = "vector<EndpointF>", routeKey = false)
-     * @TarsParameterType(name = "inactiveEp", type = "vector<EndpointF>", routeKey = false)
-     * @TarsReturnType(type = "int")
+     * @TarsParameter(name = "id", type = "string")
+     * @TarsParameter(name = "activeEp", type = "vector<EndpointF>", out=true)
+     * @TarsParameter(name = "inactiveEp", type = "vector<EndpointF>", out=true)
+     * @TarsReturnValue(type = "int")
+     *
+     * @param string $id
+     * @param array  $activeEp
+     * @param array  $inactiveEp
+     *
+     * @return int
      */
-    public function findObjectById4Any(string $id, &$activeEp, &$inactiveEp);
+    public function findObjectById4Any($id, &$activeEp, &$inactiveEp);
 
     /**
-     * @TarsParameterType(name = "id", type = "string", routeKey = false)
-     * @TarsParameterType(name = "activeEp", type = "vector<EndpointF>", routeKey = false)
-     * @TarsParameterType(name = "inactiveEp", type = "vector<EndpointF>", routeKey = false)
-     * @TarsReturnType(type = "int")
+     * @TarsParameter(name = "id", type = "string")
+     * @TarsParameter(name = "activeEp", type = "vector<EndpointF>", out=true)
+     * @TarsParameter(name = "inactiveEp", type = "vector<EndpointF>", out=true)
+     * @TarsReturnValue(type = "int")
+     *
+     * @param string $id
+     * @param array  $activeEp
+     * @param array  $inactiveEp
+     *
+     * @return int
      */
-    public function findObjectById4All(string $id, &$activeEp, &$inactiveEp);
+    public function findObjectById4All($id, &$activeEp, &$inactiveEp);
 
     /**
-     * @TarsParameterType(name = "id", type = "string", routeKey = false)
-     * @TarsParameterType(name = "activeEp", type = "vector<EndpointF>", routeKey = false)
-     * @TarsParameterType(name = "inactiveEp", type = "vector<EndpointF>", routeKey = false)
-     * @TarsReturnType(type = "int")
+     * @TarsParameter(name = "id", type = "string")
+     * @TarsParameter(name = "activeEp", type = "vector<EndpointF>", out=true)
+     * @TarsParameter(name = "inactiveEp", type = "vector<EndpointF>", out=true)
+     * @TarsReturnValue(type = "int")
+     *
+     * @param string $id
+     * @param array  $activeEp
+     * @param array  $inactiveEp
+     *
+     * @return int
      */
-    public function findObjectByIdInSameGroup(string $id, &$activeEp, &$inactiveEp);
+    public function findObjectByIdInSameGroup($id, &$activeEp, &$inactiveEp);
 
     /**
-     * @TarsParameterType(name = "id", type = "string", routeKey = false)
-     * @TarsParameterType(name = "sStation", type = "string", routeKey = false)
-     * @TarsParameterType(name = "activeEp", type = "vector<EndpointF>", routeKey = false)
-     * @TarsParameterType(name = "inactiveEp", type = "vector<EndpointF>", routeKey = false)
-     * @TarsReturnType(type = "int")
+     * @TarsParameter(name = "id", type = "string")
+     * @TarsParameter(name = "sStation", type = "string")
+     * @TarsParameter(name = "activeEp", type = "vector<EndpointF>", out=true)
+     * @TarsParameter(name = "inactiveEp", type = "vector<EndpointF>", out=true)
+     * @TarsReturnValue(type = "int")
+     *
+     * @param string $id
+     * @param string $sStation
+     * @param array  $activeEp
+     * @param array  $inactiveEp
+     *
+     * @return int
      */
-    public function findObjectByIdInSameStation(string $id, string $sStation, &$activeEp, &$inactiveEp);
+    public function findObjectByIdInSameStation($id, $sStation, &$activeEp, &$inactiveEp);
 
     /**
-     * @TarsParameterType(name = "id", type = "string", routeKey = false)
-     * @TarsParameterType(name = "setId", type = "string", routeKey = false)
-     * @TarsParameterType(name = "activeEp", type = "vector<EndpointF>", routeKey = false)
-     * @TarsParameterType(name = "inactiveEp", type = "vector<EndpointF>", routeKey = false)
-     * @TarsReturnType(type = "int")
+     * @TarsParameter(name = "id", type = "string")
+     * @TarsParameter(name = "setId", type = "string")
+     * @TarsParameter(name = "activeEp", type = "vector<EndpointF>", out=true)
+     * @TarsParameter(name = "inactiveEp", type = "vector<EndpointF>", out=true)
+     * @TarsReturnValue(type = "int")
+     *
+     * @param string $id
+     * @param string $setId
+     * @param array  $activeEp
+     * @param array  $inactiveEp
+     *
+     * @return int
      */
-    public function findObjectByIdInSameSet(string $id, string $setId, &$activeEp, &$inactiveEp);
+    public function findObjectByIdInSameSet($id, $setId, &$activeEp, &$inactiveEp);
 }

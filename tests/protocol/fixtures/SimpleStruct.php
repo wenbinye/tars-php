@@ -1,25 +1,27 @@
 <?php
 
+declare(strict_types=1);
+
 namespace wenbinye\tars\protocol\fixtures;
 
-use wenbinye\tars\protocol\annotation\TarsStructProperty;
+use wenbinye\tars\protocol\annotation\TarsProperty;
 
 class SimpleStruct
 {
     /**
-     * @TarsStructProperty(order=0, required=true, type="long")
+     * @TarsProperty(order=0, required=true, type="long")
      *
      * @var int
      */
     public $id;
     /**
-     * @TarsStructProperty(order=1, required=true, type="int")
+     * @TarsProperty(order=1, required=true, type="int")
      *
      * @var int
      */
     public $count;
     /**
-     * @TarsStructProperty(order=2, required=true, type="short")
+     * @TarsProperty(order=2, required=true, type="short")
      *
      * @var int
      */

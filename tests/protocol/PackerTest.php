@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace wenbinye\tars\protocol;
 
 use Doctrine\Common\Annotations\AnnotationReader;
@@ -44,29 +46,30 @@ class PackerTest extends TestCase
     }
 
     /**
-     * @throws \Doctrine\Common\Annotations\AnnotationException
      * @throws exception\SyntaxErrorException
      *
      * @dataProvider packData
      */
-    public function testPack($type, $data, $expect)
+    public function testPack($type, $data, $expect): void
     {
         $namespace = __NAMESPACE__.'\\fixtures';
-        $result = $this->packer->pack(self::ARG_NAME, $data, $this->parser->parse($type, $namespace));
+        $result = $this->packer->pack($this->parser->parse($type, $namespace), self::ARG_NAME, $data, self::VERSION);
         $this->assertEquals($expect, $result);
     }
 
     /**
      * @dataProvider packData
+     *
+     * @throws exception\SyntaxErrorException
      */
-    public function testUnpack($type, $expect, $payload)
+    public function testUnpack($type, $expect, $payload): void
     {
         $namespace = __NAMESPACE__.'\\fixtures';
-        $result = $this->packer->unpack(self::ARG_NAME, $this->createPayload($payload), $this->parser->parse($type, $namespace));
+        $result = $this->packer->unpack($this->parser->parse($type, $namespace), self::ARG_NAME, $this->createPayload($payload), self::VERSION);
         $this->assertEquals($expect, $result);
     }
 
-    public function packData()
+    public function packData(): array
     {
         return [
             ['bool', true, \TUPAPI::putBool(self::ARG_NAME, true)],
@@ -130,7 +133,7 @@ class PackerTest extends TestCase
         $nestedStruct->mapOfList->pushBack(['test1' => $structList]);
 
         $payload = $this->createPayload(\TUPAPI::putStruct(self::ARG_NAME, $nestedStruct));
-        $data = $this->packer->unpack(self::ARG_NAME, $payload, $this->parser->parse('NestedStruct', $namespace));
+        $data = $this->packer->unpack($this->parser->parse('NestedStruct', $namespace), self::ARG_NAME, $payload, self::VERSION);
         // var_export($data);
         $this->assertInstanceOf(NestedStruct::class, $data);
     }

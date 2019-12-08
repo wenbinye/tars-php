@@ -71,10 +71,7 @@ class Request implements RequestInterface
         $this->messageType = $messageType;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getVersion()
+    public function getVersion(): int
     {
         return $this->version;
     }
@@ -87,10 +84,7 @@ class Request implements RequestInterface
         return $this;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getServantName()
+    public function getServantName(): string
     {
         return $this->servantName;
     }
@@ -103,10 +97,7 @@ class Request implements RequestInterface
         return $this;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getFuncName()
+    public function getFuncName(): string
     {
         return $this->funcName;
     }
@@ -119,10 +110,7 @@ class Request implements RequestInterface
         return $this;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getRequestId()
+    public function getRequestId(): int
     {
         return $this->requestId;
     }

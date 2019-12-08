@@ -187,7 +187,7 @@ class TypeTokenizer
 
     private function isIdentifier($char): bool
     {
-        return preg_match('/\w/', $char);
+        return (bool) preg_match('/\w/', $char);
     }
 
     private function raiseSyntaxError(string $message): void

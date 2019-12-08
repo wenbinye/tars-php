@@ -27,37 +27,37 @@ class Packer implements PackerInterface
         $this->typeConverter = new TypeConverter($tarsTypeFactory);
     }
 
-    public function pack($name, $data, Type $type): string
+    public function pack(Type $type, $name, $data, int $version): string
     {
         if ($type->isPrimitive()) {
-            return $type->asPrimitiveType()->pack($name, $data);
+            return $type->asPrimitiveType()->pack($name, $data, $version);
         } elseif ($type->isVector()) {
-            return \TUPAPI::putVector($name, $this->typeConverter->toTarsType($data, $type));
+            return \TUPAPI::putVector($name, $this->typeConverter->toTarsType($data, $type), $version);
         } elseif ($type->isMap()) {
-            return \TUPAPI::putMap($name, $this->typeConverter->toTarsType($data, $type));
+            return \TUPAPI::putMap($name, $this->typeConverter->toTarsType($data, $type), $version);
         } elseif ($type->isStruct()) {
-            return \TUPAPI::putStruct($name, $this->typeConverter->toTarsType($data, $type));
+            return \TUPAPI::putStruct($name, $this->typeConverter->toTarsType($data, $type), $version);
         }
         throw new \InvalidArgumentException('unknown type to pack: '.get_class($type));
     }
 
-    public function unpack($name, string $payload, Type $type)
+    public function unpack(Type $type, $name, string &$payload, int $version)
     {
         if ($type->isPrimitive()) {
-            return $type->asPrimitiveType()->unpack($name, $payload);
+            return $type->asPrimitiveType()->unpack($name, $payload, $version);
         } elseif ($type->isVector()) {
             $tarsType = $this->tarsTypeFactory->create($type);
-            $data = \TUPAPI::getVector($name, $tarsType, $payload);
+            $data = \TUPAPI::getVector($name, $tarsType, $payload, false, $version);
 
             return $this->typeConverter->toPhpType($data, $type);
         } elseif ($type->isMap()) {
             $tarsType = $this->tarsTypeFactory->create($type);
-            $data = \TUPAPI::getMap($name, $tarsType, $payload);
+            $data = \TUPAPI::getMap($name, $tarsType, $payload, false, $version);
 
             return $this->typeConverter->toPhpType($data, $type);
         } elseif ($type->isStruct()) {
             $tarsType = $this->tarsTypeFactory->create($type);
-            $data = \TUPAPI::getStruct($name, $tarsType, $payload);
+            $data = \TUPAPI::getStruct($name, $tarsType, $payload, false, $version);
 
             return $this->typeConverter->toPhpType($data, $type);
         }

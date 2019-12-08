@@ -1,31 +1,33 @@
 <?php
 
+declare(strict_types=1);
+
 namespace wenbinye\tars\protocol\fixtures;
 
-use wenbinye\tars\protocol\annotation\TarsStructProperty;
+use wenbinye\tars\protocol\annotation\TarsProperty;
 
 class NestedStruct
 {
     /**
-     * @TarsStructProperty(order=1, required=true, type="SimpleStruct")
+     * @TarsProperty(order=1, required=true, type="SimpleStruct")
      *
      * @var SimpleStruct
      */
     public $simpleStruct;
     /**
-     * @TarsStructProperty(order=2, required=true, type="vector<SimpleStruct>")
+     * @TarsProperty(order=2, required=true, type="vector<SimpleStruct>")
      *
      * @var SimpleStruct[]
      */
     public $structList;
     /**
-     * @TarsStructProperty(order=3, required=true, type="map<string, SimpleStruct>")
+     * @TarsProperty(order=3, required=true, type="map<string, SimpleStruct>")
      *
      * @var array
      */
     public $structMap;
     /**
-     * @TarsStructProperty(order=9, required=true, type="map<string, vector<SimpleStruct>>")
+     * @TarsProperty(order=9, required=true, type="map<string, vector<SimpleStruct>>")
      *
      * @var array
      */

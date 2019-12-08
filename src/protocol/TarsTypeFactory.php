@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace wenbinye\tars\protocol;
 
 use Doctrine\Common\Annotations\Reader;
-use wenbinye\tars\protocol\annotation\TarsStructProperty;
+use wenbinye\tars\protocol\annotation\TarsProperty;
 use wenbinye\tars\protocol\type\GenericTarsStruct;
 use wenbinye\tars\protocol\type\Type;
 
@@ -63,12 +63,13 @@ class TarsTypeFactory
             $namespace = $reflectionClass->getNamespaceName();
             $fields = [];
             foreach ($reflectionClass->getProperties() as $property) {
-                /** @var TarsStructProperty $annotation */
-                $annotation = $this->annotationReader->getPropertyAnnotation($property, TarsStructProperty::class);
+                /** @var TarsProperty $annotation */
+                $annotation = $this->annotationReader->getPropertyAnnotation($property, TarsProperty::class);
                 if ($annotation) {
                     $type = $this->parser->parse($annotation->type, $namespace);
                     $fields[$annotation->order] = [
                         'name' => $property->getName(),
+                        'order' => $annotation->order,
                         'required' => $annotation->required,
                         'type' => $type->asTarsType(),
                         'typeObj' => $type,

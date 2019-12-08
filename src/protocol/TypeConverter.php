@@ -26,11 +26,15 @@ class TypeConverter
         if ($type->isPrimitive()) {
             return $data;
         }
+        if (!isset($data)) {
+            $data = [];
+        }
+        if (!is_array($data)) {
+            throw new \InvalidArgumentException('expect array, got '.gettype($data));
+        }
         if ($type->isVector()) {
             $vector = $this->tarsTypeFactory->create($type);
-            if (!is_array($data)) {
-                throw new \InvalidArgumentException('expect array, got '.gettype($data));
-            }
+
             foreach ($data as $item) {
                 $vector->pushBack($this->toTarsType($item, $type->asVectorType()->getSubType()));
             }
@@ -48,7 +52,7 @@ class TypeConverter
         if ($type->isStruct()) {
             $struct = $this->tarsTypeFactory->create($type);
             foreach ($struct->getFields() as $field) {
-                $struct->{$field['name']} = $this->toTarsType($data->{$field['name']}, $field['typeObj']);
+                $struct->{$field['name']} = $this->toTarsType($data[$field['name']] ?? null, $field['typeObj']);
             }
 
             return $struct;

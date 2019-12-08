@@ -6,5 +6,7 @@ namespace wenbinye\tars\rpc;
 
 interface RequestFactoryInterface
 {
-    public function createRequest(array $payload): RequestInterface;
+    public function getVersion(): int;
+
+    public function createRequest(string $servantName, string $method, array $payload): RequestInterface;
 }
