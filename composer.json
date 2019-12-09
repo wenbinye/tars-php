@@ -23,12 +23,15 @@
   },
   "require": {
     "php": "^7.2",
-    "ext-phptars": "*",
-    "ext-sockets": "*",
     "ext-json": "*",
-    "doctrine/annotations": "^1.8"
+    "ext-phptars": "*",
+    "doctrine/annotations": "^1.8",
+    "psr/container": "^1.0",
+    "symfony/console": "^5.0",
+    "webmozart/assert": "^1.6"
   },
   "require-dev": {
+    "ext-sockets": "*",
     "copyrenzhe/tars-ide-helper": "dev-master",
     "phpunit/phpunit": "^8.4",
     "winwin/composer-phpcs-plugin": "^0.1"
