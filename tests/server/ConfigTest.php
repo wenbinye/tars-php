@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server;
 
+use Doctrine\Common\Annotations\AnnotationReader;
+use Doctrine\Common\Annotations\AnnotationRegistry;
 use PHPUnit\Framework\TestCase;
 
 class ConfigTest extends TestCase
@@ -26,7 +28,12 @@ bar=2
 
     public function testParseFile()
     {
-        $result = Config::parseFile(__DIR__.'/fixtures/PHPTest.PHPHttpServer.config.conf');
-        var_export($result->toArray());
+        $config = Config::parseFile(__DIR__.'/fixtures/PHPTest.PHPHttpServer.config.conf');
+        AnnotationRegistry::registerLoader('class_exists');
+        $annotationReader = new AnnotationReader();
+        $clientProperties = ClientProperties::fromConfig($config, $annotationReader);
+        $serverProperties = ServerProperties::fromConfig($config, $annotationReader);
+        var_export([$clientProperties, $serverProperties]);
+        // var_export($result->toArray());
     }
 }
