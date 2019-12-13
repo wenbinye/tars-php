@@ -7,6 +7,7 @@ namespace wenbinye\tars\server;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Validator\Validation;
 
 class ConfigTest extends TestCase
 {
@@ -29,10 +30,15 @@ bar=2
     public function testParseFile()
     {
         $config = Config::parseFile(__DIR__.'/fixtures/PHPTest.PHPHttpServer.config.conf');
+
         AnnotationRegistry::registerLoader('class_exists');
         $annotationReader = new AnnotationReader();
-        $clientProperties = ClientProperties::fromConfig($config, $annotationReader);
-        $serverProperties = ServerProperties::fromConfig($config, $annotationReader);
+        $validator = Validation::createValidatorBuilder()
+            ->enableAnnotationMapping($annotationReader)
+            ->getValidator();
+        $propertyLoader = new PropertyLoader($annotationReader, $validator);
+        $clientProperties = $propertyLoader->loadClientProperties($config);
+        $serverProperties = $propertyLoader->loadServerProperties($config);
         var_export([$clientProperties, $serverProperties]);
         // var_export($result->toArray());
     }

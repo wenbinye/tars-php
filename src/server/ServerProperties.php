@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server;
 
-use Doctrine\Common\Annotations\Reader;
+use Symfony\Component\Validator\Constraints as Assert;
 use wenbinye\tars\rpc\Route;
 use wenbinye\tars\server\annotation\ConfigItem;
-use wenbinye\tars\support\Text;
-use wenbinye\tars\support\Type;
 
 class ServerProperties
 {
     /**
      * @ConfigItem()
+     * @Assert\NotBlank()
      *
      * @var string
      */
@@ -21,6 +20,7 @@ class ServerProperties
 
     /**
      * @ConfigItem()
+     * @Assert\NotBlank()
      *
      * @var string
      */
@@ -33,6 +33,7 @@ class ServerProperties
 
     /**
      * @ConfigItem()
+     * @Assert\NotBlank()
      *
      * @var string
      */
@@ -88,6 +89,8 @@ class ServerProperties
      */
     private $notifyServantName;
     /**
+     * @Assert\Count(min=1)
+     *
      * @var AdapterProperties[]
      */
     private $adapters = [];
@@ -110,6 +113,11 @@ class ServerProperties
     public function setServer(string $server): void
     {
         $this->server = $server;
+    }
+
+    public function getServerName(): string
+    {
+        return $this->app.'.'.$this->server;
     }
 
     public function getSwooleServerProperties(): array
@@ -226,23 +234,5 @@ class ServerProperties
     public function setAdapters(array $adapters): void
     {
         $this->adapters = $adapters;
-    }
-
-    public static function fromConfig(Config $config, Reader $annotationReader): ServerProperties
-    {
-        $serverProperties = new static();
-        /** @var Config $serverConfig */
-        $serverConfig = $config->tars->application->server;
-        $serverConfig->updateTo($serverProperties, $annotationReader);
-        foreach ($serverConfig as $key => $value) {
-            if (Text::endsWith($key, 'Adapter')) {
-                $serverProperties->adapters[] = $adpater = new AdapterProperties();
-                $value->updateTo($adpater, $annotationReader);
-            } elseif (SwooleServerProperties::has($key)) {
-                $serverProperties->swooleServerProperties[$key] = Type::fromString(SwooleServerProperties::getType($key), $value);
-            }
-        }
-
-        return $serverProperties;
     }
 }

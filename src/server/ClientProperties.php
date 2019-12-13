@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server;
 
-use Doctrine\Common\Annotations\Reader;
+use Symfony\Component\Validator\Constraints as Assert;
 use wenbinye\tars\rpc\Route;
 use wenbinye\tars\server\annotation\ConfigItem;
 
@@ -18,6 +18,7 @@ class ClientProperties
     private $asyncThread;
     /**
      * @ConfigItem(factory="fromString")
+     * @Assert\NotNull()
      *
      * @var Route
      */
@@ -185,13 +186,5 @@ class ClientProperties
     public function setMaxSampleCount(int $maxSampleCount): void
     {
         $this->maxSampleCount = $maxSampleCount;
-    }
-
-    public static function fromConfig(Config $config, Reader $annotationReader): ClientProperties
-    {
-        $clientProperties = new static();
-        $config->tars->application->client->updateTo($clientProperties, $annotationReader);
-
-        return $clientProperties;
     }
 }

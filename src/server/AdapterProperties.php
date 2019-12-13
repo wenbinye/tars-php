@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server;
 
+use Symfony\Component\Validator\Constraints as Assert;
 use wenbinye\tars\rpc\Route;
 use wenbinye\tars\server\annotation\ConfigItem;
 
@@ -11,6 +12,7 @@ class AdapterProperties
 {
     /**
      * @ConfigItem(factory="fromString")
+     * @Assert\NotNull()
      *
      * @var Route
      */
@@ -23,6 +25,7 @@ class AdapterProperties
     private $maxConnections;
     /**
      * @ConfigItem()
+     * @Assert\Choice(choices={"http", "http2", "tcp", "udp", "grpc", "websocket", "tars", "not_tars"})
      *
      * @var string
      */
@@ -41,6 +44,7 @@ class AdapterProperties
     private $queueTimeout;
     /**
      * @ConfigItem(name="servant")
+     * @Assert\NotBlank()
      *
      * @var string
      */

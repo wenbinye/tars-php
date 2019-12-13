@@ -9,7 +9,7 @@ use wenbinye\tars\support\ContainerFactoryInterface;
 
 class ServerApplication
 {
-    const APP_NAME = 'tars-app';
+    public const APP_NAME = 'tars-app';
 
     /**
      * ServerApplication constructor.
