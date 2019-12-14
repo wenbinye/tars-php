@@ -13,6 +13,7 @@ use wenbinye\tars\support\Type;
 
 class PropertyLoader
 {
+    const ADAPTER_SUFFIX = 'Adapter';
     /**
      * @var Reader
      */
@@ -54,15 +55,17 @@ class PropertyLoader
         $adapters = [];
         $swooleServerProperties = [];
         foreach ($serverConfig as $key => $value) {
-            if (Text::endsWith($key, 'Adapter')) {
-                $adapters[] = $adapterProperties = new AdapterProperties();
+            if (Text::endsWith($key, self::ADAPTER_SUFFIX)
+                && Text::startsWith($key, $serverProperties->getServerName().'.')) {
+                $adapterName = substr($key, strlen($serverProperties->getServerName()) + 1, -strlen(self::ADAPTER_SUFFIX));
+                $adapters[$adapterName] = $adapterProperties = new AdapterProperties();
                 $this->load($adapterProperties, $value);
                 $errors = $this->validator->validate($adapterProperties);
                 if ($errors->count() > 0) {
                     throw new ValidationException($errors);
                 }
-            } elseif (SwooleServerProperties::has($key)) {
-                $swooleServerProperties[$key] = Type::fromString(SwooleServerProperties::getType($key), $value);
+            } elseif (SwooleServerSetting::hasValue($key)) {
+                $swooleServerProperties[$key] = Type::fromString(SwooleServerSetting::fromValue($key)->type, $value);
             }
         }
         $serverProperties->setAdapters($adapters);

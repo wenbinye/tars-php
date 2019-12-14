@@ -4,19 +4,28 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc;
 
+use Symfony\Component\Validator\Constraints as Assert;
+
 class Route
 {
     /**
+     * @Assert\Choice(choices={"tcp", "udp"})
+     * @Assert\NotBlank()
+     *
      * @var string
      */
     private $protocol;
 
     /**
+     * @Assert\NotBlank()
+     *
      * @var string
      */
     private $host;
 
     /**
+     * @Assert\Range(min=1, max=65536)
+     *
      * @var int
      */
     private $port;
@@ -103,6 +112,16 @@ class Route
                     }
                 }
             }
+        }
+
+        if (!in_array($route->protocol, ['tcp', 'udp'], true)) {
+            throw new \InvalidArgumentException("invalid route protocol: original text is '$str'");
+        }
+        if (empty($route->host)) {
+            throw new \InvalidArgumentException("invalid route host: original text is '$str'");
+        }
+        if ($route->port < 1 || $route->port > 65536) {
+            throw new \InvalidArgumentException("invalid route port: original text is '$str'");
         }
 
         return $route;

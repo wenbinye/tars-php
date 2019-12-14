@@ -33,8 +33,10 @@ class ServerCommand extends Command
         $action = $input->getOption('action');
         Assert::oneOf($action, ['start', 'stop'], 'Unknown action \'%s\', expected one of: %s');
         Config::parseFile($input->getOption('config'));
-        $this->containerFactory->create()->get(ServerInterface::class)
-            ->$action();
+        /** @var ServerInterface $server */
+        $server = $this->containerFactory->create()->get(ServerInterface::class);
+        $server->setOutput($output);
+        $server->$action();
     }
 
     public function setContainerFactory(ContainerFactoryInterface $containerFactory): void

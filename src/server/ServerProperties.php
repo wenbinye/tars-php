@@ -235,4 +235,25 @@ class ServerProperties
     {
         $this->adapters = $adapters;
     }
+
+    public function hasAdapter(string $name): bool
+    {
+        return isset($this->adapters[$name]);
+    }
+
+    public function getAdapter(string $name): ?AdapterProperties
+    {
+        return $this->adapters[$name] ?? null;
+    }
+
+    public function getAdapterByPort(int $port): ?AdapterProperties
+    {
+        foreach ($this->adapters as $adapterProperties) {
+            if ($adapterProperties->getEndpoint()->getPort() === $port) {
+                return $adapterProperties;
+            }
+        }
+
+        return null;
+    }
 }

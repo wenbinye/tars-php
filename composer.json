@@ -28,6 +28,7 @@
     "doctrine/annotations": "^1.8",
     "php-di/phpdoc-reader": "^2.1",
     "psr/container": "^1.0",
+    "psr/event-dispatcher": "^1.0",
     "symfony/console": "^5.0",
     "symfony/validator": "^5.0",
     "webmozart/assert": "^1.6"
@@ -36,6 +37,7 @@
     "ext-sockets": "*",
     "copyrenzhe/tars-ide-helper": "dev-master",
     "phpunit/phpunit": "^8.4",
+    "swoft/swoole-ide-helper": "^4.4",
     "winwin/composer-phpcs-plugin": "^0.1"
   }
 }

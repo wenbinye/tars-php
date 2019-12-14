@@ -24,8 +24,8 @@ class AdapterProperties
      */
     private $maxConnections;
     /**
-     * @ConfigItem()
-     * @Assert\Choice(choices={"http", "http2", "tcp", "udp", "grpc", "websocket", "tars", "not_tars"})
+     * @Assert\Choice(callback={"wenbinye\tars\server\Protocol", "values"})
+     * @Assert\NotBlank()
      *
      * @var string
      */
@@ -55,6 +55,10 @@ class AdapterProperties
      * @var int
      */
     private $threads;
+    /**
+     * @var int
+     */
+    private $swooleSockType;
 
     public function getEndpoint(): Route
     {
@@ -124,5 +128,22 @@ class AdapterProperties
     public function setThreads(int $threads): void
     {
         $this->threads = $threads;
+    }
+
+    public function getSwooleServerType(): string
+    {
+        return Protocol::fromValue($this->protocol)->serverType
+            ?: $this->endpoint->getProtocol();
+    }
+
+    public function getSwooleSockType(): int
+    {
+        return $this->swooleSockType
+            ?? (SwooleServerType::UDP === $this->getSwooleServerType() ? SWOOLE_SOCK_UDP : SWOOLE_SOCK_TCP);
+    }
+
+    public function setSwooleSockType(int $swooleSockType): void
+    {
+        $this->swooleSockType = $swooleSockType;
     }
 }

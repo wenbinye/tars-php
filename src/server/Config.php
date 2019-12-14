@@ -65,6 +65,20 @@ class Config extends \ArrayIterator
         return $result;
     }
 
+    public static function fromArray(array $configArray): Config
+    {
+        $config = new static();
+        foreach ($configArray as $key => $value) {
+            if (is_array($value)) {
+                $config[$key] = static::fromArray($value);
+            } else {
+                $config[$key] = $value;
+            }
+        }
+
+        return $config;
+    }
+
     public static function parseFile(string $fileName): Config
     {
         $content = file_get_contents($fileName);
