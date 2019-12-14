@@ -51,6 +51,17 @@ class Config extends \ArrayIterator
         return isset($this[$name]);
     }
 
+    public function merge(array $configArray): void
+    {
+        foreach ($configArray as $key => $value) {
+            if (isset($this[$key]) && is_array($value) && $this[$key] instanceof self) {
+                $this[$key]->merge($value);
+                continue;
+            }
+            $this[$key] = is_array($value) ? static::fromArray($value) : $value;
+        }
+    }
+
     public function toArray(): array
     {
         $result = [];

@@ -29,6 +29,11 @@ class SwooleEvent extends Enum
     const WORKER_EXIT = 'workerExit';
 
     /**
+     * Swoole onWorkerErro event.
+     */
+    const WORKER_ERROR = 'workerError';
+
+    /**
      * Swoole onPipeMessage event.
      */
     const PIPE_MESSAGE = 'pipeMessage';
@@ -97,4 +102,9 @@ class SwooleEvent extends Enum
      * Swoole onManagerStop event.
      */
     const MANAGER_STOP = 'managerStop';
+
+    public static function requestEvents(): array
+    {
+        return [self::REQUEST, self::MESSAGE, self::RECEIVE];
+    }
 }

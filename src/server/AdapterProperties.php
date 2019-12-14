@@ -11,6 +11,13 @@ use wenbinye\tars\server\annotation\ConfigItem;
 class AdapterProperties
 {
     /**
+     * @Assert\NotBlank()
+     *
+     * @var string
+     */
+    private $name;
+
+    /**
      * @ConfigItem(factory="fromString")
      * @Assert\NotNull()
      *
@@ -24,7 +31,8 @@ class AdapterProperties
      */
     private $maxConnections;
     /**
-     * @Assert\Choice(callback={"wenbinye\tars\server\Protocol", "values"})
+     * @ConfigItem()
+     * @Assert\Choice(callback="protocols")
      * @Assert\NotBlank()
      *
      * @var string
@@ -59,6 +67,16 @@ class AdapterProperties
      * @var int
      */
     private $swooleSockType;
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): void
+    {
+        $this->name = $name;
+    }
 
     public function getEndpoint(): Route
     {
@@ -145,5 +163,10 @@ class AdapterProperties
     public function setSwooleSockType(int $swooleSockType): void
     {
         $this->swooleSockType = $swooleSockType;
+    }
+
+    public function protocols(): array
+    {
+        return Protocol::values();
     }
 }

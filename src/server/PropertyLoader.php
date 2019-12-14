@@ -59,6 +59,7 @@ class PropertyLoader
                 && Text::startsWith($key, $serverProperties->getServerName().'.')) {
                 $adapterName = substr($key, strlen($serverProperties->getServerName()) + 1, -strlen(self::ADAPTER_SUFFIX));
                 $adapters[$adapterName] = $adapterProperties = new AdapterProperties();
+                $adapterProperties->setName($adapterName);
                 $this->load($adapterProperties, $value);
                 $errors = $this->validator->validate($adapterProperties);
                 if ($errors->count() > 0) {

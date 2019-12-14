@@ -47,7 +47,8 @@ class ValidationException extends \Exception
         $messages = [];
         /** @var ConstraintViolationInterface $violation */
         foreach ($this->violations as $violation) {
-            $messages[$violation->getPropertyPath()][] = $violation->getMessage();
+            $name = $violation->getPropertyPath();
+            $messages[$name][] = "[$name]".$violation->getMessage();
         }
 
         return $messages;

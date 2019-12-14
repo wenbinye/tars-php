@@ -55,9 +55,9 @@ class SwooleServerType extends Enum
         'events' => [
             self::HTTP => [SwooleEvent::REQUEST],
             self::HTTP2 => [SwooleEvent::REQUEST],
-            self::WEBSOCKET => [SwooleEvent::REQUEST, SwooleEvent::MESSAGE],
+            self::WEBSOCKET => [SwooleEvent::REQUEST, SwooleEvent::MESSAGE, SwooleEvent::OPEN, SwooleEvent::HAND_SHAKE],
             self::TCP => [SwooleEvent::RECEIVE],
-            self::UDP => [SwooleEvent::RECEIVE],
+            self::UDP => [SwooleEvent::PACKET],
         ],
     ];
 }

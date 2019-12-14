@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server;
 
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Swoole\Server;
 use Symfony\Component\Console\Output\OutputInterface;
+use wenbinye\tars\server\event\SwooleServerEventFactory;
 
 class SwooleServer implements ServerInterface, LoggerAwareInterface
 {
@@ -30,15 +32,29 @@ class SwooleServer implements ServerInterface, LoggerAwareInterface
      * @var Server
      */
     private $swooleServer;
+    /**
+     * @var EventDispatcherInterface
+     */
+    private $eventDispatcher;
+
+    /**
+     * @var SwooleServerEventFactory
+     */
+    private $swooleServerEventFactory;
 
     /**
      * SwooleServer constructor.
      */
-    public function __construct(ServerProperties $serverProperties)
+    public function __construct(ServerProperties $serverProperties, EventDispatcherInterface $eventDispatcher)
     {
         $this->serverProperties = $serverProperties;
+        $this->eventDispatcher = $eventDispatcher;
+        $this->swooleServerEventFactory = new SwooleServerEventFactory($this);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function start(): void
     {
         $adapters = $this->serverProperties->getAdapters();
@@ -48,6 +64,9 @@ class SwooleServer implements ServerInterface, LoggerAwareInterface
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function stop(): void
     {
         $pids = $this->getPidList();
@@ -62,6 +81,24 @@ class SwooleServer implements ServerInterface, LoggerAwareInterface
         } else {
             $this->output->writeln('<error>Server was failed to stop</error>');
         }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setOutput(OutputInterface $output): void
+    {
+        $this->output = $output;
+    }
+
+    public function getServerProperties(): ServerProperties
+    {
+        return $this->serverProperties;
+    }
+
+    public function getOutput(): OutputInterface
+    {
+        return $this->output;
     }
 
     private function getPidList()
@@ -96,9 +133,14 @@ class SwooleServer implements ServerInterface, LoggerAwareInterface
         return array_map('intval', $pids);
     }
 
-    public function setOutput(OutputInterface $output): void
+    private function swooleEventHandler(string $eventName)
     {
-        $this->output = $output;
+        return function () use ($eventName) {
+            $event = $this->swooleServerEventFactory->create($eventName, func_get_args());
+            if ($event) {
+                $this->eventDispatcher->dispatch($event);
+            }
+        };
     }
 
     private function createSwooleServer(AdapterProperties $adapter): void
@@ -108,6 +150,17 @@ class SwooleServer implements ServerInterface, LoggerAwareInterface
         $listen = $adapter->getEndpoint();
         $this->swooleServer = new $swooleServerClass($listen->getHost(), $listen->getPort(), SWOOLE_PROCESS, $adapter->getSwooleSockType());
         $this->swooleServer->set(array_merge($this->serverProperties->getSwooleServerProperties(), $serverType->settings));
+
+        foreach (SwooleEvent::values() as $event) {
+            if (in_array($event, SwooleEvent::requestEvents(), true)) {
+                continue;
+            }
+            $this->swooleServer->on($event, $this->swooleEventHandler($event));
+        }
+
+        foreach ($serverType->events as $event) {
+            $this->swooleServer->on($event, $this->swooleEventHandler($event));
+        }
     }
 
     private function addPort(AdapterProperties $adapter): void
@@ -117,5 +170,9 @@ class SwooleServer implements ServerInterface, LoggerAwareInterface
         /** @var Server\Port $port */
         $port = $this->swooleServer->addlistener($listen->getHost(), $listen->getPort(), $adapter->getSwooleSockType());
         $port->set($serverType->settings);
+
+        foreach ($serverType->events as $event) {
+            $port->on($event, $this->swooleEventHandler($event));
+        }
     }
 }

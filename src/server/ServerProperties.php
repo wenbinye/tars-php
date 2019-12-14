@@ -40,6 +40,7 @@ class ServerProperties
     private $basePath;
     /**
      * @ConfigItem()
+     * @Assert\NotBlank()
      *
      * @var string
      */
@@ -255,5 +256,15 @@ class ServerProperties
         }
 
         return null;
+    }
+
+    public function getMasterPidFile(): string
+    {
+        return $this->dataPath.'/master.pid';
+    }
+
+    public function getManagerPidFile(): string
+    {
+        return $this->dataPath.'/manager.pid';
     }
 }
