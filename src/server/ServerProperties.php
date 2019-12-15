@@ -29,7 +29,7 @@ class ServerProperties
     /**
      * @var array
      */
-    private $swooleServerProperties;
+    private $swooleServerSettings;
 
     /**
      * @ConfigItem()
@@ -121,14 +121,14 @@ class ServerProperties
         return $this->app.'.'.$this->server;
     }
 
-    public function getSwooleServerProperties(): array
+    public function getSwooleServerSettings(): array
     {
-        return $this->swooleServerProperties;
+        return $this->swooleServerSettings;
     }
 
-    public function setSwooleServerProperties(array $swooleServerProperties): void
+    public function setSwooleServerSettings(array $swooleServerSettings): void
     {
-        $this->swooleServerProperties = $swooleServerProperties;
+        $this->swooleServerSettings = $swooleServerSettings;
     }
 
     public function getBasePath(): string

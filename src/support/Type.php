@@ -21,7 +21,7 @@ class Type
         if ('int' === $typeName) {
             return (int) $value;
         } elseif ('bool' === $typeName) {
-            return (bool) $value;
+            return in_array(strtolower($value), ['1', 'true', 'on'], true);
         } else {
             return $value;
         }

@@ -13,28 +13,20 @@
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-
+ 
 module tars
 {
-    /**
-     * 端口信息
-     */
-    struct EndpointF
+    interface AdminF
     {
-        0 require string host;
-        1 require int port;
-        2 require int timeout;
-        3 require int istcp;
-        4 require int grid;
-        5 optional int groupworkid;
-        6 optional int grouprealid;
-		7 optional string setId;
-		8 optional int qos;
-		9 optional int bakFlag;
-		11 optional int weight;
-		12 optional int weightType;
-    };
-    key[EndpointF, host, port, timeout, istcp, grid, qos, weight, weightType];
-};
+        /**
+        * 关闭服务
+        */
+        void shutdown();
 
+        /**
+        * 通知服务
+        */
+        string notify(string command);
+    };
+};
 

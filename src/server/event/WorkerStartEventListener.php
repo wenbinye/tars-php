@@ -4,25 +4,25 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server\event;
 
+use wenbinye\tars\server\task\QueueInterface;
+use wenbinye\tars\server\task\ReportTask;
+
 class WorkerStartEventListener implements EventListenerInterface
 {
     /**
+     * @var QueueInterface
+     */
+    private $taskQueue;
+
+    /**
      * @param WorkerStartEvent $event
      */
-    public function onEvent($event): void
+    public function __invoke($event): void
     {
         $this->setProcessTitle($event);
-//        if ($event->getWorkerId() === 0) {
-//            // 将定时上报的任务投递到task worker 0,只需要投递一次
-//            $this->sw->task(
-//                [
-//                    'application' => $this->application,
-//                    'serverName' => $this->serverName,
-//                    'masterPid' => $server->master_pid,
-//                    'adapters' => array_column($this->tarsServerConfig['adapters'], 'adapterName'),
-//                    'client' => $this->tarsClientConfig
-//                ], 0);
-//        }
+        if (0 === $event->getWorkerId()) {
+            $this->startKeepAliveTask();
+        }
     }
 
     private function setProcessTitle(WorkerStartEvent $event): void
@@ -33,5 +33,10 @@ class WorkerStartEventListener implements EventListenerInterface
         } else {
             @cli_set_process_title($serverName.": worker {$event->getWorkerId()} process");
         }
+    }
+
+    private function startKeepAliveTask(): void
+    {
+        $this->taskQueue->put(new ReportTask());
     }
 }

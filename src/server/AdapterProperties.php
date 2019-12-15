@@ -138,6 +138,11 @@ class AdapterProperties
         $this->servantName = $servantName;
     }
 
+    public function getAdapterName(): string
+    {
+        return $this->servantName.'Adapter';
+    }
+
     public function getThreads(): int
     {
         return $this->threads;

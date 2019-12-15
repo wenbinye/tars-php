@@ -53,7 +53,7 @@ class PropertyLoader
         $serverConfig = $config->tars->application->server;
         $this->load($serverProperties, $serverConfig);
         $adapters = [];
-        $swooleServerProperties = [];
+        $swooleServerSettings = [];
         foreach ($serverConfig as $key => $value) {
             if (Text::endsWith($key, self::ADAPTER_SUFFIX)
                 && Text::startsWith($key, $serverProperties->getServerName().'.')) {
@@ -66,11 +66,15 @@ class PropertyLoader
                     throw new ValidationException($errors);
                 }
             } elseif (SwooleServerSetting::hasValue($key)) {
-                $swooleServerProperties[$key] = Type::fromString(SwooleServerSetting::fromValue($key)->type, $value);
+                $swooleServerSettings[$key] = Type::fromString(SwooleServerSetting::fromValue($key)->type, $value);
             }
         }
+        if (empty($swooleServerSettings[SwooleServerSetting::TASK_WORKER_NUM])) {
+            // at least one task worker
+            $swooleServerSettings[SwooleServerSetting::TASK_WORKER_NUM] = 1;
+        }
         $serverProperties->setAdapters($adapters);
-        $serverProperties->setSwooleServerProperties($swooleServerProperties);
+        $serverProperties->setSwooleServerSettings($swooleServerSettings);
         $errors = $this->validator->validate($serverProperties);
         if ($errors->count() > 0) {
             throw new ValidationException($errors);

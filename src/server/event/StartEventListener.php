@@ -4,19 +4,28 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server\event;
 
-class StartEventListener implements EventListenerInterface
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
+use wenbinye\tars\server\exception\IOException;
+
+class StartEventListener implements EventListenerInterface, LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     /**
      * @param StartEvent $event
      */
-    public function onEvent($event): void
+    public function __invoke($event): void
     {
         $serverProperties = $event->getServer()->getServerProperties();
         @cli_set_process_title($serverProperties->getServerName().': master process');
 
-        file_put_contents($serverProperties->getMasterPidFile(), $event->getSwooleServer()->master_pid);
-        file_put_contents($serverProperties->getManagerPidFile(), $event->getSwooleServer()->manager_pid);
-
+        try {
+            $this->writePidFile($serverProperties->getMasterPidFile(), $event->getSwooleServer()->master_pid);
+            $this->writePidFile($serverProperties->getManagerPidFile(), $event->getSwooleServer()->manager_pid);
+        } catch (IOException $e) {
+            $event->getSwooleServer()->stop();
+        }
         // 初始化的一次上报
         // TarsPlatform::keepaliveInit($this->tarsConfig, $server->master_pid);
 
@@ -28,5 +37,18 @@ class StartEventListener implements EventListenerInterface
 //                $this->servicesInfo['saveTarsConfigFileDir'],
 //                $this->servicesInfo['saveTarsConfigFileName']);
 //        }
+    }
+
+    private function writePidFile(string $pidFile, int $pid): void
+    {
+        $dir = dirname($pidFile);
+        if (!is_dir($dir) && !mkdir($dir, 0777, true) && !is_dir($dir)) {
+            $this->logger->error("Cannot create pid file directory $dir");
+            throw new IOException("Cannot create pid file directory $dir");
+        }
+        $ret = file_put_contents($pidFile, $pid);
+        if (false === $ret) {
+            throw new IOException("Cannot create pid file $pidFile");
+        }
     }
 }

@@ -9,7 +9,7 @@ class ManagerStartEventListener implements EventListenerInterface
     /**
      * @param ManagerStartEvent $event
      */
-    public function onEvent($event): void
+    public function __invoke($event): void
     {
         @cli_set_process_title($event->getServer()->getServerProperties()->getServerName().': manager process');
     }

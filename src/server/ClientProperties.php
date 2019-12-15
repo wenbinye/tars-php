@@ -43,6 +43,14 @@ class ClientProperties
     private $refreshEndpointInterval;
     /**
      * @ConfigItem()
+     * @Assert\Range(min=1000)
+     *
+     * @var int
+     */
+    private $keepAliveInterval;
+    /**
+     * @ConfigItem()
+     * @Assert\Range(min=1000)
      *
      * @var int
      */
@@ -101,6 +109,16 @@ class ClientProperties
     public function getRefreshEndpointInterval(): int
     {
         return $this->refreshEndpointInterval;
+    }
+
+    public function getKeepAliveInterval(): int
+    {
+        return $this->keepAliveInterval;
+    }
+
+    public function setKeepAliveInterval(int $keepAliveInterval): void
+    {
+        $this->keepAliveInterval = $keepAliveInterval;
     }
 
     public function getReportInterval(): int

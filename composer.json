@@ -36,8 +36,12 @@
   "require-dev": {
     "ext-sockets": "*",
     "copyrenzhe/tars-ide-helper": "dev-master",
+    "mockery/mockery": "^1.3",
+    "monolog/monolog": "^2.0",
+    "php-di/php-di": "^6.0",
     "phpunit/phpunit": "^8.4",
     "swoft/swoole-ide-helper": "^4.4",
+    "symfony/event-dispatcher": "^5.0",
     "winwin/composer-phpcs-plugin": "^0.1"
   }
 }

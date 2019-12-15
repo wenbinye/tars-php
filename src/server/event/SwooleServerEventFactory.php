@@ -30,9 +30,11 @@ class SwooleServerEventFactory
             /** @var SwooleServerEvent $event */
             $event = $this->$method(...$args);
             $event->setServer($this->server);
-            if ($args[0] instanceof Server) {
+            if (!empty($args) && $args[0] instanceof Server) {
                 $event->setSwooleServer($args[0]);
             }
+
+            return $event;
         }
 
         return null;

@@ -9,5 +9,5 @@ interface EventListenerInterface
     /**
      * @param SwooleServerEvent $event
      */
-    public function onEvent($event): void;
+    public function __invoke($event): void;
 }
