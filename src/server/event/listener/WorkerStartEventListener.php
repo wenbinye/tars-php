@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace wenbinye\tars\server\event;
+namespace wenbinye\tars\server\event\listener;
 
 use wenbinye\tars\server\task\QueueInterface;
 use wenbinye\tars\server\task\ReportTask;

@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-namespace wenbinye\tars\server\event;
+namespace wenbinye\tars\server\event\listener;
 
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
+use wenbinye\tars\server\event\StartEvent;
 use wenbinye\tars\server\exception\IOException;
 
 class StartEventListener implements EventListenerInterface, LoggerAwareInterface

@@ -126,6 +126,11 @@ class ServerProperties
         return $this->swooleServerSettings;
     }
 
+    public function getSwooleServerSetting(string $name)
+    {
+        return $this->swooleServerSettings[$name] ?? null;
+    }
+
     public function setSwooleServerSettings(array $swooleServerSettings): void
     {
         $this->swooleServerSettings = $swooleServerSettings;

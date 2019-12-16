@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\protocol;
 
+use wenbinye\tars\protocol\type\MapType;
+use wenbinye\tars\protocol\type\StructMap;
 use wenbinye\tars\protocol\type\Type;
 
 class TypeConverter
@@ -42,9 +44,13 @@ class TypeConverter
             return $vector;
         }
         if ($type->isMap()) {
+            /** @var MapType $type */
             $map = $this->tarsTypeFactory->create($type);
-            foreach ($data as $key => $value) {
-                $map->pushBack([$this->toTarsType($key, $type->asMapType()->getKeyType()) => $this->toTarsType($value, $type->asMapType()->getValueType())]);
+            if ($type->getKeyType()->isPrimitive()) {
+                foreach ($data as $key => $value) {
+                    $map->pushBack([$this->toTarsType($key, $type->asMapType()->getKeyType()) => $this->toTarsType($value, $type->asMapType()->getValueType())]);
+                }
+            } else {
             }
 
             return $map;
@@ -74,9 +80,18 @@ class TypeConverter
             return $result;
         }
         if ($type->isMap()) {
-            $result = [];
-            foreach ($data as $key => $value) {
-                $result[$key] = $this->toPhpType($value, $type->asMapType()->getValueType());
+            $mapType = $type->asMapType();
+            if ($mapType->getKeyType()->isStruct()) {
+                $result = new StructMap();
+                foreach ($data as $entry) {
+                    $result->put($this->toPhpType($entry['key'], $mapType->getKeyType()),
+                        $this->toPhpType($entry['value'], $mapType->getValueType()));
+                }
+            } else {
+                $result = [];
+                foreach ($data as $key => $value) {
+                    $result[$key] = $this->toPhpType($value, $mapType->getValueType());
+                }
             }
 
             return $result;

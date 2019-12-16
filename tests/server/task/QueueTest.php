@@ -84,25 +84,11 @@ class FooTaskHandler implements TaskHandlerInterface, LoggerAwareInterface
     use LoggerAwareTrait;
 
     /**
-     * @var QueueInterface
-     */
-    private $queue;
-
-    /**
-     * FooTaskHandler constructor.
-     */
-    public function __construct(QueueInterface $queue)
-    {
-        $this->queue = $queue;
-    }
-
-    /**
      * @param FooTask $task
      */
     public function handle($task)
     {
         $this->logger->info('handle task', ['task' => $task]);
         $task->incr();
-        $this->queue->putDelay($task, 100);
     }
 }

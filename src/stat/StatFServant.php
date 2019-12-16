@@ -19,7 +19,7 @@ interface StatFServant
      * @TarsReturnValue(type = "int")
      *
      * @param array $msg
-     * @param bool $bFromClient
+     * @param bool  $bFromClient
      *
      * @return int
      */

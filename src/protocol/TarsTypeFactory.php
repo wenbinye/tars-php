@@ -46,8 +46,10 @@ class TarsTypeFactory
         }
 
         if ($type->isMap()) {
-            return new \TARS_Map($this->create($type->asMapType()->getKeyType()),
-                $this->create($type->asMapType()->getValueType()));
+            $mapType = $type->asMapType();
+
+            return new \TARS_Map($this->create($mapType->getKeyType()),
+                $this->create($mapType->getValueType()), $mapType->getKeyType()->isStruct());
         }
 
         if ($type->isStruct()) {

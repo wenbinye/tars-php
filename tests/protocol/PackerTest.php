@@ -11,6 +11,8 @@ use wenbinye\tars\protocol\fixtures\NestedStruct;
 use wenbinye\tars\protocol\fixtures\NestedStructOld;
 use wenbinye\tars\protocol\fixtures\SimpleStruct;
 use wenbinye\tars\protocol\fixtures\SimpleStructOld;
+use wenbinye\tars\protocol\type\StructMap;
+use wenbinye\tars\protocol\type\StructMapEntry;
 
 class PackerTest extends TestCase
 {
@@ -117,7 +119,7 @@ class PackerTest extends TestCase
         ];
     }
 
-    public function testName()
+    public function testMapOfStructKey()
     {
         $namespace = __NAMESPACE__.'\\fixtures';
         $simpleStruct = $this->createSimpleStructOld();
@@ -128,14 +130,23 @@ class PackerTest extends TestCase
         $nestedStruct->structMap->pushBack(['test3' => $simpleStruct]);
         $nestedStruct->structList->pushBack($simpleStruct);
 
-        $structList = new \TARS_VECTOR(new SimpleStructOld());
-        $structList->pushBack($simpleStruct);
-        $nestedStruct->mapOfList->pushBack(['test1' => $structList]);
+        $structList = new \TARS_Map(new SimpleStructOld(), new NestedStructOld(), true);
+        $structList->pushBack(['key' => $simpleStruct, 'value' => $nestedStruct]);
 
-        $payload = $this->createPayload(\TUPAPI::putStruct(self::ARG_NAME, $nestedStruct));
-        $data = $this->packer->unpack($this->parser->parse('NestedStruct', $namespace), self::ARG_NAME, $payload, self::VERSION);
+        $payload = $this->createPayload(\TUPAPI::putMap(self::ARG_NAME, $structList));
+        // var_export($payload);
+        $data = $this->packer->unpack($this->parser->parse('map<SimpleStruct, NestedStruct>', $namespace), self::ARG_NAME, $payload, self::VERSION);
         // var_export($data);
-        $this->assertInstanceOf(NestedStruct::class, $data);
+        $this->assertInstanceOf(StructMap::class, $data);
+        $this->assertEquals(1, $data->count());
+        foreach ($data as $entry) {
+            /* @var StructMapEntry $entry */
+            $this->assertInstanceOf(SimpleStruct::class, $entry->getKey());
+            $this->assertInstanceOf(NestedStruct::class, $entry->getValue());
+            $this->assertEquals($entry->getKey()->id, 10);
+            $this->assertEquals($entry->getValue()->simpleStruct->id, 10);
+        }
+        // $this->assertInstanceOf(NestedStruct::class, $data);
     }
 
     public function value(callable $gen)

@@ -5,15 +5,13 @@ declare(strict_types=1);
 namespace wenbinye\tars\server;
 
 use Psr\EventDispatcher\EventDispatcherInterface;
-use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerAwareTrait;
+use Psr\Log\LoggerInterface;
 use Swoole\Server;
 use Symfony\Component\Console\Output\OutputInterface;
 use wenbinye\tars\server\event\SwooleServerEventFactory;
 
-class SwooleServer implements ServerInterface, LoggerAwareInterface
+class SwooleServer implements ServerInterface
 {
-    use LoggerAwareTrait;
     const MASTER_PROCESS_NAME = 'master';
     const MANAGER_PROCESS_NAME = 'manager';
     const WORKER_PROCESS_NAME = 'worker';
@@ -26,7 +24,10 @@ class SwooleServer implements ServerInterface, LoggerAwareInterface
      * @var EventDispatcherInterface
      */
     private $eventDispatcher;
-
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
     /**
      * @var OutputInterface
      */
@@ -45,10 +46,11 @@ class SwooleServer implements ServerInterface, LoggerAwareInterface
     /**
      * SwooleServer constructor.
      */
-    public function __construct(ServerProperties $serverProperties, EventDispatcherInterface $eventDispatcher)
+    public function __construct(ServerProperties $serverProperties, EventDispatcherInterface $eventDispatcher, LoggerInterface $logger)
     {
         $this->serverProperties = $serverProperties;
         $this->eventDispatcher = $eventDispatcher;
+        $this->logger = $logger;
         $this->swooleServerEventFactory = new SwooleServerEventFactory($this);
     }
 
