@@ -40,11 +40,14 @@ class QueueTest extends SwooleServerTestCase
         });
         $eventDispatcher->addListener(TaskEvent::class, function (TaskEvent $event) use ($logger, $queue) {
             $logger->info('consume task', ['task' => $event->getData()]);
+            $this->assertInstanceOf(FooTask::class, $event->getData());
+            $this->assertEquals('foo', $event->getData()->getArg());
             $queue->process($event->getData());
         });
         $server = $container->get(ServerInterface::class);
         $logger->info('start server');
         $server->start();
+        $this->assertTrue(true, 'ok');
     }
 }
 
@@ -63,6 +66,19 @@ class FooTask implements \JsonSerializable
     {
         $this->arg = $arg;
         $this->times = 1;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getArg()
+    {
+        return $this->arg;
+    }
+
+    public function getTimes(): int
+    {
+        return $this->times;
     }
 
     public function incr()

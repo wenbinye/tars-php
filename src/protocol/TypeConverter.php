@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\protocol;
 
+use Webmozart\Assert\Assert;
 use wenbinye\tars\protocol\type\MapType;
 use wenbinye\tars\protocol\type\StructMap;
+use wenbinye\tars\protocol\type\StructMapEntry;
 use wenbinye\tars\protocol\type\Type;
 
 class TypeConverter
@@ -31,10 +33,8 @@ class TypeConverter
         if (!isset($data)) {
             $data = [];
         }
-        if (!is_array($data)) {
-            throw new \InvalidArgumentException('expect array, got '.gettype($data));
-        }
         if ($type->isVector()) {
+            Assert::isArray($data);
             $vector = $this->tarsTypeFactory->create($type);
 
             foreach ($data as $item) {
@@ -47,10 +47,19 @@ class TypeConverter
             /** @var MapType $type */
             $map = $this->tarsTypeFactory->create($type);
             if ($type->getKeyType()->isPrimitive()) {
+                Assert::isArray($data);
                 foreach ($data as $key => $value) {
                     $map->pushBack([$this->toTarsType($key, $type->asMapType()->getKeyType()) => $this->toTarsType($value, $type->asMapType()->getValueType())]);
                 }
             } else {
+                Assert::isInstanceOf($data, StructMap::class);
+                /** @var StructMapEntry $entry */
+                foreach ($data as $entry) {
+                    $map->pushBack([
+                        'key' => $this->toTarsType($entry->getKey(), $type->asMapType()->getKeyType()),
+                        'value' => $this->toTarsType($entry->getValue(), $type->asMapType()->getValueType()),
+                    ]);
+                }
             }
 
             return $map;
@@ -58,7 +67,7 @@ class TypeConverter
         if ($type->isStruct()) {
             $struct = $this->tarsTypeFactory->create($type);
             foreach ($struct->getFields() as $field) {
-                $struct->{$field['name']} = $this->toTarsType($data[$field['name']] ?? null, $field['typeObj']);
+                $struct->{$field['name']} = $this->toTarsType($data->{$field['name']} ?? null, $field['typeObj']);
             }
 
             return $struct;

@@ -25,6 +25,7 @@ class StartEventListener implements EventListenerInterface, LoggerAwareInterface
             $this->writePidFile($serverProperties->getMasterPidFile(), $event->getSwooleServer()->master_pid);
             $this->writePidFile($serverProperties->getManagerPidFile(), $event->getSwooleServer()->manager_pid);
         } catch (IOException $e) {
+            $this->logger->error('Cannot write master and manager pid file: '.$e->getMessage());
             $event->getSwooleServer()->stop();
         }
         // 初始化的一次上报

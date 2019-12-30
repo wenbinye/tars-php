@@ -20,10 +20,10 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use wenbinye\tars\server\event\listener\ManagerStartEventListener;
+use wenbinye\tars\server\event\listener\StartEventListener;
 use wenbinye\tars\server\event\ManagerStartEvent;
-use wenbinye\tars\server\event\ManagerStartEventListener;
 use wenbinye\tars\server\event\StartEvent;
-use wenbinye\tars\server\event\StartEventListener;
 use wenbinye\tars\server\task\Queue;
 use wenbinye\tars\server\task\QueueInterface;
 
@@ -37,6 +37,7 @@ abstract class SwooleServerTestCase extends TestCase
         ]);
         $config->tars->application->server->merge([
             'daemonize' => 'false',
+            'worker_num' => '1',
             'PHPTest.PHPHttpServer.objAdapter' => [
                 'protocol' => 'http',
             ],
@@ -44,33 +45,33 @@ abstract class SwooleServerTestCase extends TestCase
         $containerBuilder = new ContainerBuilder(AutoAwareContainer::class);
         $containerBuilder->useAutowiring(true)
             ->addDefinitions([
-            Config::class => $config,
-            Reader::class => function () {
-                AnnotationRegistry::registerLoader('class_exists');
+                Config::class => $config,
+                Reader::class => function () {
+                    AnnotationRegistry::registerLoader('class_exists');
 
-                return new AnnotationReader();
-            },
-            ValidatorInterface::class => function (Reader $annotationReader) {
-                return Validation::createValidatorBuilder()
-                    ->enableAnnotationMapping($annotationReader)
-                    ->getValidator();
-            },
-            ServerProperties::class => factory([PropertyLoader::class, 'loadServerProperties']),
-            ClientProperties::class => factory([PropertyLoader::class, 'loadClientProperties']),
-            LoggerInterface::class => function () {
-                return new Logger('test', [new ErrorLogHandler()]);
-            },
-            ServerInterface::class => autowire(SwooleServer::class),
-            SwooleServer::class => get(ServerInterface::class),
-            QueueInterface::class => autowire(Queue::class),
-            EventDispatcherInterface::class => function (ContainerInterface $container) {
-                $dispatcher = new EventDispatcher();
-                $dispatcher->addListener(StartEvent::class, $container->get(StartEventListener::class));
-                $dispatcher->addListener(ManagerStartEvent::class, $container->get(ManagerStartEventListener::class));
+                    return new AnnotationReader();
+                },
+                ValidatorInterface::class => function (Reader $annotationReader) {
+                    return Validation::createValidatorBuilder()
+                        ->enableAnnotationMapping($annotationReader)
+                        ->getValidator();
+                },
+                ServerProperties::class => factory([PropertyLoader::class, 'loadServerProperties']),
+                ClientProperties::class => factory([PropertyLoader::class, 'loadClientProperties']),
+                LoggerInterface::class => function () {
+                    return new Logger('test', [new ErrorLogHandler()]);
+                },
+                ServerInterface::class => autowire(SwooleServer::class),
+                SwooleServer::class => get(ServerInterface::class),
+                QueueInterface::class => autowire(Queue::class),
+                EventDispatcherInterface::class => function (ContainerInterface $container) {
+                    $dispatcher = new EventDispatcher();
+                    $dispatcher->addListener(StartEvent::class, $container->get(StartEventListener::class));
+                    $dispatcher->addListener(ManagerStartEvent::class, $container->get(ManagerStartEventListener::class));
 
-                return $dispatcher;
-            },
-        ]);
+                    return $dispatcher;
+                },
+            ]);
 
         return $containerBuilder->build();
     }

@@ -44,7 +44,8 @@ bar=2
         $propertyLoader = new PropertyLoader($annotationReader, $validator);
         $clientProperties = $propertyLoader->loadClientProperties($config);
         $serverProperties = $propertyLoader->loadServerProperties($config);
-        var_export([$clientProperties, $serverProperties]);
+        $this->assertInstanceOf(ClientProperties::class, $clientProperties);
+        // var_export([$clientProperties, $serverProperties]);
         // var_export($result->toArray());
     }
 }

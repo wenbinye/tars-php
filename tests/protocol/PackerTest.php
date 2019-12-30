@@ -67,13 +67,15 @@ class PackerTest extends TestCase
     public function testUnpack($type, $expect, $payload): void
     {
         $namespace = __NAMESPACE__.'\\fixtures';
-        $result = $this->packer->unpack($this->parser->parse($type, $namespace), self::ARG_NAME, $this->createPayload($payload), self::VERSION);
+        $buffer = $this->createPayload($payload);
+        $result = $this->packer->unpack($this->parser->parse($type, $namespace), self::ARG_NAME, $buffer, self::VERSION);
         $this->assertEquals($expect, $result);
     }
 
     public function packData(): array
     {
         return [
+            ['SimpleStruct', $this->createSimpleStruct(), \TUPAPI::putStruct(self::ARG_NAME, $this->createSimpleStructOld())],
             ['bool', true, \TUPAPI::putBool(self::ARG_NAME, true)],
             ['vector<int>', [1, 2], $this->value(function () {
                 $vector = new \TARS_Vector(\TARS::INT32);
@@ -89,7 +91,6 @@ class PackerTest extends TestCase
 
                 return \TUPAPI::putMap(self::ARG_NAME, $map);
             })],
-            ['SimpleStruct', $this->createSimpleStruct(), \TUPAPI::putStruct(self::ARG_NAME, $this->createSimpleStructOld())],
             ['NestedStruct', $this->value(function () {
                 $nestedStruct = new NestedStruct();
                 $simpleStruct = $this->createSimpleStruct();

@@ -66,7 +66,7 @@ class PropertyLoader
                     throw new ValidationException($errors);
                 }
             } elseif (SwooleServerSetting::hasValue($key)) {
-                $swooleServerSettings[$key] = Type::fromString(SwooleServerSetting::fromValue($key)->type, $value);
+                $swooleServerSettings[$key] = Type::fromString(SwooleServerSetting::fromValue($key)->type, (string) $value);
             }
         }
         if (empty($swooleServerSettings[SwooleServerSetting::TASK_WORKER_NUM])) {
