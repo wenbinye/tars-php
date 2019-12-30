@@ -8,8 +8,8 @@ use wenbinye\tars\rpc\exception\ServerException;
 
 class DefaultErrorHandler implements ErrorHandlerInterface
 {
-    public function handle(RequestInterface $request, int $code, string $message): void
+    public function handle(RequestInterface $request, ResponseInterface $response): void
     {
-        throw new ServerException($code, $message);
+        throw new ServerException($response->getReturnCode(), $response->getErrorMessage());
     }
 }

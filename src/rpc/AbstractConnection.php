@@ -10,18 +10,21 @@ use wenbinye\tars\rpc\exception\ConnectionException;
 abstract class AbstractConnection implements ConnectionInterface
 {
     /**
-     * @var ParametersInterface
+     * @var mixed
      */
-    private $parameters;
-
     private $resource;
+
+    /**
+     * @var RouteResolverInterface
+     */
+    private $routeResolver;
 
     /**
      * AbstractConnection constructor.
      */
-    public function __construct(ParametersInterface $parameters)
+    public function __construct(RouteResolverInterface $routeResolver)
     {
-        $this->parameters = $parameters;
+        $this->routeResolver = $routeResolver;
     }
 
     /**
@@ -80,10 +83,28 @@ abstract class AbstractConnection implements ConnectionInterface
     /**
      * {@inheritdoc}
      */
-    public function getParameters(): ParametersInterface
+    public function getRoute(): Route
     {
-        return $this->parameters;
+        return $this->routeResolver->resolve();
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function send(RequestInterface $request): string
+    {
+        $this->beforeSend();
+        try {
+            return $this->doSend($request);
+        } finally {
+            $this->afterSend();
+        }
+    }
+
+    /**
+     * @throws CommunicationException
+     */
+    abstract protected function doSend(RequestInterface $request): string;
 
     /**
      * Helper method to handle connection errors.
@@ -100,6 +121,19 @@ abstract class AbstractConnection implements ConnectionInterface
     }
 
     protected static function createExceptionMessage(string $message): string
+    {
+        // TODO: message format with request info
+        return $message;
+    }
+
+    protected function beforeSend(): void
+    {
+        if ($this->routeResolver instanceof RefreshableRouteResolverInterface) {
+            $this->routeResolver->refresh();
+        }
+    }
+
+    protected function afterSend(): void
     {
     }
 }

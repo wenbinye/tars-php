@@ -10,6 +10,11 @@ use wenbinye\tars\protocol\annotation\TarsParameter;
 use wenbinye\tars\protocol\annotation\TarsReturnValue;
 use wenbinye\tars\rpc\exception\InvalidClientException;
 
+/**
+ * 读取调用方法 rpc ServantName, 参数，返回值等信息.
+ *
+ * Class MethodMetadataFactory
+ */
 class MethodMetadataFactory implements MethodMetadataFactoryInterface
 {
     /**
@@ -27,6 +32,9 @@ class MethodMetadataFactory implements MethodMetadataFactoryInterface
         $this->annotationReader = $annotationReader;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function create($client, string $method): MethodMetadata
     {
         $key = get_class($client).'::'.$method;

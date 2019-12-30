@@ -21,11 +21,6 @@ abstract class AbstractClient
     private $requestFactory;
 
     /**
-     * @var ConnectionInterface
-     */
-    private $connection;
-
-    /**
      * @var MethodMetadataFactoryInterface
      */
     private $methodMetadataFactory;
@@ -39,25 +34,36 @@ abstract class AbstractClient
      * @var TypeParser
      */
     private $parser;
+    /**
+     * @var MiddlewareStack
+     */
+    private $middlewareStack;
 
     /**
      * AbstractClient constructor.
+     *
+     * @param MiddlewareInterface[] $middlewares
      */
     public function __construct(ConnectionInterface $connection,
                                 PackerInterface $packer,
                                 RequestFactoryInterface $requestFactory,
                                 MethodMetadataFactoryInterface $methodMetadataFactory,
-                                ErrorHandlerInterface $errorHandler)
+                                ErrorHandlerInterface $errorHandler,
+                                array $middlewares = [])
     {
         $this->packer = $packer;
         $this->requestFactory = $requestFactory;
-        $this->connection = $connection;
-        $this->parser = new TypeParser();
         $this->methodMetadataFactory = $methodMetadataFactory;
         $this->errorHandler = $errorHandler;
+        $this->middlewareStack = new MiddlewareStack($middlewares, function (RequestInterface $request) use ($connection) {
+            $rawContent = $connection->send($request);
+
+            return new Response($rawContent, $request->withAttribute('route', $connection->getRoute()));
+        });
+        $this->parser = new TypeParser();
     }
 
-    public function _call(string $method, ...$args): array
+    protected function _send(string $method, ...$args): array
     {
         $methodMetadata = $this->methodMetadataFactory->create($this, $method);
         $payload = [];
@@ -68,16 +74,16 @@ abstract class AbstractClient
         }
 
         $request = $this->requestFactory->createRequest($methodMetadata->getServantName(), $method, $payload);
-        $response = $this->connection->send($request);
-        $decoded = \TUPAPI::decode($response, $request->getVersion());
-        if (0 !== $decoded['iRet']) {
-            return $this->errorHandler->handle($request, $decoded['iRet'], $decoded['sResultDesc'] ?? '');
+        $response = $this->middlewareStack->__invoke($request);
+        if ($response->isSuccess()) {
+            return $this->errorHandler->handle($request, $response);
         }
         $result = [];
+        $payload = $response->getPayload();
         foreach ($methodMetadata->getReturnValues() as $name => $returnType) {
             $type = $this->parser->parse($returnType->type, $methodMetadata->getNamespace());
             if (!$type->isVoid()) {
-                $result[] = $this->packer->unpack($type, $returnType->name, $decoded['sBuffer'], $request->getVersion());
+                $result[] = $this->packer->unpack($type, $returnType->name, $payload, $request->getVersion());
             }
         }
 

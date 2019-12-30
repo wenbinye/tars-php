@@ -18,7 +18,8 @@ class SocketTcpConnection extends AbstractConnection
         if (false === $socket) {
             $this->onConnectionError(ErrorCode::fromValue(ErrorCode::TARS_SOCKET_CREATE_FAILED));
         }
-        if (!\socket_connect($socket, $this->getParameters()->getHost(), $this->getParameters()->getPort())) {
+        $route = $this->getRoute();
+        if (!\socket_connect($socket, $route->getHost(), $route->getPort())) {
             \socket_close($socket);
             $this->onConnectionError(ErrorCode::fromValue(ErrorCode::TARS_SOCKET_CONNECT_FAILED));
         }
@@ -35,7 +36,7 @@ class SocketTcpConnection extends AbstractConnection
     /**
      * {@inheritdoc}
      */
-    public function send(RequestInterface $request): string
+    protected function doSend(RequestInterface $request): string
     {
         $time = microtime(true);
         $socket = $this->getResource();

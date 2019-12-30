@@ -13,7 +13,7 @@ class Request implements RequestInterface
     /**
      * @var string
      */
-    private $funcName;
+    private $methodName;
     /**
      * @var int
      */
@@ -51,16 +51,27 @@ class Request implements RequestInterface
      * @var int
      */
     private $messageType;
+    /**
+     * @var array
+     */
+    private $attributes;
 
     /**
      * Request constructor.
      */
-    public function __construct(string $servantName, string $funcName, int $requestId, array $payload,
-                                int $timeout = self::DEFAULT_TIMEOUT, array $context = [], array $status = [],
-                                int $version = self::TUP_VERSION, int $packetType = self::PACKET_TYPE, int $messageType = self::MESSAGE_TYPE)
+    public function __construct(string $servantName,
+                                string $funcName,
+                                int $requestId,
+                                array $payload,
+                                int $timeout = self::DEFAULT_TIMEOUT,
+                                array $context = [],
+                                array $status = [],
+                                int $version = self::TUP_VERSION,
+                                int $packetType = self::PACKET_TYPE,
+                                int $messageType = self::MESSAGE_TYPE)
     {
         $this->servantName = $servantName;
-        $this->funcName = $funcName;
+        $this->methodName = $funcName;
         $this->requestId = $requestId;
         $this->payload = $payload;
         $this->timeout = $timeout;
@@ -97,15 +108,15 @@ class Request implements RequestInterface
         return $this;
     }
 
-    public function getFuncName(): string
+    public function getMethodName(): string
     {
-        return $this->funcName;
+        return $this->methodName;
     }
 
-    public function withFuncName(string $funcName): Request
+    public function withMethodName(string $methodName): Request
     {
         $new = clone $this;
-        $new->funcName = $funcName;
+        $new->methodName = $methodName;
 
         return $this;
     }
@@ -201,11 +212,24 @@ class Request implements RequestInterface
         return $this;
     }
 
+    public function getAttribute(string $attribute)
+    {
+        return $this->attributes[$attribute] ?? null;
+    }
+
+    public function withAttribute(string $attribute, $value): RequestInterface
+    {
+        $new = clone $this;
+        $new->attributes[$attribute] = $value;
+
+        return $new;
+    }
+
     public function encode(): string
     {
         return \TUPAPI::encode(
             $this->version, $this->requestId,
-            $this->servantName, $this->funcName,
+            $this->servantName, $this->methodName,
             $this->packetType, $this->messageType,
             $this->timeout, $this->context, $this->status,
             1 === $this->version ? array_values($this->payload) : $this->payload);

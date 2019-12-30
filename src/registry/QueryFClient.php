@@ -13,7 +13,7 @@ class QueryFClient extends AbstractClient implements QueryFServant
      */
     public function findObjectById($id)
     {
-        list($ret) = $this->_call(__FUNCTION__, $id);
+        list($ret) = $this->_send(__FUNCTION__, $id);
 
         return $ret;
     }
@@ -23,7 +23,7 @@ class QueryFClient extends AbstractClient implements QueryFServant
      */
     public function findObjectById4Any($id, &$activeEp, &$inactiveEp)
     {
-        list($activeEp, $inactiveEp, $ret) = $this->_call(__FUNCTION__, $id);
+        list($activeEp, $inactiveEp, $ret) = $this->_send(__FUNCTION__, $id);
 
         return $ret;
     }
@@ -33,7 +33,7 @@ class QueryFClient extends AbstractClient implements QueryFServant
      */
     public function findObjectById4All($id, &$activeEp, &$inactiveEp)
     {
-        list($activeEp, $inactiveEp, $ret) = $this->_call(__FUNCTION__, $id);
+        list($activeEp, $inactiveEp, $ret) = $this->_send(__FUNCTION__, $id);
 
         return $ret;
     }
@@ -43,7 +43,7 @@ class QueryFClient extends AbstractClient implements QueryFServant
      */
     public function findObjectByIdInSameGroup($id, &$activeEp, &$inactiveEp)
     {
-        list($activeEp, $inactiveEp, $ret) = $this->_call(__FUNCTION__, $id);
+        list($activeEp, $inactiveEp, $ret) = $this->_send(__FUNCTION__, $id);
 
         return $ret;
     }
@@ -53,7 +53,7 @@ class QueryFClient extends AbstractClient implements QueryFServant
      */
     public function findObjectByIdInSameStation($id, $sStation, &$activeEp, &$inactiveEp)
     {
-        list($activeEp, $inactiveEp, $ret) = $this->_call(__FUNCTION__, $id, $sStation);
+        list($activeEp, $inactiveEp, $ret) = $this->_send(__FUNCTION__, $id, $sStation);
 
         return $ret;
     }
@@ -63,7 +63,7 @@ class QueryFClient extends AbstractClient implements QueryFServant
      */
     public function findObjectByIdInSameSet($id, $setId, &$activeEp, &$inactiveEp)
     {
-        list($activeEp, $inactiveEp, $ret) = $this->_call(__FUNCTION__, $id, $setId);
+        list($activeEp, $inactiveEp, $ret) = $this->_send(__FUNCTION__, $id, $setId);
 
         return $ret;
     }

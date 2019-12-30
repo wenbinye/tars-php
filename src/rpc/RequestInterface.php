@@ -14,11 +14,23 @@ interface RequestInterface
 
     public function getVersion(): int;
 
+    public function getServantName(): string;
+
+    public function getMethodName(): string;
+
+    public function getRequestId(): int;
+
     public function getTimeout(): int;
 
     public function getMessageType(): int;
 
     public function getPacketType(): int;
+
+    public function getPayload(): array;
+
+    public function getAttribute(string $attribute);
+
+    public function withAttribute(string $attribute, $value): RequestInterface;
 
     public function encode(): string;
 }

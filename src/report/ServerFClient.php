@@ -13,7 +13,7 @@ class ServerFClient extends AbstractClient implements ServerFServant
      */
     public function keepAlive($serverInfo)
     {
-        list($ret) = $this->_call(__FUNCTION__, $serverInfo);
+        list($ret) = $this->_send(__FUNCTION__, $serverInfo);
 
         return $ret;
     }
@@ -23,7 +23,7 @@ class ServerFClient extends AbstractClient implements ServerFServant
      */
     public function reportVersion($app, $serverName, $version)
     {
-        list($ret) = $this->_call(__FUNCTION__, $app, $serverName, $version);
+        list($ret) = $this->_send(__FUNCTION__, $app, $serverName, $version);
 
         return $ret;
     }

@@ -13,7 +13,7 @@ class PropertyFClient extends AbstractClient implements PropertyFServant
      */
     public function reportPropMsg($statmsg)
     {
-        list($ret) = $this->_call(__FUNCTION__, $statmsg);
+        list($ret) = $this->_send(__FUNCTION__, $statmsg);
 
         return $ret;
     }

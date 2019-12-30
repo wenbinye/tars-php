@@ -13,7 +13,7 @@ class StatFClient extends AbstractClient implements StatFServant
      */
     public function reportMicMsg($msg, $bFromClient)
     {
-        list($ret) = $this->_call(__FUNCTION__, $msg, $bFromClient);
+        list($ret) = $this->_send(__FUNCTION__, $msg, $bFromClient);
 
         return $ret;
     }
@@ -23,7 +23,7 @@ class StatFClient extends AbstractClient implements StatFServant
      */
     public function reportSampleMsg($msg)
     {
-        list($ret) = $this->_call(__FUNCTION__, $msg);
+        list($ret) = $this->_send(__FUNCTION__, $msg);
 
         return $ret;
     }

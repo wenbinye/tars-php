@@ -23,7 +23,10 @@ interface ConnectionInterface
      */
     public function isConnected(): bool;
 
-    public function getParameters(): ParametersInterface;
+    /**
+     * Gets the connect info.
+     */
+    public function getRoute(): Route;
 
     /**
      * @throws CommunicationException

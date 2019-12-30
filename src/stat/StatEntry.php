@@ -1,0 +1,143 @@
+<?php
+
+declare(strict_types=1);
+
+namespace wenbinye\tars\stat;
+
+use wenbinye\tars\rpc\ResponseInterface;
+use wenbinye\tars\rpc\Route;
+
+class StatEntry
+{
+    /**
+     * @var int
+     */
+    private $index;
+    /**
+     * @var StatMicMsgHead
+     */
+    private $head;
+
+    /**
+     * @var StatMicMsgBody
+     */
+    private $body;
+
+    /**
+     * StatEntry constructor.
+     */
+    private function __construct(int $index, StatMicMsgHead $head, StatMicMsgBody $body)
+    {
+        $this->index = $index;
+        $this->head = $head;
+        $this->body = $body;
+    }
+
+    public function getIndex(): int
+    {
+        return $this->index;
+    }
+
+    public function getHead(): StatMicMsgHead
+    {
+        return $this->head;
+    }
+
+    public function getBody(): StatMicMsgBody
+    {
+        return $this->body;
+    }
+
+    public function getUniqueId(): string
+    {
+        return $this->__toString();
+    }
+
+    public function __toString(): string
+    {
+        return implode('|', [
+            $this->index,
+            $this->head->slaveName,
+            $this->head->interfaceName,
+            $this->head->slaveIp,
+            $this->head->slavePort,
+            $this->head->slaveSetName,
+            $this->head->slaveSetID,
+            $this->head->slaveSetArea,
+            $this->head->masterName,
+            $this->head->masterIp,
+            $this->head->returnValue,
+            $this->head->tarsVersion,
+        ]);
+    }
+
+    public static function fromString(string $key): StatEntry
+    {
+        $head = new StatMicMsgHead();
+        list(
+            $index,
+            $head->slaveName,
+            $head->interfaceName,
+            $head->slaveIp,
+            $head->slavePort,
+            $head->slaveSetName,
+            $head->slaveSetID,
+            $head->slaveSetArea,
+            $head->masterName,
+            $head->masterIp,
+            $head->returnValue,
+            $head->tarsVersion
+            ) = explode('|', $key);
+
+        return new static((int) $index, $head, new StatMicMsgBody());
+    }
+
+    public static function success(int $index, ResponseInterface $response, int $responseTime): StatEntry
+    {
+        $entry = static::create($index, $response, $responseTime);
+        $entry->body->count = 1;
+
+        return $entry;
+    }
+
+    public static function fail(int $index, ResponseInterface $response, int $responseTime): StatEntry
+    {
+        $entry = static::create($index, $response, $responseTime);
+        $entry->body->execCount = 1;
+
+        return $entry;
+    }
+
+    public static function timedOut(int $index, ResponseInterface $response, int $responseTime): StatEntry
+    {
+        $entry = static::create($index, $response, $responseTime);
+        $entry->body->timeoutCount = 1;
+
+        return $entry;
+    }
+
+    private static function create(int $index, ResponseInterface $response, int $responseTime): StatEntry
+    {
+        $head = new StatMicMsgHead();
+        $head->masterName = '';
+        $head->masterIp = '';
+        $request = $response->getRequest();
+        $head->slaveName = $request->getServantName();
+        $head->interfaceName = $request->getMethodName();
+        /** @var Route $route */
+        $route = $request->getAttribute('route');
+        $head->slaveIp = $route->getHost();
+        $head->slavePort = $route->getPort();
+        $head->returnValue = $response->getReturnCode();
+        $head->slaveSetName = '';
+        $head->slaveSetArea = '';
+        $head->slaveSetID = '';
+        $head->tarsVersion = $request->getVersion();
+        $body = new StatMicMsgBody();
+        $body->totalRspTime = $responseTime;
+        $body->minRspTime = $responseTime;
+        $body->maxRspTime = $responseTime;
+
+        return new static($index, $head, $body);
+    }
+}
