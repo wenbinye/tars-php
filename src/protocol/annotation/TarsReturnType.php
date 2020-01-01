@@ -10,12 +10,8 @@ use Doctrine\Common\Annotations\Annotation\Required;
  * @Annotation
  * @Target({"METHOD"})
  */
-final class TarsReturnValue
+final class TarsReturnType
 {
-    /**
-     * @var string
-     */
-    public $name = '';
     /**
      * @Required()
      *

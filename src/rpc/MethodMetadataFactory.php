@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace wenbinye\tars\rpc;
 
 use Doctrine\Common\Annotations\Reader;
-use wenbinye\tars\protocol\annotation\TarsClient;
 use wenbinye\tars\protocol\annotation\TarsParameter;
-use wenbinye\tars\protocol\annotation\TarsReturnValue;
+use wenbinye\tars\protocol\annotation\TarsReturnType;
+use wenbinye\tars\protocol\annotation\TarsServant;
 use wenbinye\tars\rpc\exception\InvalidClientException;
 
 /**
@@ -35,57 +35,55 @@ class MethodMetadataFactory implements MethodMetadataFactoryInterface
     /**
      * {@inheritdoc}
      */
-    public function create($client, string $method): MethodMetadata
+    public function create($servant, string $method): MethodMetadata
     {
-        $key = get_class($client).'::'.$method;
+        $key = get_class($servant).'::'.$method;
         if (isset($this->cache[$key])) {
             return $this->cache[$key];
         }
         try {
-            return $this->cache[$key] = $this->getMetadataFromAnnotation($client, $method);
+            return $this->cache[$key] = $this->getMetadataFromAnnotation($servant, $method);
         } catch (\ReflectionException $e) {
             throw new InvalidClientException('read method metadata failed', $e);
         }
     }
 
     /**
-     * @param object $client
+     * @param object $servant
      *
      * @throws \ReflectionException
      */
-    private function getMetadataFromAnnotation($client, string $method): MethodMetadata
+    private function getMetadataFromAnnotation($servant, string $method): MethodMetadata
     {
-        $reflectionClass = new \ReflectionClass($client);
+        $reflectionClass = new \ReflectionClass($servant);
         foreach ($reflectionClass->getInterfaces() as $interface) {
             if (!$interface->hasMethod($method)) {
                 continue;
             }
-            /** @var TarsClient $clientAnnotation */
-            $clientAnnotation = $this->annotationReader->getClassAnnotation($interface, TarsClient::class);
-            if (!$clientAnnotation) {
+            /** @var TarsServant $servantAnnotation */
+            $servantAnnotation = $this->annotationReader->getClassAnnotation($interface, TarsServant::class);
+            if (!$servantAnnotation) {
                 continue;
             }
             $reflectionMethod = $interface->getMethod($method);
             $parameters = [];
-            $returnValues = [];
+            $outputParameters = [];
+            $returnType = null;
             foreach ($this->annotationReader->getMethodAnnotations($reflectionMethod) as $methodAnnotation) {
                 if ($methodAnnotation instanceof TarsParameter) {
                     if ($methodAnnotation->out) {
-                        $returnValue = new TarsReturnValue();
-                        $returnValue->type = $methodAnnotation->type;
-                        $returnValue->name = $methodAnnotation->name;
-                        $returnValues[] = $returnValue;
+                        $outputParameters[] = $methodAnnotation;
                     } else {
                         $parameters[] = $methodAnnotation;
                     }
-                } elseif ($methodAnnotation instanceof TarsReturnValue) {
-                    $returnValues[] = $methodAnnotation;
+                } elseif ($methodAnnotation instanceof TarsReturnType) {
+                    $returnType = $methodAnnotation;
                 }
             }
 
             return new MethodMetadata($interface->getName(), $interface->getNamespaceName(), $method,
-                $clientAnnotation->servant, $parameters, $returnValues);
+                $servantAnnotation->servant, $parameters, $outputParameters, $returnType);
         }
-        throw new InvalidClientException(sprintf("%s does not contain valid method definition, check it's interfaces should annotated with @TarsClient", get_class($client)));
+        throw new InvalidClientException(sprintf("%s does not contain valid method definition, check it's interfaces should annotated with @TarsServant", get_class($servant)));
     }
 }

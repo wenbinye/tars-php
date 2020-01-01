@@ -8,7 +8,7 @@ namespace wenbinye\tars\protocol\annotation;
  * @Annotation
  * @Target({"CLASS"})
  */
-final class TarsClient
+final class TarsServant
 {
     /**
      * @var string

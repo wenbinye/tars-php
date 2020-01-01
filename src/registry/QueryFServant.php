@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\registry;
 
-use wenbinye\tars\protocol\annotation\TarsClient;
 use wenbinye\tars\protocol\annotation\TarsParameter;
-use wenbinye\tars\protocol\annotation\TarsReturnValue;
+use wenbinye\tars\protocol\annotation\TarsReturnType;
+use wenbinye\tars\protocol\annotation\TarsServant;
 
 /**
- * @TarsClient(servant="tars.tarsregistry.QueryObj")
+ * @TarsServant(servant="tars.tarsregistry.QueryObj")
  */
 interface QueryFServant
 {
     /**
      * @TarsParameter(name = "id", type = "string")
-     * @TarsReturnValue(type = "vector<EndpointF>")
+     * @TarsReturnType(type = "vector<EndpointF>")
      *
      * @param string $id
      *
@@ -27,7 +27,7 @@ interface QueryFServant
      * @TarsParameter(name = "id", type = "string")
      * @TarsParameter(name = "activeEp", type = "vector<EndpointF>", out=true)
      * @TarsParameter(name = "inactiveEp", type = "vector<EndpointF>", out=true)
-     * @TarsReturnValue(type = "int")
+     * @TarsReturnType(type = "int")
      *
      * @param string $id
      * @param array  $activeEp
@@ -41,7 +41,7 @@ interface QueryFServant
      * @TarsParameter(name = "id", type = "string")
      * @TarsParameter(name = "activeEp", type = "vector<EndpointF>", out=true)
      * @TarsParameter(name = "inactiveEp", type = "vector<EndpointF>", out=true)
-     * @TarsReturnValue(type = "int")
+     * @TarsReturnType(type = "int")
      *
      * @param string $id
      * @param array  $activeEp
@@ -55,7 +55,7 @@ interface QueryFServant
      * @TarsParameter(name = "id", type = "string")
      * @TarsParameter(name = "activeEp", type = "vector<EndpointF>", out=true)
      * @TarsParameter(name = "inactiveEp", type = "vector<EndpointF>", out=true)
-     * @TarsReturnValue(type = "int")
+     * @TarsReturnType(type = "int")
      *
      * @param string $id
      * @param array  $activeEp
@@ -70,7 +70,7 @@ interface QueryFServant
      * @TarsParameter(name = "sStation", type = "string")
      * @TarsParameter(name = "activeEp", type = "vector<EndpointF>", out=true)
      * @TarsParameter(name = "inactiveEp", type = "vector<EndpointF>", out=true)
-     * @TarsReturnValue(type = "int")
+     * @TarsReturnType(type = "int")
      *
      * @param string $id
      * @param string $sStation
@@ -86,7 +86,7 @@ interface QueryFServant
      * @TarsParameter(name = "setId", type = "string")
      * @TarsParameter(name = "activeEp", type = "vector<EndpointF>", out=true)
      * @TarsParameter(name = "inactiveEp", type = "vector<EndpointF>", out=true)
-     * @TarsReturnValue(type = "int")
+     * @TarsReturnType(type = "int")
      *
      * @param string $id
      * @param string $setId

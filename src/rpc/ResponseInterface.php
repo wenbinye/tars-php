@@ -4,19 +4,17 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc;
 
-interface ResponseInterface
+interface ResponseInterface extends MessageInterface
 {
     public function getRequest(): RequestInterface;
 
-    public function getRawContent(): string;
-
-    public function getDecoded(): array;
+    public function getParsedBody(): array;
 
     public function getReturnCode(): int;
 
     public function isSuccess(): bool;
 
-    public function getErrorMessage(): string;
+    public function getMessage(): string;
 
     public function getPayload(): string;
 }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace wenbinye\tars\rpc;
 
 use wenbinye\tars\protocol\annotation\TarsParameter;
-use wenbinye\tars\protocol\annotation\TarsReturnValue;
+use wenbinye\tars\protocol\annotation\TarsReturnType;
 
 class MethodMetadata
 {
@@ -30,24 +30,31 @@ class MethodMetadata
      */
     private $parameters;
     /**
-     * @var TarsReturnValue[]
+     * @var TarsParameter[]
      */
-    private $returnValues;
+    private $outputParameters;
+
+    /**
+     * @var TarsReturnType
+     */
+    private $returnType;
 
     /**
      * MethodMetadata constructor.
      *
-     * @param TarsParameter[]   $parameters
-     * @param TarsReturnValue[] $returnValues
+     * @param TarsParameter[]  $parameters
+     * @param TarsReturnType[] $returnValues
      */
-    public function __construct(string $className, string $namespace, string $methodName, string $servantName, array $parameters, array $returnValues)
+    public function __construct(string $className, string $namespace, string $methodName,
+                                string $servantName, array $parameters, array $outputParameters, ?TarsReturnType $returnType = null)
     {
         $this->className = $className;
         $this->namespace = $namespace;
         $this->methodName = $methodName;
         $this->servantName = $servantName;
         $this->parameters = $parameters;
-        $this->returnValues = $returnValues;
+        $this->outputParameters = $outputParameters;
+        $this->returnType = $returnType;
     }
 
     public function getNamespace(): string
@@ -79,10 +86,15 @@ class MethodMetadata
     }
 
     /**
-     * @return TarsReturnValue[]
+     * @return TarsParameter[]
      */
-    public function getReturnValues(): array
+    public function getOutputParameters(): array
     {
-        return $this->returnValues;
+        return $this->outputParameters;
+    }
+
+    public function getReturnType(): TarsReturnType
+    {
+        return $this->returnType;
     }
 }

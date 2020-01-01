@@ -80,10 +80,14 @@ abstract class AbstractClient
         }
         $result = [];
         $payload = $response->getPayload();
-        foreach ($methodMetadata->getReturnValues() as $name => $returnType) {
-            $type = $this->parser->parse($returnType->type, $methodMetadata->getNamespace());
+        foreach ($methodMetadata->getOutputParameters() as $outputParameter) {
+            $type = $this->parser->parse($outputParameter->type, $methodMetadata->getNamespace());
+            $result[] = $this->packer->unpack($type, $outputParameter->name, $payload, $request->getVersion());
+        }
+        if (null !== $methodMetadata->getReturnType()) {
+            $type = $this->parser->parse($methodMetadata->getReturnType()->type, $methodMetadata->getNamespace());
             if (!$type->isVoid()) {
-                $result[] = $this->packer->unpack($type, $returnType->name, $payload, $request->getVersion());
+                $result[] = $this->packer->unpack($type, '', $payload, $request->getVersion());
             }
         }
 

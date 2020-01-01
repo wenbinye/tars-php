@@ -9,7 +9,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use wenbinye\tars\server\Config;
-use wenbinye\tars\server\event\listener\RequestEventListener;
+use wenbinye\tars\server\event\listener\HttpRequestHandler;
 use Zend\Diactoros\ServerRequestFactory;
 
 class SlimTest extends TestCase
@@ -22,7 +22,7 @@ class SlimTest extends TestCase
     public function testAware()
     {
         $container = (new Slim())->create();
-        $requestEventListener = $container->get(RequestEventListener::class);
+        $requestEventListener = $container->get(HttpRequestHandler::class);
         $this->assertAttributeInstanceOf(LoggerInterface::class, 'logger', $requestEventListener);
     }
 

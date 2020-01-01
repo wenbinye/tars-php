@@ -22,6 +22,11 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use wenbinye\tars\protocol\Packer;
+use wenbinye\tars\protocol\PackerInterface;
+use wenbinye\tars\protocol\TarsTypeFactory;
+use wenbinye\tars\rpc\MethodMetadataFactory;
+use wenbinye\tars\rpc\MethodMetadataFactoryInterface;
 use wenbinye\tars\server\annotation\Bean;
 use wenbinye\tars\server\ClientProperties;
 use wenbinye\tars\server\Config;
@@ -32,6 +37,8 @@ use wenbinye\tars\server\http\ResponseSenderInterface;
 use wenbinye\tars\server\http\ServerRequestFactoryInterface;
 use wenbinye\tars\server\http\ZendDiactorosServerRequestFactory;
 use wenbinye\tars\server\PropertyLoader;
+use wenbinye\tars\server\rpc\RequestHandlerInterface;
+use wenbinye\tars\server\rpc\TarsRequestHandler;
 use wenbinye\tars\server\ServerInterface;
 use wenbinye\tars\server\ServerProperties;
 use wenbinye\tars\server\SwooleServer;
@@ -123,6 +130,23 @@ class PhpDiContainerFactory implements ContainerFactoryInterface
 
     /**
      * @Bean()
+     */
+    public function tarsRequestHandler(ContainerInterface $container, Config $config, MethodMetadataFactoryInterface $methodMetadataFactory): RequestHandlerInterface
+    {
+        $servants = [];
+        $middlewares = [];
+        foreach ($config->get('application.servants', []) as $servantId) {
+            $servants[] = $container->get($servantId);
+        }
+        foreach ($config->get('application.servant_middlewares', []) as $middlewareId) {
+            $middlewares[] = $container->get($middlewareId);
+        }
+
+        return new TarsRequestHandler($servants, $methodMetadataFactory, $middlewares);
+    }
+
+    /**
+     * @Bean()
      *
      * @throws \wenbinye\tars\support\exception\ValidationException
      */
@@ -161,6 +185,14 @@ class PhpDiContainerFactory implements ContainerFactoryInterface
         return new Logger('test', [$errorLogHandler]);
     }
 
+    /**
+     * @Bean()
+     */
+    public function packer(Reader $annotationReader): PackerInterface
+    {
+        return new Packer(new TarsTypeFactory($annotationReader));
+    }
+
     public function getBeanConfigurationSource(): BeanConfigurationSource
     {
         if (!$this->beanConfigurationSource) {
@@ -197,6 +229,7 @@ class PhpDiContainerFactory implements ContainerFactoryInterface
             TaskProcessorInterface::class => get(QueueInterface::class),
             ServerRequestFactoryInterface::class => autowire(ZendDiactorosServerRequestFactory::class),
             ResponseSenderInterface::class => autowire(ResponseSender::class),
+            MethodMetadataFactoryInterface::class => autowire(MethodMetadataFactory::class),
         ], $this->getAutowiring()));
         $builder->addDefinitions($this->getBeanConfigurationSource());
 

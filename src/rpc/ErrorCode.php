@@ -16,10 +16,7 @@ class ErrorCode extends Enum
     // 错误码定义（需要从扩展开始规划）
     const TARS_SUCCESS = 0; // taf
     const TARS_FAILED = 1; // taf失败（通用失败）
-    const UNKNOWN = 99999;
     const TARS_MALLOC_FAILED = -1; // 内存分配失败
-
-    const ROUTE_FAIL = -100;
 
     const TARS_SOCKET_SET_NONBLOCK_FAILED = -1002; // socket设置非阻塞失败
     const TARS_SOCKET_SEND_FAILED = -1003; // socket发送失败
@@ -63,29 +60,33 @@ class ErrorCode extends Enum
     const TARS_GET_FLOAT_FAILED = -10044;
 
     // tars服务端可能返回的错误码
-    const JCESERVERSUCCESS = 0; //服务器端处理成功
-    const JCESERVERDECODEERR = -1; //服务器端解码异常
-    const JCESERVERENCODEERR = -2; //服务器端编码异常
-    const JCESERVERNOFUNCERR = -3; //服务器端没有该函数
-    const JCESERVERNOSERVANTERR = -4; //服务器端五该Servant对象
-    const JCESERVERRESETGRID = -5; //服务器端灰度状态不一致
-    const JCESERVERQUEUETIMEOUT = -6; //服务器队列超过限制
-    const JCEASYNCCALLTIMEOUT = -7; //异步调用超时
-    const JCEPROXYCONNECTERR = -8; //proxy链接异常
-    const JCESERVERUNKNOWNERR = -99; //服务器端未知异常
+    const SERVER_SUCCESS = 0; //服务器端处理成功
+    const SERVER_DECODE_ERR = -1; //服务器端解码异常
+    const SERVER_ENCODE_ERR = -2; //服务器端编码异常
+    const SERVER_NO_FUNC_ERR = -3; //服务器端没有该函数
+    const SERVER_NO_SERVANT_ERR = -4; //服务器端五该Servant对象
+    const SERVER_RESET_GRID = -5; //服务器端灰度状态不一致
+    const SERVER_QUEUE_TIMEOUT = -6; //服务器队列超过限制
+    const SERVER_ASYNC_CALL_TIMEOUT = -7; //异步调用超时
+    const SERVER_PROXY_CONNECT_ERR = -8; //proxy链接异常
+    const SERVER_UNKNOWN_ERR = -99; //服务器端未知异常
+
+    const ROUTE_FAIL = -100;
+    const UNKNOWN = 99999;
 
     protected static $PROPERTIES = [
         'message' => [
-            self::JCESERVERSUCCESS => '服务器端处理成功',
-            self::JCESERVERDECODEERR => '服务器端解码异常',
-            self::JCESERVERENCODEERR => '服务器端编码异常',
-            self::JCESERVERNOFUNCERR => '服务器端没有该函数',
-            self::JCESERVERNOSERVANTERR => '服务器端无该Servant对象',
-            self::JCESERVERRESETGRID => '服务器端灰度状态不一致',
-            self::JCESERVERQUEUETIMEOUT => '服务器队列超过限制',
-            self::JCEASYNCCALLTIMEOUT => '异步调用超时',
-            self::JCEPROXYCONNECTERR => 'proxy链接异常',
-            self::JCESERVERUNKNOWNERR => '服务器端未知异常',
+            self::SERVER_SUCCESS => '服务器端处理成功',
+            self::SERVER_DECODE_ERR => '服务器端解码异常',
+            self::SERVER_ENCODE_ERR => '服务器端编码异常',
+            self::SERVER_NO_FUNC_ERR => '服务器端没有该函数',
+            self::SERVER_NO_SERVANT_ERR => '服务器端无该Servant对象',
+            self::SERVER_RESET_GRID => '服务器端灰度状态不一致',
+            self::SERVER_QUEUE_TIMEOUT => '服务器队列超过限制',
+            self::SERVER_ASYNC_CALL_TIMEOUT => '异步调用超时',
+            self::SERVER_PROXY_CONNECT_ERR => 'proxy链接异常',
+            self::SERVER_UNKNOWN_ERR => '服务器端未知异常',
+
             self::ROUTE_FAIL => '路由失败，请检查环境是否匹配，agent是否配置正确',
             self::TARS_PUT_BOOL_FAILED => 'bool类型打包失败，请检查是否传入了正确值',
             self::TARS_PUT_STRUCT_FAILED => 'struct类型打包失败，请检查是否传入了正确值',

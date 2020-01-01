@@ -9,12 +9,12 @@ class Response implements ResponseInterface
     /**
      * @var string
      */
-    private $rawContent;
+    private $body;
 
     /**
      * @var array
      */
-    private $decoded;
+    private $parsedBody;
     /**
      * @var RequestInterface
      */
@@ -23,11 +23,11 @@ class Response implements ResponseInterface
     /**
      * Response constructor.
      */
-    public function __construct(string $rawContent, RequestInterface $request)
+    public function __construct(string $body, RequestInterface $request)
     {
-        $this->rawContent = $rawContent;
+        $this->body = $body;
         $this->request = $request;
-        $this->decoded = \TUPAPI::decode($rawContent, $request->getVersion());
+        $this->parsedBody = \TUPAPI::decode($body, $request->getVersion());
     }
 
     public function getRequest(): RequestInterface
@@ -35,19 +35,24 @@ class Response implements ResponseInterface
         return $this->request;
     }
 
-    public function getRawContent(): string
+    public function getVersion(): int
     {
-        return $this->rawContent;
+        return $this->request->getVersion();
     }
 
-    public function getDecoded(): array
+    public function getBody(): string
     {
-        return $this->decoded;
+        return $this->body;
+    }
+
+    public function getParsedBody(): array
+    {
+        return $this->parsedBody;
     }
 
     public function getReturnCode(): int
     {
-        return $this->decoded['iRet'] ?? -1;
+        return $this->parsedBody['iRet'] ?? -1;
     }
 
     public function isSuccess(): bool
@@ -55,13 +60,13 @@ class Response implements ResponseInterface
         return 0 === $this->getReturnCode();
     }
 
-    public function getErrorMessage(): string
+    public function getMessage(): string
     {
-        return $this->decoded['sResultDesc'] ?? 'Unknown error';
+        return $this->parsedBody['sResultDesc'] ?? 'Unknown error';
     }
 
     public function getPayload(): string
     {
-        return $this->decoded['sBuffer'] ?? '';
+        return $this->parsedBody['sBuffer'] ?? '';
     }
 }

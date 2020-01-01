@@ -11,7 +11,7 @@ use wenbinye\tars\server\event\RequestEvent;
 use wenbinye\tars\server\http\ResponseSenderInterface;
 use wenbinye\tars\server\http\ServerRequestFactoryInterface;
 
-class RequestEventListener implements EventListenerInterface, LoggerAwareInterface
+class HttpRequestHandler implements EventListenerInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 

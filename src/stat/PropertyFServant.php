@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\stat;
 
-use wenbinye\tars\protocol\annotation\TarsClient;
 use wenbinye\tars\protocol\annotation\TarsParameter;
-use wenbinye\tars\protocol\annotation\TarsReturnValue;
+use wenbinye\tars\protocol\annotation\TarsReturnType;
+use wenbinye\tars\protocol\annotation\TarsServant;
 
 /**
- * @TarsClient(servant="")
+ * @TarsServant(servant="")
  */
 interface PropertyFServant
 {
     /**
      * @TarsParameter(name = "statmsg", type = "map<StatPropMsgHead, StatPropMsgBody>")
-     * @TarsReturnValue(type = "int")
+     * @TarsReturnType(type = "int")
      *
      * @param array $statmsg
      *

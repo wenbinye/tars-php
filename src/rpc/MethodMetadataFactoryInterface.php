@@ -9,7 +9,7 @@ interface MethodMetadataFactoryInterface
     /**
      * 获取接口 ServantName, 参数，返回值等信息.
      *
-     * @param object $client
+     * @param object $servant
      */
-    public function create($client, string $method): MethodMetadata;
+    public function create($servant, string $method): MethodMetadata;
 }
