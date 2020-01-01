@@ -15,4 +15,9 @@ class ManagerStartEventListener implements EventListenerInterface
     {
         @cli_set_process_title($event->getServer()->getServerProperties()->getServerName().': manager process');
     }
+
+    public function getSubscribedEvent(): string
+    {
+        return ManagerStartEvent::class;
+    }
 }

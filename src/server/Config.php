@@ -8,12 +8,15 @@ use wenbinye\tars\server\exception\ConfigException;
 
 class Config extends \ArrayIterator
 {
+    /**
+     * @var Config
+     */
     private static $INSTANCE;
 
     /**
      * @return mixed
      */
-    public static function getInstance()
+    public static function getInstance(): Config
     {
         return self::$INSTANCE;
     }
@@ -21,19 +24,9 @@ class Config extends \ArrayIterator
     /**
      * @param mixed $INSTANCE
      */
-    public static function setInstance(Config $instance): void
+    private static function setInstance(Config $instance): void
     {
         self::$INSTANCE = $instance;
-    }
-
-    public function getInt($key): int
-    {
-        return (int) $this[$key];
-    }
-
-    public function getBool($key): bool
-    {
-        return (bool) $this[$key];
     }
 
     public function __get($name)
@@ -49,6 +42,30 @@ class Config extends \ArrayIterator
     public function __isset($name)
     {
         return isset($this[$name]);
+    }
+
+    public function has(string $key): bool
+    {
+        return null !== $this->get($key);
+    }
+
+    /**
+     * @param $key
+     *
+     * @return mixed
+     */
+    public function get(string $key, $default = null)
+    {
+        $pos = strpos($key, '.');
+        if (false === $pos) {
+            return $this[$key] ?? $default;
+        }
+        $current = substr($key, 0, $pos);
+        if (isset($this[$current]) && $this[$current] instanceof self) {
+            return $this[$current]->get(substr($key, $pos + 1), $default);
+        }
+
+        return $default;
     }
 
     public function merge(array $configArray): void

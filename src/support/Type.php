@@ -20,11 +20,13 @@ class Type
 
         if ('int' === $typeName) {
             return (int) $value;
-        } elseif ('bool' === $typeName) {
-            return in_array(strtolower($value), ['1', 'true', 'on'], true);
-        } else {
-            return $value;
         }
+
+        if ('bool' === $typeName) {
+            return in_array(strtolower($value), ['1', 'true', 'on'], true);
+        }
+
+        return $value;
         // throw new \InvalidArgumentException("Cannot cast $type from string");
     }
 }

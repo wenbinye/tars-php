@@ -28,17 +28,6 @@ class StartEventListener implements EventListenerInterface, LoggerAwareInterface
             $this->logger->error('Cannot write master and manager pid file: '.$e->getMessage());
             $event->getSwooleServer()->stop();
         }
-        // 初始化的一次上报
-        // TarsPlatform::keepaliveInit($this->tarsConfig, $server->master_pid);
-
-        //拉取配置
-//        if (!empty($this->servicesInfo) &&
-//            isset($this->servicesInfo['saveTarsConfigFileDir']) &&
-//            isset($this->servicesInfo['saveTarsConfigFileName'])) {
-//            TarsPlatform::loadTarsConfig($this->tarsConfig,
-//                $this->servicesInfo['saveTarsConfigFileDir'],
-//                $this->servicesInfo['saveTarsConfigFileName']);
-//        }
     }
 
     private function writePidFile(string $pidFile, int $pid): void
@@ -52,5 +41,10 @@ class StartEventListener implements EventListenerInterface, LoggerAwareInterface
         if (false === $ret) {
             throw new IOException("Cannot create pid file $pidFile");
         }
+    }
+
+    public function getSubscribedEvent(): string
+    {
+        return StartEvent::class;
     }
 }

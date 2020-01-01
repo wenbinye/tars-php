@@ -4,25 +4,21 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server\event\listener;
 
-use wenbinye\tars\server\task\QueueInterface;
-use wenbinye\tars\server\task\ReportTask;
+use wenbinye\tars\server\event\WorkerStartEvent;
 
 class WorkerStartEventListener implements EventListenerInterface
 {
-    /**
-     * @var QueueInterface
-     */
-    private $taskQueue;
-
     /**
      * @param WorkerStartEvent $event
      */
     public function __invoke($event): void
     {
         $this->setProcessTitle($event);
-        if (0 === $event->getWorkerId()) {
-            $this->startKeepAliveTask();
-        }
+    }
+
+    public function getSubscribedEvent(): string
+    {
+        return WorkerStartEvent::class;
     }
 
     private function setProcessTitle(WorkerStartEvent $event): void
@@ -33,10 +29,5 @@ class WorkerStartEventListener implements EventListenerInterface
         } else {
             @cli_set_process_title($serverName.": worker {$event->getWorkerId()} process");
         }
-    }
-
-    private function startKeepAliveTask(): void
-    {
-        $this->taskQueue->put(new ReportTask());
     }
 }

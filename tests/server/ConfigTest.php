@@ -48,4 +48,15 @@ bar=2
         // var_export([$clientProperties, $serverProperties]);
         // var_export($result->toArray());
     }
+
+    public function testGet()
+    {
+        $config = Config::fromArray(['foo' => [
+            'bar' => 1,
+        ]]);
+
+        $this->assertTrue($config->has('foo.bar'));
+        $this->assertFalse($config->has('foo.baz'));
+        $this->assertEquals(1, $config->get('foo.bar'));
+    }
 }

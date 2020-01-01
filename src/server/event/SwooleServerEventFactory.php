@@ -40,6 +40,11 @@ class SwooleServerEventFactory
         return null;
     }
 
+    public function createBeforeStartEvent(): BeforeStartEvent
+    {
+        return new BeforeStartEvent();
+    }
+
     public function createStartEvent(): StartEvent
     {
         return new StartEvent();

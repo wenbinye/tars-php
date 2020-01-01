@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server\event\listener;
 
-use wenbinye\tars\server\event\SwooleServerEvent;
-
 interface EventListenerInterface
 {
     /**
-     * @param SwooleServerEvent $event
+     * @param object $event
      */
     public function __invoke($event): void;
+
+    public function getSubscribedEvent(): string;
 }

@@ -60,6 +60,7 @@ class SwooleServer implements ServerInterface
     public function start(): void
     {
         $adapters = $this->serverProperties->getAdapters();
+        $this->eventDispatcher->dispatch($this->swooleServerEventFactory->create('beforeStart', []));
         $this->createSwooleServer(array_shift($adapters));
         foreach ($adapters as $adapter) {
             $this->addPort($adapter);
@@ -156,7 +157,7 @@ class SwooleServer implements ServerInterface
         return array_map('intval', $pids);
     }
 
-    private function swooleEventHandler(string $eventName)
+    private function swooleEventHandler(string $eventName): callable
     {
         return function () use ($eventName) {
             $event = $this->swooleServerEventFactory->create($eventName, func_get_args());

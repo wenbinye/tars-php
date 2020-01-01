@@ -18,18 +18,33 @@ class RequestEventListener implements EventListenerInterface
     /**
      * @var RequestHandlerInterface
      */
-    private $handler;
+    private $requestHandler;
     /**
      * @var ResponseSenderInterface
      */
     private $responseSender;
 
     /**
+     * RequestEventListener constructor.
+     */
+    public function __construct(ServerRequestFactoryInterface $serverRequestFactory, RequestHandlerInterface $handler, ResponseSenderInterface $responseSender)
+    {
+        $this->serverRequestFactory = $serverRequestFactory;
+        $this->requestHandler = $handler;
+        $this->responseSender = $responseSender;
+    }
+
+    /**
      * @param RequestEvent $event
      */
     public function __invoke($event): void
     {
-        $response = $this->handler->handle($this->serverRequestFactory->createServerRequest($event->getRequest()));
+        $response = $this->requestHandler->handle($this->serverRequestFactory->createServerRequest($event->getRequest()));
         $this->responseSender->send($response, $event->getResponse());
+    }
+
+    public function getSubscribedEvent(): string
+    {
+        return RequestEvent::class;
     }
 }
