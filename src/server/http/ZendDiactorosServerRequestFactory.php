@@ -31,8 +31,10 @@ class ZendDiactorosServerRequestFactory implements ServerRequestFactoryInterface
             $swooleRequest->files ? normalizeUploadedFiles($swooleRequest->files) : null
         );
         $body = $swooleRequest->rawContent();
-        if (false !== $body) {
-            $serverRequest = $serverRequest->withBody(new Stream($body));
+        if (!empty($body)) {
+            $stream = new Stream('php://memory');
+            $stream->write($body);
+            $serverRequest = $serverRequest->withBody($stream);
         }
 
         return $serverRequest;

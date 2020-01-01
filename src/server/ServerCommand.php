@@ -30,9 +30,16 @@ class ServerCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $action = $input->getOption('action');
+        $action = $input->getArgument('action');
         Assert::oneOf($action, ['start', 'stop'], 'Unknown action \'%s\', expected one of: %s');
-        Config::parseFile($input->getOption('config'));
+        $configFile = $input->getOption('config');
+        if (!$configFile) {
+            throw new \InvalidArgumentException('config file is required');
+        }
+        if (!is_readable($configFile)) {
+            throw new \InvalidArgumentException("config file '$configFile' is not readable");
+        }
+        Config::parseFile($configFile);
         /** @var ServerInterface $server */
         $server = $this->containerFactory->create()->get(ServerInterface::class);
         $server->setOutput($output);

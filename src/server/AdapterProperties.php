@@ -10,6 +10,10 @@ use wenbinye\tars\server\annotation\ConfigItem;
 
 class AdapterProperties
 {
+    private static $PROTOCOL_ALIAS = [
+        'not_tars' => Protocol::HTTP,
+    ];
+
     /**
      * @Assert\NotBlank()
      *
@@ -105,6 +109,9 @@ class AdapterProperties
 
     public function setProtocol(string $protocol): void
     {
+        if (isset(self::$PROTOCOL_ALIAS[$protocol])) {
+            $protocol = self::$PROTOCOL_ALIAS[$protocol];
+        }
         $this->protocol = $protocol;
     }
 

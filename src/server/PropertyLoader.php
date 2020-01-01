@@ -120,6 +120,10 @@ class PropertyLoader
             if (!isset($value)) {
                 continue;
             }
+            // to set 'foo' config item value try:
+            // 1. method setFooFromString
+            // 2. annotation ConfigItem->factory callback
+            // 3. method setFoo
             $stringSetter = sprintf('set%sFromString', $property->getName());
             if ($reflectionClass->hasMethod($stringSetter)) {
                 if ($configItem->factory) {

@@ -34,9 +34,10 @@ class ResponseSender implements ResponseSenderInterface
     /**
      * ResponseSender constructor.
      */
-    public function __construct(ServerProperties $serverProperties)
+    public function __construct(ServerProperties $serverProperties, QueueInterface $queue)
     {
         $this->serverProperties = $serverProperties;
+        $this->taskQueue = $queue;
     }
 
     /**
@@ -52,7 +53,7 @@ class ResponseSender implements ResponseSenderInterface
         }
         $body = $response->getBody();
         $contentLength = $body->getSize();
-        $swooleResponse->header('content-length', $contentLength);
+        $swooleResponse->header('content-length', (string) $contentLength);
 
         if ($body instanceof FileStream) {
             $swooleResponse->sendfile($body->getFileName());
@@ -60,7 +61,7 @@ class ResponseSender implements ResponseSenderInterface
             return;
         }
 
-        if ($contentLength > $this->serverProperties->getSwooleServerSetting(SwooleServerSetting::BUFFER_OUTPUT_SIZE) ?: self::DEFAULT_BUFFER_OUTPUT_SIZE) {
+        if ($contentLength > $this->getBufferOutputSize()) {
             $file = tempnam(sys_get_temp_dir(), 'swoole-resp');
             file_put_contents($file, (string) $body);
             $swooleResponse->sendfile($file);
@@ -72,5 +73,15 @@ class ResponseSender implements ResponseSenderInterface
             }
             $swooleResponse->end();
         }
+    }
+
+    private function getBufferOutputSize(): int
+    {
+        $bufferOutputSize = $this->serverProperties->getSwooleServerSetting(SwooleServerSetting::BUFFER_OUTPUT_SIZE);
+        if (!empty($bufferOutputSize)) {
+            return (int) $bufferOutputSize;
+        }
+
+        return self::DEFAULT_BUFFER_OUTPUT_SIZE;
     }
 }
