@@ -1,8 +1,8 @@
 <?php
 
+declare(strict_types=1);
 
 namespace wenbinye\tars\server\framework;
-
 
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\AnnotationRegistry;
@@ -31,7 +31,6 @@ use wenbinye\tars\server\ServerProperties;
 
 class ServerConfiguration
 {
-
     /**
      * @Bean()
      */
@@ -95,6 +94,8 @@ class ServerConfiguration
         foreach ($config->get('application.servants', []) as $servantId) {
             $servants[] = $container->get($servantId);
         }
+        var_export([$servants]);
+
         foreach ($config->get('application.servant_middlewares', []) as $middlewareId) {
             $middlewares[] = $container->get($middlewareId);
         }
@@ -110,7 +111,7 @@ class ServerConfiguration
     public function serverProperties(PropertyLoader $propertyLoader, Config $config): ServerProperties
     {
         $serverProperties = $propertyLoader->loadServerProperties($config);
-        $configFile = $serverProperties->getBasePath() . '/config.php';
+        $configFile = $serverProperties->getBasePath().'/config.php';
         if (file_exists($configFile)) {
             $config->merge(require $configFile);
         }

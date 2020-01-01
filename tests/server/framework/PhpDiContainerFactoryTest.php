@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server\framework;
 
+use Doctrine\Common\Annotations\AnnotationRegistry;
 use PHPUnit\Framework\TestCase;
 use wenbinye\tars\di\annotation\Service;
 use wenbinye\tars\server\Config;
@@ -13,6 +14,7 @@ class PhpDiContainerFactoryTest extends TestCase
     protected function setUp(): void
     {
         Config::parseFile(__DIR__.'/../fixtures/PHPTest.PHPHttpServer.config.conf');
+        AnnotationRegistry::registerLoader('class_exists');
     }
 
     public function testComponentScan()

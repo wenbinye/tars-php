@@ -11,19 +11,19 @@ interface RequestInterface extends MessageInterface
 
     public function getServantName(): string;
 
-    public function withServantName(string $servantName): self;
+    public function withServantName(string $servantName);
 
     public function getMethodName(): string;
 
-    public function withMethodName(string $methodName): self;
+    public function withMethodName(string $methodName);
 
     public function getRequestId(): int;
 
-    public function withRequestId(int $requestId): self;
+    public function withRequestId(int $requestId);
 
     public function getParameters(): array;
 
-    public function withParameters(array $parameters): self;
+    public function withParameters(array $parameters);
 
     public function getMessageType(): int;
 

@@ -24,8 +24,14 @@ use wenbinye\tars\di\BeanConfigurationSourceAwareInterface;
 use wenbinye\tars\di\ConfigDefinitionSource;
 use wenbinye\tars\di\ContainerBuilder;
 use wenbinye\tars\di\ContainerBuilderAwareInterface;
+use wenbinye\tars\rpc\DefaultErrorHandler;
+use wenbinye\tars\rpc\ErrorHandlerInterface;
 use wenbinye\tars\rpc\MethodMetadataFactory;
 use wenbinye\tars\rpc\MethodMetadataFactoryInterface;
+use wenbinye\tars\rpc\RequestFactory;
+use wenbinye\tars\rpc\RequestFactoryInterface;
+use wenbinye\tars\rpc\RequestIdGenerator;
+use wenbinye\tars\rpc\RequestIdGeneratorInterface;
 use wenbinye\tars\server\Config;
 use wenbinye\tars\server\http\ResponseSender;
 use wenbinye\tars\server\http\ResponseSenderInterface;
@@ -176,7 +182,10 @@ class PhpDiContainerFactory implements ContainerFactoryInterface
             QueueInterface::class => autowire(Queue::class),
             TaskProcessorInterface::class => get(QueueInterface::class),
             ServerRequestFactoryInterface::class => autowire(ZendDiactorosServerRequestFactory::class),
+            RequestFactoryInterface::class => autowire(RequestFactory::class),
+            RequestIdGeneratorInterface::class => autowire(RequestIdGenerator::class),
             ResponseSenderInterface::class => autowire(ResponseSender::class),
+            ErrorHandlerInterface::class => autowire(DefaultErrorHandler::class),
             MethodMetadataFactoryInterface::class => autowire(MethodMetadataFactory::class),
         ]);
         $builder->addDefinitions($this->getBeanConfigurationSource());

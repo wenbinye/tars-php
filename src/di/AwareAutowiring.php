@@ -39,10 +39,12 @@ class AwareAutowiring implements DefinitionSource, Autowiring
     public function autowire(string $name, ObjectDefinition $definition = null)
     {
         $definition = $this->autowiring->autowire($name, $definition);
-        $className = $definition->getClassName();
-        foreach ($this->awareInjections as $awareDefinition) {
-            if ($awareDefinition->match($className)) {
-                $awareDefinition->inject($definition);
+        if ($definition && $definition instanceof ObjectDefinition) {
+            $className = $definition->getClassName();
+            foreach ($this->awareInjections as $awareDefinition) {
+                if ($awareDefinition->match($className)) {
+                    $awareDefinition->inject($definition);
+                }
             }
         }
 

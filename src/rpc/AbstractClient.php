@@ -44,7 +44,7 @@ abstract class AbstractClient
      *
      * @param MiddlewareInterface[] $middlewares
      */
-    public function __construct(ConnectionInterface $connection,
+    public function __construct(ConnectionFactoryInterface $connectionFactory,
                                 PackerInterface $packer,
                                 RequestFactoryInterface $requestFactory,
                                 MethodMetadataFactoryInterface $methodMetadataFactory,
@@ -55,7 +55,8 @@ abstract class AbstractClient
         $this->requestFactory = $requestFactory;
         $this->methodMetadataFactory = $methodMetadataFactory;
         $this->errorHandler = $errorHandler;
-        $this->middlewareStack = new MiddlewareStack($middlewares, function (RequestInterface $request) use ($connection) {
+        $this->middlewareStack = new MiddlewareStack($middlewares, static function (RequestInterface $request) use ($connectionFactory) {
+            $connection = $connectionFactory->create($request->getServantName());
             $rawContent = $connection->send($request);
 
             return new Response($rawContent, $request->withAttribute('route', $connection->getRoute()));
@@ -75,7 +76,8 @@ abstract class AbstractClient
 
         $request = $this->requestFactory->createRequest($methodMetadata->getServantName(), $method, $payload);
         $response = $this->middlewareStack->__invoke($request);
-        if ($response->isSuccess()) {
+        var_export($response);
+        if (!$response->isSuccess()) {
             return $this->errorHandler->handle($request, $response);
         }
         $result = [];

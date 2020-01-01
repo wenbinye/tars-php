@@ -40,7 +40,7 @@ class SocketTcpConnection extends AbstractConnection
     {
         $time = microtime(true);
         $socket = $this->getResource();
-        $requestData = $request->encode();
+        $requestData = $request->getBody();
         if (!\socket_write($socket, $requestData, strlen($requestData))) {
             $this->onConnectionError(ErrorCode::fromValue(ErrorCode::TARS_SOCKET_SEND_FAILED));
         }

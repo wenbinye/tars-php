@@ -54,7 +54,7 @@ class ServerResponse implements ResponseInterface
         if (null === $this->body) {
             $this->body = \TUPAPI::encodeRspPacket($this->getVersion(),
                 $this->request->getPacketType(), $this->request->getMessageType(), $this->request->getRequestId(),
-                $this->getReturnCode(), $this->getMessage(), $this->getParsedBody());
+                $this->getReturnCode(), $this->getMessage(), $this->getParsedBody(), []);
         }
 
         return $this->body;

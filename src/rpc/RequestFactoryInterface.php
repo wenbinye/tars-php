@@ -8,5 +8,5 @@ interface RequestFactoryInterface
 {
     public function getVersion(): int;
 
-    public function createRequest(string $servantName, string $method, array $payload): RequestInterface;
+    public function createRequest(string $servantName, string $method, array $payload): ClientRequestInterface;
 }

@@ -32,7 +32,7 @@ class RequestFactory implements RequestFactoryInterface
      * RequestFactory constructor.
      */
     public function __construct(RequestIdGeneratorInterface $requestIdGenerator,
-                                int $timeout = RequestInterface::DEFAULT_TIMEOUT,
+                                int $timeout = ClientRequestInterface::DEFAULT_TIMEOUT,
                                 int $version = RequestInterface::TUP_VERSION,
                                 int $packetType = RequestInterface::PACKET_TYPE,
                                 int $messageType = RequestInterface::MESSAGE_TYPE)
@@ -64,7 +64,7 @@ class RequestFactory implements RequestFactoryInterface
         return $this->timeout;
     }
 
-    public function createRequest(string $servantName, string $method, array $payload): RequestInterface
+    public function createRequest(string $servantName, string $method, array $payload): ClientRequestInterface
     {
         return new Request($servantName, $method, $this->requestIdGenerator->generate(),
             $payload, $this->timeout, [], [],

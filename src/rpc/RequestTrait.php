@@ -22,7 +22,7 @@ trait RequestTrait
     /**
      * @var array
      */
-    private $parameters;
+    private $parameters = [];
 
     /**
      * @var int
@@ -83,7 +83,7 @@ trait RequestTrait
         $this->attributes = $attributes;
     }
 
-    public function withVersion(int $version): self
+    public function withVersion(int $version)
     {
         $new = clone $this;
         $new->version = $version;
@@ -96,7 +96,7 @@ trait RequestTrait
         return $this->servantName;
     }
 
-    public function withServantName(string $servantName): self
+    public function withServantName(string $servantName)
     {
         $new = clone $this;
         $new->servantName = $servantName;
@@ -109,7 +109,7 @@ trait RequestTrait
         return $this->methodName;
     }
 
-    public function withMethodName(string $methodName): self
+    public function withMethodName(string $methodName)
     {
         $new = clone $this;
         $new->methodName = $methodName;
@@ -122,7 +122,7 @@ trait RequestTrait
         return $this->requestId;
     }
 
-    public function withRequestId(int $requestId): self
+    public function withRequestId(int $requestId)
     {
         $new = clone $this;
         $new->requestId = $requestId;
@@ -135,7 +135,7 @@ trait RequestTrait
         return $this->parameters;
     }
 
-    public function withParameters(array $parameters): self
+    public function withParameters(array $parameters)
     {
         $new = clone $this;
         $new->parameters = $parameters;
@@ -148,7 +148,7 @@ trait RequestTrait
         return $this->packetType;
     }
 
-    public function withPacketType(int $packetType): self
+    public function withPacketType(int $packetType)
     {
         $new = clone $this;
         $new->packetType = $packetType;
@@ -161,7 +161,7 @@ trait RequestTrait
         return $this->messageType;
     }
 
-    public function withMessageType(int $messageType): self
+    public function withMessageType(int $messageType)
     {
         $new = clone $this;
         $new->messageType = $messageType;
@@ -174,7 +174,7 @@ trait RequestTrait
         return $this->attributes[$attribute] ?? null;
     }
 
-    public function withAttribute(string $attribute, $value): self
+    public function withAttribute(string $attribute, $value)
     {
         $new = clone $this;
         $new->attributes[$attribute] = $value;
@@ -187,7 +187,7 @@ trait RequestTrait
         return $this->body;
     }
 
-    public function withBody(string $body): self
+    public function withBody(string $body)
     {
         $new = clone $this;
         $new->body = $body;

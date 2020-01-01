@@ -23,7 +23,7 @@ class Slim implements ContainerFactoryInterface
     {
         $this->phpDiContainerFactory = new PhpDiContainerFactory($classLoader);
         if (!empty($namespaces)) {
-            $this->componetScan($namespaces);
+            $this->componentScan($namespaces);
         }
     }
 
@@ -46,7 +46,7 @@ class Slim implements ContainerFactoryInterface
         return $app;
     }
 
-    public function componetScan(array $namespaces): self
+    public function componentScan(array $namespaces): self
     {
         $this->phpDiContainerFactory->componentScan($namespaces);
 

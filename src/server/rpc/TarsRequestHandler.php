@@ -112,7 +112,7 @@ class TarsRequestHandler implements RequestHandlerInterface
         foreach ($reflectionClass->getInterfaces() as $interface) {
             /** @var TarsServant $servantAnnotation */
             $servantAnnotation = $annotationReader->getClassAnnotation($interface, TarsServant::class);
-            if (!$servantAnnotation) {
+            if ($servantAnnotation) {
                 $servantNames[] = $servantAnnotation->servant;
             }
         }
