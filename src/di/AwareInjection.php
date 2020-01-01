@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace wenbinye\tars\server\framework;
+namespace wenbinye\tars\di;
 
 use DI\Definition\ObjectDefinition;
 use DI\Definition\ObjectDefinition\MethodInjection;

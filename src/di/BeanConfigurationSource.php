@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace wenbinye\tars\server\framework;
+namespace wenbinye\tars\di;
 
 use DI\Definition\Source\Autowiring;
 use DI\Definition\Source\DefinitionArray;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use Doctrine\Common\Annotations\Reader;
-use wenbinye\tars\server\annotation\Bean;
+use wenbinye\tars\di\annotation\Bean;
 
 class BeanConfigurationSource extends DefinitionArray
 {
@@ -31,7 +31,7 @@ class BeanConfigurationSource extends DefinitionArray
     /**
      * BeanConfigurationSource constructor.
      */
-    public function __construct(array $configurationBeans, Autowiring $autowiring = null)
+    public function __construct(array $configurationBeans = [], Autowiring $autowiring = null)
     {
         $this->configurationBeans = $configurationBeans;
         parent::__construct([], $autowiring);

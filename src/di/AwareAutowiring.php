@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace wenbinye\tars\server\framework;
+namespace wenbinye\tars\di;
 
 use DI\Definition\ObjectDefinition;
 use DI\Definition\Source\AnnotationBasedAutowiring;
@@ -22,10 +22,10 @@ class AwareAutowiring implements DefinitionSource, Autowiring
      */
     private $awareInjections;
 
-    public function __construct($autowiring, array $awareBeans)
+    public function __construct($autowiring, array $awareInjections = [])
     {
         $this->autowiring = $autowiring;
-        $this->awareInjections = $awareBeans;
+        $this->awareInjections = $awareInjections;
     }
 
     public function add(AwareInjection $awareInjection): void

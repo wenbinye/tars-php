@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace wenbinye\tars\server\framework;
+namespace wenbinye\tars\di;
 
 use DI\ContainerBuilder;
 use DI\Definition\Source\ReflectionBasedAutowiring;

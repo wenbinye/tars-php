@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace wenbinye\tars\server\annotation;
+namespace wenbinye\tars\di\annotation;
 
 use Doctrine\Common\Annotations\Annotation\Target;
 

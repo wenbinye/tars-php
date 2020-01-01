@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server\framework;
 
+use Composer\Autoload\ClassLoader;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Slim\Factory\AppFactory;
-use wenbinye\tars\server\annotation\Bean;
+use wenbinye\tars\di\annotation\Bean;
 use wenbinye\tars\server\ServerProperties;
 use wenbinye\tars\support\ContainerFactoryInterface;
 
@@ -16,17 +17,19 @@ class Slim implements ContainerFactoryInterface
     /**
      * @var PhpDiContainerFactory
      */
-    private $phpDiFactory;
+    private $phpDiContainerFactory;
 
-    /**
-     * @var callable
-     */
-    private $routeFactory;
-
-    public function __construct(array $config = [], callable $routeFactory = null)
+    public function __construct(ClassLoader $classLoader, array $namespaces = [])
     {
-        $this->phpDiFactory = new PhpDiContainerFactory($config);
-        $this->routeFactory = $routeFactory;
+        $this->phpDiContainerFactory = new PhpDiContainerFactory($classLoader);
+        if (!empty($namespaces)) {
+            $this->componetScan($namespaces);
+        }
+    }
+
+    public function getPhpDiContainerFactory(): PhpDiContainerFactory
+    {
+        return $this->phpDiContainerFactory;
     }
 
     /**
@@ -39,17 +42,23 @@ class Slim implements ContainerFactoryInterface
         if (file_exists($routeFile)) {
             require $routeFile;
         }
-        if ($this->routeFactory) {
-            call_user_func($this->routeFactory, $app);
-        }
 
         return $app;
     }
 
+    public function componetScan(array $namespaces): self
+    {
+        $this->phpDiContainerFactory->componentScan($namespaces);
+
+        return $this;
+    }
+
     public function create(): ContainerInterface
     {
-        $this->phpDiFactory->getBeanConfigurationSource()->addConfiguration($this);
+        $this->phpDiContainerFactory->getBeanConfigurationSource()
+            ->addConfiguration($this)
+            ->addConfiguration(new ServerConfiguration());
 
-        return $this->phpDiFactory->create();
+        return $this->phpDiContainerFactory->create();
     }
 }

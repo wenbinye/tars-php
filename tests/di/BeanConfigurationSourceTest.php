@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace wenbinye\tars\server\framework;
+namespace wenbinye\tars\di;
 
 use DI\ContainerBuilder;
 use Monolog\Test\TestCase;
-use wenbinye\tars\server\annotation\Bean;
+use wenbinye\tars\di\annotation\Bean;
 
 class BeanConfigurationSourceTest extends TestCase
 {

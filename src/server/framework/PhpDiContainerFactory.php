@@ -4,43 +4,34 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server\framework;
 
+use Composer\Autoload\ClassLoader;
 use function DI\autowire;
-use DI\ContainerBuilder;
-use DI\Definition\Source\AnnotationBasedAutowiring;
-use DI\Definition\Source\DefinitionArray;
 use function DI\get;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use Doctrine\Common\Annotations\Reader;
-use Monolog\Formatter\LineFormatter;
-use Monolog\Handler\ErrorLogHandler;
-use Monolog\Logger;
+use kuiper\reflection\ReflectionFileFactory;
+use kuiper\reflection\ReflectionNamespaceFactory;
 use Psr\Container\ContainerInterface;
-use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerInterface;
-use Symfony\Component\EventDispatcher\EventDispatcher;
-use Symfony\Component\Validator\Validation;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
-use wenbinye\tars\protocol\Packer;
-use wenbinye\tars\protocol\PackerInterface;
-use wenbinye\tars\protocol\TarsTypeFactory;
+use wenbinye\tars\di\annotation\ComponentInterface;
+use wenbinye\tars\di\annotation\ComponentScan;
+use wenbinye\tars\di\AnnotationReaderAwareInterface;
+use wenbinye\tars\di\AwareAutowiring;
+use wenbinye\tars\di\AwareInjection;
+use wenbinye\tars\di\BeanConfigurationSource;
+use wenbinye\tars\di\BeanConfigurationSourceAwareInterface;
+use wenbinye\tars\di\ConfigDefinitionSource;
+use wenbinye\tars\di\ContainerBuilder;
+use wenbinye\tars\di\ContainerBuilderAwareInterface;
 use wenbinye\tars\rpc\MethodMetadataFactory;
 use wenbinye\tars\rpc\MethodMetadataFactoryInterface;
-use wenbinye\tars\server\annotation\Bean;
-use wenbinye\tars\server\ClientProperties;
 use wenbinye\tars\server\Config;
-use wenbinye\tars\server\event\BeforeStartEvent;
-use wenbinye\tars\server\event\listener\EventListenerInterface;
 use wenbinye\tars\server\http\ResponseSender;
 use wenbinye\tars\server\http\ResponseSenderInterface;
 use wenbinye\tars\server\http\ServerRequestFactoryInterface;
 use wenbinye\tars\server\http\ZendDiactorosServerRequestFactory;
-use wenbinye\tars\server\PropertyLoader;
-use wenbinye\tars\server\rpc\RequestHandlerInterface;
-use wenbinye\tars\server\rpc\TarsRequestHandler;
 use wenbinye\tars\server\ServerInterface;
-use wenbinye\tars\server\ServerProperties;
 use wenbinye\tars\server\SwooleServer;
 use wenbinye\tars\server\task\Queue;
 use wenbinye\tars\server\task\QueueInterface;
@@ -55,162 +46,119 @@ class PhpDiContainerFactory implements ContainerFactoryInterface
     private $beanConfigurationSource;
 
     /**
+     * @var ClassLoader
+     */
+    private $classLoader;
+
+    /**
      * @var AwareAutowiring
      */
     private $autowiring;
 
     /**
-     * @var array
+     * @var Reader
      */
-    private $config;
+    private $annotationReader;
+
+    /**
+     * @var ContainerBuilder
+     */
+    private $containerBuilder;
 
     /**
      * PhpDiContainerFactory constructor.
      */
-    public function __construct(array $config = [])
+    public function __construct(ClassLoader $classLoader)
     {
-        $this->config = $config;
-    }
-
-    /**
-     * @Bean()
-     */
-    public function config(): Config
-    {
-        $config = Config::getInstance();
-        $config->merge($this->config);
-
-        return $config;
-    }
-
-    /**
-     * @Bean
-     *
-     * @throws \Doctrine\Common\Annotations\AnnotationException
-     */
-    public function annotationReader(): Reader
-    {
-        AnnotationRegistry::registerLoader('class_exists');
-
-        return new AnnotationReader();
-    }
-
-    /**
-     * @Bean()
-     */
-    public function validator(Reader $annotationReader): ValidatorInterface
-    {
-        return Validation::createValidatorBuilder()
-            ->enableAnnotationMapping($annotationReader)
-            ->getValidator();
-    }
-
-    /**
-     * @Bean()
-     */
-    public function eventDispatcher(ContainerInterface $container, Config $config, LoggerInterface $logger): EventDispatcherInterface
-    {
-        $dispatcher = new EventDispatcher();
-        $dispatcher->addListener(BeforeStartEvent::class, static function () use ($container, $dispatcher, $config, $logger) {
-            foreach ($config->get('application.listeners', []) as $event => $listenerId) {
-                $logger->debug("attach $listenerId");
-                $listener = $container->get($listenerId);
-                if ($listener instanceof EventListenerInterface) {
-                    $dispatcher->addListener($listener->getSubscribedEvent(), $listener);
-                } elseif (is_string($event)) {
-                    $dispatcher->addListener($event, $listener);
-                } else {
-                    throw new \InvalidArgumentException("config application.listeners $listenerId does not bind to any event");
-                }
-            }
-        });
-
-        return $dispatcher;
-    }
-
-    /**
-     * @Bean()
-     */
-    public function tarsRequestHandler(ContainerInterface $container, Config $config, MethodMetadataFactoryInterface $methodMetadataFactory): RequestHandlerInterface
-    {
-        $servants = [];
-        $middlewares = [];
-        foreach ($config->get('application.servants', []) as $servantId) {
-            $servants[] = $container->get($servantId);
-        }
-        foreach ($config->get('application.servant_middlewares', []) as $middlewareId) {
-            $middlewares[] = $container->get($middlewareId);
-        }
-
-        return new TarsRequestHandler($servants, $methodMetadataFactory, $middlewares);
-    }
-
-    /**
-     * @Bean()
-     *
-     * @throws \wenbinye\tars\support\exception\ValidationException
-     */
-    public function serverProperties(PropertyLoader $propertyLoader, Config $config): ServerProperties
-    {
-        $serverProperties = $propertyLoader->loadServerProperties($config);
-        $configFile = $serverProperties->getBasePath().'/config.php';
-        if (file_exists($configFile)) {
-            $config->merge(require $configFile);
-        }
-
-        return $serverProperties;
-    }
-
-    /**
-     * @Bean()
-     *
-     * @throws \wenbinye\tars\support\exception\ValidationException
-     */
-    public function clientProperties(PropertyLoader $propertyLoader, Config $config): ClientProperties
-    {
-        return $propertyLoader->loadClientProperties($config);
-    }
-
-    /**
-     * @Bean()
-     */
-    public function logger(): LoggerInterface
-    {
-        $errorLogHandler = new ErrorLogHandler();
-        /** @var LineFormatter $formatter */
-        $formatter = $errorLogHandler->getFormatter();
-        $formatter->allowInlineLineBreaks();
-        $errorLogHandler->setFormatter($formatter);
-
-        return new Logger('test', [$errorLogHandler]);
-    }
-
-    /**
-     * @Bean()
-     */
-    public function packer(Reader $annotationReader): PackerInterface
-    {
-        return new Packer(new TarsTypeFactory($annotationReader));
+        $this->classLoader = $classLoader;
     }
 
     public function getBeanConfigurationSource(): BeanConfigurationSource
     {
         if (!$this->beanConfigurationSource) {
-            $this->beanConfigurationSource = new BeanConfigurationSource([$this]);
+            $this->beanConfigurationSource = new BeanConfigurationSource();
         }
 
         return $this->beanConfigurationSource;
     }
 
-    public function getAutowiring(): AwareAutowiring
+    /**
+     * @throws \Doctrine\Common\Annotations\AnnotationException
+     */
+    public function getAnnotationReader(): Reader
     {
-        if (!$this->autowiring) {
-            $this->autowiring = new AwareAutowiring(new AnnotationBasedAutowiring(), [
-                AwareInjection::create(LoggerAwareInterface::class),
-            ]);
+        if (!$this->annotationReader) {
+            AnnotationRegistry::registerLoader('class_exists');
+            $this->annotationReader = new AnnotationReader();
         }
 
-        return $this->autowiring;
+        return $this->annotationReader;
+    }
+
+    public function setBeanConfigurationSource(BeanConfigurationSource $beanConfigurationSource): void
+    {
+        $this->beanConfigurationSource = $beanConfigurationSource;
+    }
+
+    public function setAutowiring(AwareAutowiring $autowiring): void
+    {
+        $this->autowiring = $autowiring;
+    }
+
+    public function setAnnotationReader(Reader $annotationReader): void
+    {
+        $this->annotationReader = $annotationReader;
+    }
+
+    public function getClassLoader(): ClassLoader
+    {
+        return $this->classLoader;
+    }
+
+    public function getContainerBuilder(): ContainerBuilder
+    {
+        if (!$this->containerBuilder) {
+            $this->containerBuilder = new ContainerBuilder();
+        }
+
+        return $this->containerBuilder;
+    }
+
+    public function setContainerBuilder(ContainerBuilder $containerBuilder): void
+    {
+        $this->containerBuilder = $containerBuilder;
+    }
+
+    public function componentScan(array $namespaces): self
+    {
+        static $scannedNamespaces;
+
+        $annotationReader = $this->getAnnotationReader();
+        $reflectionNamespaceFactory = ReflectionNamespaceFactory::createInstance(ReflectionFileFactory::createInstance())
+            ->registerLoader($this->getClassLoader());
+
+        while ($namespaces) {
+            $namespace = array_pop($namespaces);
+            if (isset($scannedNamespaces[$namespace])) {
+                continue;
+            }
+            foreach ($reflectionNamespaceFactory->create($namespace)->getClasses() as $className) {
+                $reflectionClass = new \ReflectionClass($className);
+                foreach ($annotationReader->getClassAnnotations($reflectionClass) as $annotation) {
+                    if ($annotation instanceof ComponentInterface) {
+                        $annotation->setClass($reflectionClass);
+                        $this->processComponent($annotation);
+                    } elseif ($annotation instanceof ComponentScan) {
+                        foreach ($annotation->basePackages ?: [$reflectionClass->getNamespaceName()] as $ns) {
+                            $namespaces[] = $ns;
+                        }
+                    }
+                }
+            }
+            $scannedNamespaces[$namespace] = true;
+        }
+
+        return $this;
     }
 
     /**
@@ -218,11 +166,11 @@ class PhpDiContainerFactory implements ContainerFactoryInterface
      */
     public function createBuilder(): ContainerBuilder
     {
-        $builder = new ContainerBuilder();
+        $builder = $this->getContainerBuilder();
 
+        $builder->addAwareInjection(AwareInjection::create(LoggerAwareInterface::class));
         $builder->addDefinitions(new ConfigDefinitionSource(Config::getInstance()));
-        $builder->addDefinitions($this->getAutowiring());
-        $builder->addDefinitions(new DefinitionArray([
+        $builder->addDefinitions([
             ServerInterface::class => autowire(SwooleServer::class),
             SwooleServer::class => get(ServerInterface::class),
             QueueInterface::class => autowire(Queue::class),
@@ -230,7 +178,7 @@ class PhpDiContainerFactory implements ContainerFactoryInterface
             ServerRequestFactoryInterface::class => autowire(ZendDiactorosServerRequestFactory::class),
             ResponseSenderInterface::class => autowire(ResponseSender::class),
             MethodMetadataFactoryInterface::class => autowire(MethodMetadataFactory::class),
-        ], $this->getAutowiring()));
+        ]);
         $builder->addDefinitions($this->getBeanConfigurationSource());
 
         return $builder;
@@ -239,5 +187,19 @@ class PhpDiContainerFactory implements ContainerFactoryInterface
     public function create(): ContainerInterface
     {
         return $this->createBuilder()->build();
+    }
+
+    private function processComponent(ComponentInterface $component): void
+    {
+        if ($component instanceof AnnotationReaderAwareInterface) {
+            $component->setAnnotationReader($this->getAnnotationReader());
+        }
+        if ($component instanceof ContainerBuilderAwareInterface) {
+            $component->setContainerBuilder($this->getContainerBuilder());
+        }
+        if ($component instanceof BeanConfigurationSourceAwareInterface) {
+            $component->setBeanConfigurationSource($this->getBeanConfigurationSource());
+        }
+        $component->process();
     }
 }
