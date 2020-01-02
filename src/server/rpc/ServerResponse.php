@@ -52,9 +52,20 @@ class ServerResponse implements ResponseInterface
     public function getBody(): string
     {
         if (null === $this->body) {
-            $this->body = \TUPAPI::encodeRspPacket($this->getVersion(),
-                $this->request->getPacketType(), $this->request->getMessageType(), $this->request->getRequestId(),
-                $this->getReturnCode(), $this->getMessage(), $this->getParsedBody(), []);
+            if (self::TUP_VERSION === $this->getVersion()) {
+                $this->body = \TUPAPI::encode($this->getVersion(),
+                    $this->request->getRequestId(),
+                    $this->request->getServantName(),
+                    $this->request->getMethodName(),
+                    $this->request->getPacketType(),
+                    $this->request->getMessageType(),
+                    0, [], ['STATUS_RESULT_CODE' => $this->getReturnCode()],
+                    $this->getParsedBody());
+            } else {
+                $this->body = \TUPAPI::encodeRspPacket($this->getVersion(),
+                    $this->request->getPacketType(), $this->request->getMessageType(), $this->request->getRequestId(),
+                    $this->getReturnCode(), $this->getMessage(), $this->getParsedBody(), []);
+            }
         }
 
         return $this->body;

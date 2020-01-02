@@ -135,6 +135,9 @@ trait RequestTrait
         return $this->parameters;
     }
 
+    /**
+     * @return static
+     */
     public function withParameters(array $parameters)
     {
         $new = clone $this;

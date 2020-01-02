@@ -23,6 +23,9 @@ interface RequestInterface extends MessageInterface
 
     public function getParameters(): array;
 
+    /**
+     * @return static
+     */
     public function withParameters(array $parameters);
 
     public function getMessageType(): int;

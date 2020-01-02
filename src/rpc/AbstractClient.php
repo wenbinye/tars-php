@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc;
 
-use wenbinye\tars\protocol\annotation\TarsParameter;
 use wenbinye\tars\protocol\PackerInterface;
-use wenbinye\tars\protocol\TypeParser;
 
 abstract class AbstractClient
 {
@@ -31,10 +29,6 @@ abstract class AbstractClient
     private $errorHandler;
 
     /**
-     * @var TypeParser
-     */
-    private $parser;
-    /**
      * @var MiddlewareStack
      */
     private $middlewareStack;
@@ -51,7 +45,7 @@ abstract class AbstractClient
                                 ErrorHandlerInterface $errorHandler,
                                 array $middlewares = [])
     {
-        $this->packer = $packer;
+        $this->packer = new RpcPacker($packer);
         $this->requestFactory = $requestFactory;
         $this->methodMetadataFactory = $methodMetadataFactory;
         $this->errorHandler = $errorHandler;
@@ -61,38 +55,19 @@ abstract class AbstractClient
 
             return new Response($rawContent, $request->withAttribute('route', $connection->getRoute()));
         });
-        $this->parser = new TypeParser();
     }
 
     protected function _send(string $method, ...$args): array
     {
         $methodMetadata = $this->methodMetadataFactory->create($this, $method);
-        $payload = [];
-        foreach ($methodMetadata->getParameters() as $i => $parameter) {
-            /* @var TarsParameter $parameter */
-            $payload[$parameter->name] = $this->packer->pack($this->parser->parse($parameter->type, $methodMetadata->getNamespace()),
-                $parameter->name, $args[$i] ?? null, $this->requestFactory->getVersion());
-        }
 
-        $request = $this->requestFactory->createRequest($methodMetadata->getServantName(), $method, $payload);
+        $request = $this->requestFactory->createRequest($methodMetadata->getServantName(), $method,
+            $this->packer->packRequest($methodMetadata, $args, $this->requestFactory->getVersion()));
         $response = $this->middlewareStack->__invoke($request);
-        var_export($response);
         if (!$response->isSuccess()) {
             return $this->errorHandler->handle($request, $response);
         }
-        $result = [];
-        $payload = $response->getPayload();
-        foreach ($methodMetadata->getOutputParameters() as $outputParameter) {
-            $type = $this->parser->parse($outputParameter->type, $methodMetadata->getNamespace());
-            $result[] = $this->packer->unpack($type, $outputParameter->name, $payload, $request->getVersion());
-        }
-        if (null !== $methodMetadata->getReturnType()) {
-            $type = $this->parser->parse($methodMetadata->getReturnType()->type, $methodMetadata->getNamespace());
-            if (!$type->isVoid()) {
-                $result[] = $this->packer->unpack($type, '', $payload, $request->getVersion());
-            }
-        }
 
-        return $result;
+        return $this->packer->unpackResponse($methodMetadata, $response->getPayload(), $response->getVersion());
     }
 }

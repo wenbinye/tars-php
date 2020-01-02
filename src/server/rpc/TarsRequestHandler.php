@@ -7,13 +7,13 @@ namespace wenbinye\tars\server\rpc;
 use Doctrine\Common\Annotations\Reader;
 use wenbinye\tars\protocol\annotation\TarsServant;
 use wenbinye\tars\protocol\PackerInterface;
-use wenbinye\tars\protocol\TypeParser;
 use wenbinye\tars\rpc\ErrorCode;
 use wenbinye\tars\rpc\MethodMetadataFactory;
 use wenbinye\tars\rpc\MethodMetadataFactoryInterface;
 use wenbinye\tars\rpc\MiddlewareInterface;
 use wenbinye\tars\rpc\MiddlewareStack;
 use wenbinye\tars\rpc\ResponseInterface;
+use wenbinye\tars\rpc\RpcPacker;
 
 class TarsRequestHandler implements RequestHandlerInterface
 {
@@ -22,13 +22,9 @@ class TarsRequestHandler implements RequestHandlerInterface
      */
     private $servants;
     /**
-     * @var PackerInterface
+     * @var RpcPacker
      */
     private $packer;
-    /**
-     * @var TypeParser
-     */
-    private $parser;
     /**
      * @var MethodMetadataFactoryInterface
      */
@@ -50,8 +46,7 @@ class TarsRequestHandler implements RequestHandlerInterface
                 $this->servants[$servantName] = $servant;
             }
         }
-        $this->packer = $packer;
-        $this->parser = new TypeParser();
+        $this->packer = new RpcPacker($packer);
         $this->methodMetadataFactory = new MethodMetadataFactory($annotationReader);
         $this->middlewareStack = new MiddlewareStack($middlewares, [$this, 'invoke']);
     }
@@ -59,19 +54,10 @@ class TarsRequestHandler implements RequestHandlerInterface
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         if (isset($this->servants[$request->getServantName()])) {
-            $request = $request->withAttribute('servant', $this->servants[$request->getServantName()]);
-            $servant = $request->getAttribute('servant');
+            $servant = $this->servants[$request->getServantName()];
             $methodMetadata = $this->methodMetadataFactory->create($servant, $request->getMethodName());
-            $payload = $request->getPayload();
-            $args = [];
-            foreach ($methodMetadata->getParameters() as $parameter) {
-                $type = $this->parser->parse($parameter->type, $methodMetadata->getNamespace());
-                $args[] = $this->packer->unpack($type, $parameter->name, $payload, $request->getVersion());
-            }
-            foreach ($methodMetadata->getOutputParameters() as $parameter) {
-                $args[] = null;
-            }
-            $request = $request->withParameters($args);
+            $request = $request->withAttribute('servant', $servant)
+                ->withParameters($this->packer->unpackRequest($methodMetadata, $request->getPayload(), $request->getVersion()));
         }
 
         return $this->middlewareStack->__invoke($request);
@@ -87,22 +73,11 @@ class TarsRequestHandler implements RequestHandlerInterface
             return new ServerResponse($request, [], ErrorCode::SERVER_NO_FUNC_ERR);
         }
         $parameters = $request->getParameters();
-        $ret = call_user_func_array([$servant, $request->getMethodName()], $parameters);
-        $encodeBuffers = [];
+        $parameters[] = call_user_func_array([$servant, $request->getMethodName()], $parameters);
         $methodMetadata = $this->methodMetadataFactory->create($servant, $request->getMethodName());
-        if (null !== $methodMetadata->getReturnType()) {
-            $type = $this->parser->parse($methodMetadata->getReturnType()->type, $methodMetadata->getNamespace());
-            if (!$type->isVoid()) {
-                $encodeBuffers[] = $this->packer->pack($type, '', $ret, $request->getVersion());
-            }
-        }
-        $offset = count($methodMetadata->getParameters());
-        foreach ($methodMetadata->getOutputParameters() as $i => $outputParameter) {
-            $type = $this->parser->parse($outputParameter->type, $methodMetadata->getNamespace());
-            $encodeBuffers[] = $this->packer->pack($type, $outputParameter->name, $parameters[$offset + $i], $request->getVersion());
-        }
 
-        return new ServerResponse($request, $encodeBuffers, ErrorCode::SERVER_SUCCESS, 'ok');
+        return new ServerResponse($request, $this->packer->packResponse($methodMetadata, $parameters, $request->getVersion()),
+            ErrorCode::SERVER_SUCCESS, 'ok');
     }
 
     private function getServantNames(Reader $annotationReader, $servant): array
