@@ -8,6 +8,7 @@ use DI\CompiledContainer;
 use DI\Compiler\Compiler;
 use DI\Container;
 use DI\Definition\Source\AnnotationBasedAutowiring;
+use DI\Definition\Source\Autowiring;
 use DI\Definition\Source\DefinitionArray;
 use DI\Definition\Source\DefinitionFile;
 use DI\Definition\Source\DefinitionSource;
@@ -103,6 +104,11 @@ class ContainerBuilder
     protected $sourceCacheNamespace;
 
     /**
+     * @var Autowiring
+     */
+    private $autowiring;
+
+    /**
      * Build a container configured for the dev environment.
      */
     public static function buildDevContainer(): Container
@@ -127,20 +133,9 @@ class ContainerBuilder
     {
         $sources = array_reverse($this->definitionSources);
 
-        if ($this->useAnnotations) {
-            $autowiring = new AnnotationBasedAutowiring($this->ignorePhpDocErrors);
-            if ($this->awareInjections) {
-                $autowiring = new AwareAutowiring($autowiring);
-            }
+        $autowiring = $this->getAutowiring();
+        if ($autowiring instanceof DefinitionSource) {
             $sources[] = $autowiring;
-        } elseif ($this->useAutowiring) {
-            $autowiring = new ReflectionBasedAutowiring();
-            if ($this->awareInjections) {
-                $autowiring = new AwareAutowiring($autowiring);
-            }
-            $sources[] = $autowiring;
-        } else {
-            $autowiring = new NoAutowiring();
         }
 
         $sources = array_map(function ($definitions) use ($autowiring) {
@@ -149,6 +144,8 @@ class ContainerBuilder
                 return new DefinitionFile($definitions, $autowiring);
             } elseif (is_array($definitions)) {
                 return new DefinitionArray($definitions, $autowiring);
+            } elseif ($definitions instanceof AutowiringAwareInterface) {
+                $definitions->setAutowiring($autowiring);
             }
 
             return $definitions;
@@ -389,5 +386,27 @@ class ContainerBuilder
         if ($this->locked) {
             throw new \LogicException('The ContainerBuilder cannot be modified after the container has been built');
         }
+    }
+
+    /**
+     * @return AnnotationBasedAutowiring|NoAutowiring|ReflectionBasedAutowiring|AwareAutowiring
+     */
+    public function getAutowiring()
+    {
+        if ($this->useAnnotations) {
+            $autowiring = new AnnotationBasedAutowiring($this->ignorePhpDocErrors);
+            if ($this->awareInjections) {
+                $autowiring = new AwareAutowiring($autowiring);
+            }
+        } elseif ($this->useAutowiring) {
+            $autowiring = new ReflectionBasedAutowiring();
+            if ($this->awareInjections) {
+                $autowiring = new AwareAutowiring($autowiring);
+            }
+        } else {
+            $autowiring = new NoAutowiring();
+        }
+
+        return $autowiring;
     }
 }

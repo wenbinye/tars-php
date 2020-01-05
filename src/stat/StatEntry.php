@@ -6,6 +6,7 @@ namespace wenbinye\tars\stat;
 
 use wenbinye\tars\rpc\ResponseInterface;
 use wenbinye\tars\rpc\Route;
+use wenbinye\tars\server\ServerProperties;
 
 class StatEntry
 {
@@ -33,6 +34,11 @@ class StatEntry
         $this->body = $body;
     }
 
+    private static function removeObj(string $servantName): string
+    {
+        return substr($servantName, 0, strrpos($servantName, '.'));
+    }
+
     public function getIndex(): int
     {
         return $this->index;
@@ -50,7 +56,7 @@ class StatEntry
 
     public function getUniqueId(): string
     {
-        return $this->__toString();
+        return (string) $this;
     }
 
     public function __toString(): string
@@ -92,37 +98,37 @@ class StatEntry
         return new static((int) $index, $head, new StatMicMsgBody());
     }
 
-    public static function success(int $index, ResponseInterface $response, int $responseTime): StatEntry
+    public static function success(int $index, ServerProperties $serverProperties, ResponseInterface $response, int $responseTime): StatEntry
     {
-        $entry = static::create($index, $response, $responseTime);
+        $entry = static::create($index, $serverProperties, $response, $responseTime);
         $entry->body->count = 1;
 
         return $entry;
     }
 
-    public static function fail(int $index, ResponseInterface $response, int $responseTime): StatEntry
+    public static function fail(int $index, ServerProperties $serverProperties, ResponseInterface $response, int $responseTime): StatEntry
     {
-        $entry = static::create($index, $response, $responseTime);
+        $entry = static::create($index, $serverProperties, $response, $responseTime);
         $entry->body->execCount = 1;
 
         return $entry;
     }
 
-    public static function timedOut(int $index, ResponseInterface $response, int $responseTime): StatEntry
+    public static function timedOut(int $index, ServerProperties $serverProperties, ResponseInterface $response, int $responseTime): StatEntry
     {
-        $entry = static::create($index, $response, $responseTime);
+        $entry = static::create($index, $serverProperties, $response, $responseTime);
         $entry->body->timeoutCount = 1;
 
         return $entry;
     }
 
-    private static function create(int $index, ResponseInterface $response, int $responseTime): StatEntry
+    private static function create(int $index, ServerProperties $serverProperties, ResponseInterface $response, int $responseTime): StatEntry
     {
         $head = new StatMicMsgHead();
-        $head->masterName = '';
-        $head->masterIp = '';
+        $head->masterName = $serverProperties->getServerName();
+        $head->masterIp = $serverProperties->getLocalIp();
         $request = $response->getRequest();
-        $head->slaveName = $request->getServantName();
+        $head->slaveName = self::removeObj($request->getServantName());
         $head->interfaceName = $request->getMethodName();
         /** @var Route $route */
         $route = $request->getAttribute('route');

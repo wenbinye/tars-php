@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace wenbinye\tars\server\framework;
 
 use DI\Annotation\Inject;
+use function DI\autowire;
+use function DI\get;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use Doctrine\Common\Annotations\Reader;
@@ -18,6 +20,7 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use wenbinye\tars\di\annotation\Bean;
+use wenbinye\tars\di\DefinitionConfiguration;
 use wenbinye\tars\protocol\Packer;
 use wenbinye\tars\protocol\PackerInterface;
 use wenbinye\tars\protocol\TarsTypeFactory;
@@ -29,7 +32,9 @@ use wenbinye\tars\rpc\ConnectionFactoryChain;
 use wenbinye\tars\rpc\ConnectionFactoryInterface;
 use wenbinye\tars\rpc\DefaultErrorHandler;
 use wenbinye\tars\rpc\ErrorHandlerInterface;
+use wenbinye\tars\rpc\MethodMetadataFactory;
 use wenbinye\tars\rpc\MethodMetadataFactoryInterface;
+use wenbinye\tars\rpc\RequestFactory;
 use wenbinye\tars\rpc\RequestFactoryInterface;
 use wenbinye\tars\rpc\RequestIdGenerator;
 use wenbinye\tars\rpc\RequestIdGeneratorInterface;
@@ -37,13 +42,51 @@ use wenbinye\tars\server\ClientProperties;
 use wenbinye\tars\server\Config;
 use wenbinye\tars\server\event\BeforeStartEvent;
 use wenbinye\tars\server\event\listener\EventListenerInterface;
+use wenbinye\tars\server\http\ResponseSender;
+use wenbinye\tars\server\http\ResponseSenderInterface;
+use wenbinye\tars\server\http\ServerRequestFactoryInterface;
+use wenbinye\tars\server\http\ZendDiactorosServerRequestFactory;
 use wenbinye\tars\server\PropertyLoader;
 use wenbinye\tars\server\rpc\RequestHandlerInterface;
 use wenbinye\tars\server\rpc\TarsRequestHandler;
+use wenbinye\tars\server\ServerInterface;
 use wenbinye\tars\server\ServerProperties;
+use wenbinye\tars\server\SwooleServer;
+use wenbinye\tars\server\task\Queue;
+use wenbinye\tars\server\task\QueueInterface;
+use wenbinye\tars\server\task\TaskProcessorInterface;
+use wenbinye\tars\stat\collector\SystemCpuCollector;
+use wenbinye\tars\stat\Monitor;
+use wenbinye\tars\stat\MonitorInterface;
+use wenbinye\tars\stat\PropertyFClient;
+use wenbinye\tars\stat\Stat;
+use wenbinye\tars\stat\StatInterface;
+use wenbinye\tars\stat\StatStoreAdapter;
+use wenbinye\tars\stat\SwooleTableStatStore;
 
-class ServerConfiguration
+class ServerConfiguration implements DefinitionConfiguration
 {
+    public function getDefinitions(): array
+    {
+        return [
+            ServerInterface::class => autowire(SwooleServer::class),
+            SwooleServer::class => get(ServerInterface::class),
+            QueueInterface::class => autowire(Queue::class),
+            StatInterface::class => autowire(Stat::class),
+            StatStoreAdapter::class => autowire(SwooleTableStatStore::class),
+            TaskProcessorInterface::class => get(QueueInterface::class),
+            ServerRequestFactoryInterface::class => autowire(ZendDiactorosServerRequestFactory::class),
+            RequestFactoryInterface::class => autowire(RequestFactory::class),
+            RequestIdGeneratorInterface::class => autowire(RequestIdGenerator::class),
+            ResponseSenderInterface::class => autowire(ResponseSender::class),
+            ErrorHandlerInterface::class => autowire(DefaultErrorHandler::class),
+            MethodMetadataFactoryInterface::class => autowire(MethodMetadataFactory::class),
+            'monitorCollectors' => [
+                \DI\get(SystemCpuCollector::class),
+            ],
+        ];
+    }
+
     /**
      * @Bean()
      */
@@ -198,7 +241,7 @@ class ServerConfiguration
     }
 
     /**
-     * @Bean("staticConnectionFactory")
+     * @Bean
      */
     public function staticConnectionFactory(ClientProperties $clientProperties): ConnectionFactory
     {
@@ -210,10 +253,9 @@ class ServerConfiguration
 
     /**
      * @Bean()
-     * @Inject({"connectionFactory" = "staticConnectionFactory"})
      */
     public function queryFClient(
-        ConnectionFactoryInterface $connectionFactory, PackerInterface $packer, RequestFactoryInterface $requestFactory,
+        ConnectionFactory $connectionFactory, PackerInterface $packer, RequestFactoryInterface $requestFactory,
         MethodMetadataFactoryInterface $methodMetadataFactory, ErrorHandlerInterface $errorHandler): QueryFClient
     {
         return new QueryFClient($connectionFactory, $packer, $requestFactory, $methodMetadataFactory, $errorHandler);
@@ -221,12 +263,30 @@ class ServerConfiguration
 
     /**
      * @Bean()
-     * @Inject({"staticConnectionFactory" = "staticConnectionFactory", "cache"="registryCache"})
+     * @Inject({"cache" = "registryCache"})
      */
-    public function connectionFactory(ConnectionFactoryInterface $staticConnectionFactory, QueryFClient $queryFClient, CacheInterface $cache): ConnectionFactoryInterface
+    public function registryConnectionFactory(QueryFClient $queryFClient, CacheInterface $cache, LoggerInterface $logger): RegistryConnectionFactory
     {
-        $registryFactory = new RegistryConnectionFactory($queryFClient, $cache);
+        $registryConnectionFactory = new RegistryConnectionFactory($queryFClient, $cache);
+        $registryConnectionFactory->setLogger($logger);
 
-        return new ConnectionFactoryChain([$staticConnectionFactory, $registryFactory]);
+        return $registryConnectionFactory;
+    }
+
+    /**
+     * @Bean()
+     */
+    public function connectionFactory(ConnectionFactory $staticConnectionFactory, RegistryConnectionFactory $registryConnectionFactory): ConnectionFactoryInterface
+    {
+        return new ConnectionFactoryChain([$staticConnectionFactory, $registryConnectionFactory]);
+    }
+
+    /**
+     * @Bean()
+     * @Inject({"collectors" = "monitorCollectors"})
+     */
+    public function monitor(ServerProperties $serverProperties, PropertyFClient $propertyFClient, array $collectors): MonitorInterface
+    {
+        return new Monitor($serverProperties, $propertyFClient, $collectors);
     }
 }

@@ -19,7 +19,7 @@ class Slim implements ContainerFactoryInterface
      */
     private $phpDiContainerFactory;
 
-    public function __construct(?ClassLoader $classLoader, array $namespaces = [])
+    public function __construct(ClassLoader $classLoader, array $namespaces = [])
     {
         $this->phpDiContainerFactory = new PhpDiContainerFactory($classLoader);
         if (!empty($namespaces)) {
@@ -56,6 +56,7 @@ class Slim implements ContainerFactoryInterface
     public function create(): ContainerInterface
     {
         $this->phpDiContainerFactory->getBeanConfigurationSource()
+            ->addConfiguration(new ServerConfiguration())
             ->addConfiguration($this);
 
         return $this->phpDiContainerFactory->create();

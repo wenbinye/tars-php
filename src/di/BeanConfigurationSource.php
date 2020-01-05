@@ -8,18 +8,14 @@ use DI\Annotation\Inject;
 use DI\Definition\FactoryDefinition;
 use DI\Definition\Source\Autowiring;
 use DI\Definition\Source\DefinitionArray;
+use DI\Definition\Source\DefinitionSource;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use Doctrine\Common\Annotations\Reader;
 use wenbinye\tars\di\annotation\Bean;
 
-class BeanConfigurationSource extends DefinitionArray
+class BeanConfigurationSource implements DefinitionSource, AutowiringAwareInterface
 {
-    /**
-     * @var bool
-     */
-    private $initialized = false;
-
     /**
      * @var array
      */
@@ -31,12 +27,21 @@ class BeanConfigurationSource extends DefinitionArray
     private $annotationReader;
 
     /**
+     * @var DefinitionArray
+     */
+    private $definitionArray;
+
+    /**
+     * @var Autowiring
+     */
+    private $autowiring;
+
+    /**
      * BeanConfigurationSource constructor.
      */
-    public function __construct(array $configurationBeans = [], Autowiring $autowiring = null)
+    public function __construct(array $configurationBeans = [])
     {
         $this->configurationBeans = $configurationBeans;
-        parent::__construct([], $autowiring);
     }
 
     /**
@@ -44,9 +49,7 @@ class BeanConfigurationSource extends DefinitionArray
      */
     public function getDefinition(string $name)
     {
-        $this->initialize();
-
-        return parent::getDefinition($name);
+        return $this->getDefinitionArray()->getDefinition($name);
     }
 
     /**
@@ -54,9 +57,12 @@ class BeanConfigurationSource extends DefinitionArray
      */
     public function getDefinitions(): array
     {
-        $this->initialize();
+        return $this->getDefinitionArray()->getDefinitions();
+    }
 
-        return parent::getDefinitions();
+    public function setAutowiring(Autowiring $autowiring): void
+    {
+        $this->autowiring = $autowiring;
     }
 
     public function addConfiguration($configuration): BeanConfigurationSource
@@ -85,10 +91,10 @@ class BeanConfigurationSource extends DefinitionArray
      * @throws \ReflectionException
      * @throws \Exception
      */
-    private function initialize(): void
+    private function getDefinitionArray(): DefinitionArray
     {
-        if ($this->initialized) {
-            return;
+        if ($this->definitionArray) {
+            return $this->definitionArray;
         }
         $definitions = [];
         foreach ($this->configurationBeans as $configuration) {
@@ -97,28 +103,18 @@ class BeanConfigurationSource extends DefinitionArray
                 /** @var Bean $beanAnnotation */
                 $beanAnnotation = $this->getAnnotationReader()->getMethodAnnotation($method, Bean::class);
                 if ($beanAnnotation) {
-                    $name = $beanAnnotation->name;
-                    if (!$name) {
-                        if ($method->getReturnType() && !$method->getReturnType()->isBuiltin()) {
-                            $name = $method->getReturnType()->getName();
-                        } else {
-                            $name = $method->getName();
-                        }
-                    }
-                    /** @var Inject $annotation */
-                    $annotation = $this->getAnnotationReader()->getMethodAnnotation($method, Inject::class);
-                    if ($annotation) {
-                        $definitions[$name] = new FactoryDefinition(
-                            $name, [$configuration, $method->getName()], $this->getMethodParameterInjections($annotation)
-                        );
-                    } else {
-                        $definitions[$name] = \DI\factory([$configuration, $method->getName()]);
-                    }
+                    $factoryDefinition = $this->createDefinition($beanAnnotation, $configuration, $method);
+                    $definitions[$factoryDefinition->getName()] = $factoryDefinition;
+                }
+            }
+            if ($configuration instanceof DefinitionConfiguration) {
+                foreach ($configuration->getDefinitions() as $name => $definition) {
+                    $definitions[$name] = $definition;
                 }
             }
         }
-        $this->addDefinitions($definitions);
-        $this->initialized = true;
+
+        return $this->definitionArray = new DefinitionArray($definitions, $this->autowiring);
     }
 
     private function getMethodParameterInjections(Inject $annotation): array
@@ -129,5 +125,26 @@ class BeanConfigurationSource extends DefinitionArray
         }
 
         return $parameters;
+    }
+
+    private function createDefinition(Bean $beanAnnotation, $configuration, \ReflectionMethod $method): ?FactoryDefinition
+    {
+        $name = $beanAnnotation->name;
+        if (!$name) {
+            if ($method->getReturnType() && !$method->getReturnType()->isBuiltin()) {
+                $name = $method->getReturnType()->getName();
+            } else {
+                $name = $method->getName();
+            }
+        }
+        /** @var Inject $annotation */
+        $annotation = $this->getAnnotationReader()->getMethodAnnotation($method, Inject::class);
+        if ($annotation) {
+            return new FactoryDefinition(
+                $name, [$configuration, $method->getName()], $this->getMethodParameterInjections($annotation)
+            );
+        }
+
+        return new FactoryDefinition($name, [$configuration, $method->getName()]);
     }
 }

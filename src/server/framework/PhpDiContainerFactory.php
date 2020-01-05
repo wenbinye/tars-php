@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace wenbinye\tars\server\framework;
 
 use Composer\Autoload\ClassLoader;
-use function DI\autowire;
-use function DI\get;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use Doctrine\Common\Annotations\Reader;
@@ -25,24 +23,7 @@ use wenbinye\tars\di\ConfigDefinitionSource;
 use wenbinye\tars\di\ContainerBuilder;
 use wenbinye\tars\di\ContainerBuilderAwareInterface;
 use wenbinye\tars\di\ContainerFactoryInterface;
-use wenbinye\tars\rpc\DefaultErrorHandler;
-use wenbinye\tars\rpc\ErrorHandlerInterface;
-use wenbinye\tars\rpc\MethodMetadataFactory;
-use wenbinye\tars\rpc\MethodMetadataFactoryInterface;
-use wenbinye\tars\rpc\RequestFactory;
-use wenbinye\tars\rpc\RequestFactoryInterface;
-use wenbinye\tars\rpc\RequestIdGenerator;
-use wenbinye\tars\rpc\RequestIdGeneratorInterface;
 use wenbinye\tars\server\Config;
-use wenbinye\tars\server\http\ResponseSender;
-use wenbinye\tars\server\http\ResponseSenderInterface;
-use wenbinye\tars\server\http\ServerRequestFactoryInterface;
-use wenbinye\tars\server\http\ZendDiactorosServerRequestFactory;
-use wenbinye\tars\server\ServerInterface;
-use wenbinye\tars\server\SwooleServer;
-use wenbinye\tars\server\task\Queue;
-use wenbinye\tars\server\task\QueueInterface;
-use wenbinye\tars\server\task\TaskProcessorInterface;
 
 class PhpDiContainerFactory implements ContainerFactoryInterface
 {
@@ -176,19 +157,7 @@ class PhpDiContainerFactory implements ContainerFactoryInterface
 
         $builder->addAwareInjection(AwareInjection::create(LoggerAwareInterface::class));
         $builder->addDefinitions(new ConfigDefinitionSource(Config::getInstance()));
-        $builder->addDefinitions([
-            ServerInterface::class => autowire(SwooleServer::class),
-            SwooleServer::class => get(ServerInterface::class),
-            QueueInterface::class => autowire(Queue::class),
-            TaskProcessorInterface::class => get(QueueInterface::class),
-            ServerRequestFactoryInterface::class => autowire(ZendDiactorosServerRequestFactory::class),
-            RequestFactoryInterface::class => autowire(RequestFactory::class),
-            RequestIdGeneratorInterface::class => autowire(RequestIdGenerator::class),
-            ResponseSenderInterface::class => autowire(ResponseSender::class),
-            ErrorHandlerInterface::class => autowire(DefaultErrorHandler::class),
-            MethodMetadataFactoryInterface::class => autowire(MethodMetadataFactory::class),
-        ]);
-        $builder->addDefinitions($this->getBeanConfigurationSource()->addConfiguration(new ServerConfiguration()));
+        $builder->addDefinitions($this->getBeanConfigurationSource());
 
         return $builder;
     }

@@ -82,7 +82,7 @@ class RegistryRouteResolver implements RefreshableRouteResolverInterface, Logger
     private function getRoutes(string $servantName): ?array
     {
         $endpoints = $this->cache->get($servantName);
-        if (null === $endpoints) {
+        if (null !== $endpoints) {
             return null;
         }
         $endpoints = $this->queryFClient->findObjectById($servantName);

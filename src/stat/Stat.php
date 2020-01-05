@@ -6,6 +6,8 @@ namespace wenbinye\tars\stat;
 
 use wenbinye\tars\protocol\type\StructMap;
 use wenbinye\tars\rpc\ResponseInterface;
+use wenbinye\tars\server\ClientProperties;
+use wenbinye\tars\server\ServerProperties;
 
 class Stat implements StatInterface
 {
@@ -23,41 +25,64 @@ class Stat implements StatInterface
      * @var int
      */
     private $reportInterval;
+    /**
+     * @var ServerProperties
+     */
+    private $serverProperties;
+
+    /**
+     * Stat constructor.
+     */
+    public function __construct(StatFClient $statClient, StatStoreAdapter $store, ClientProperties $clientProperties, ServerProperties $serverProperties)
+    {
+        $this->store = $store;
+        $this->statClient = $statClient;
+        $this->reportInterval = $clientProperties->getReportInterval();
+        $this->serverProperties = $serverProperties;
+    }
 
     public function success(ResponseInterface $response, int $responseTime): void
     {
-        $this->store->save(StatEntry::success($this->getTimeSlice(), $response, $responseTime));
+        $timeSlice = $this->getRequestTimeSlice($response);
+        $this->store->save(StatEntry::success($timeSlice, $this->serverProperties, $response, $responseTime));
     }
 
     public function fail(ResponseInterface $response, int $responseTime): void
     {
-        $this->store->save(StatEntry::fail($this->getTimeSlice(), $response, $responseTime));
+        $this->store->save(StatEntry::fail($this->getRequestTimeSlice($response), $this->serverProperties, $response, $responseTime));
     }
 
     public function timedOut(ResponseInterface $response, int $responseTime): void
     {
-        $this->store->save(StatEntry::timedOut($this->getTimeSlice(), $response, $responseTime));
+        $this->store->save(StatEntry::timedOut($this->getRequestTimeSlice($response), $this->serverProperties, $response, $responseTime));
     }
 
     public function send(): void
     {
         $msg = new StructMap();
-        $currentSlice = $this->getTimeSlice();
+        $entries = [];
+        $currentSlice = $this->getTimeSlice(time());
         foreach ($this->store->getEntries($currentSlice) as $entry) {
             $msg->put($entry->getHead(), $entry->getBody());
+            $entries[] = $entry;
         }
         if ($msg->count() > 0) {
-            $this->statClient->reportMicMsg($msg, true);
-            foreach ($msg as $entry) {
+            $ret = $this->statClient->reportMicMsg($msg, true);
+            foreach ($entries as $entry) {
                 $this->store->delete($entry);
             }
         }
     }
 
-    private function getTimeSlice(): int
+    private function getTimeSlice(int $time): int
     {
-        $time = time();
-
         return (int) ($time / ($this->reportInterval / 1000));
+    }
+
+    private function getRequestTimeSlice(ResponseInterface $response): int
+    {
+        $time = $response->getRequest()->getAttribute('startTime') ?? time();
+
+        return $this->getTimeSlice($time);
     }
 }

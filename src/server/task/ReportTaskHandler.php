@@ -7,11 +7,11 @@ namespace wenbinye\tars\server\task;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Swoole\Timer;
-use wenbinye\tars\report\ServerFClient;
-use wenbinye\tars\report\ServerInfo;
 use wenbinye\tars\server\ClientProperties;
 use wenbinye\tars\server\SwooleServer;
 use wenbinye\tars\stat\MonitorInterface;
+use wenbinye\tars\stat\ServerFClient;
+use wenbinye\tars\stat\ServerInfo;
 use wenbinye\tars\stat\StatFClient;
 use wenbinye\tars\stat\StatInterface;
 

@@ -9,7 +9,7 @@ use wenbinye\tars\protocol\annotation\TarsReturnType;
 use wenbinye\tars\protocol\annotation\TarsServant;
 
 /**
- * @TarsServant(servant="")
+ * @TarsServant(servant="tars.tarsproperty.PropertyObj")
  */
 interface PropertyFServant
 {
