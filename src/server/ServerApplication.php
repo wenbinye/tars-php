@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace wenbinye\tars\server;
 
 use Symfony\Component\Console\Application;
-use wenbinye\tars\support\ContainerFactoryInterface;
+use wenbinye\tars\di\ContainerFactoryInterface;
 
 class ServerApplication
 {

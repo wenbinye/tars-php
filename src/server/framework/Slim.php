@@ -9,8 +9,8 @@ use Psr\Container\ContainerInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Slim\Factory\AppFactory;
 use wenbinye\tars\di\annotation\Bean;
+use wenbinye\tars\di\ContainerFactoryInterface;
 use wenbinye\tars\server\ServerProperties;
-use wenbinye\tars\support\ContainerFactoryInterface;
 
 class Slim implements ContainerFactoryInterface
 {
@@ -19,7 +19,7 @@ class Slim implements ContainerFactoryInterface
      */
     private $phpDiContainerFactory;
 
-    public function __construct(ClassLoader $classLoader, array $namespaces = [])
+    public function __construct(?ClassLoader $classLoader, array $namespaces = [])
     {
         $this->phpDiContainerFactory = new PhpDiContainerFactory($classLoader);
         if (!empty($namespaces)) {
@@ -56,8 +56,7 @@ class Slim implements ContainerFactoryInterface
     public function create(): ContainerInterface
     {
         $this->phpDiContainerFactory->getBeanConfigurationSource()
-            ->addConfiguration($this)
-            ->addConfiguration(new ServerConfiguration());
+            ->addConfiguration($this);
 
         return $this->phpDiContainerFactory->create();
     }

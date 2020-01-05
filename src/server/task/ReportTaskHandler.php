@@ -11,7 +11,9 @@ use wenbinye\tars\report\ServerFClient;
 use wenbinye\tars\report\ServerInfo;
 use wenbinye\tars\server\ClientProperties;
 use wenbinye\tars\server\SwooleServer;
+use wenbinye\tars\stat\MonitorInterface;
 use wenbinye\tars\stat\StatFClient;
+use wenbinye\tars\stat\StatInterface;
 
 class ReportTaskHandler implements TaskHandlerInterface, LoggerAwareInterface
 {
@@ -32,17 +34,23 @@ class ReportTaskHandler implements TaskHandlerInterface, LoggerAwareInterface
     /**
      * @var StatFClient
      */
-    private $statFClient;
+    private $statClient;
+    /**
+     * @var MonitorInterface
+     */
+    private $monitor;
 
     /**
      * KeepAliveTaskHandler constructor.
      */
-    public function __construct(ClientProperties $clientProperties, SwooleServer $server, ServerFClient $serverFClient, StatFClient $statFClient)
+    public function __construct(ClientProperties $clientProperties, SwooleServer $server, ServerFClient $serverFClient,
+                                StatInterface $statClient, MonitorInterface $monitor)
     {
         $this->clientProperties = $clientProperties;
         $this->server = $server;
         $this->serverFClient = $serverFClient;
-        $this->statFClient = $statFClient;
+        $this->statClient = $statClient;
+        $this->monitor = $monitor;
     }
 
     /**
@@ -54,6 +62,8 @@ class ReportTaskHandler implements TaskHandlerInterface, LoggerAwareInterface
         Timer::tick($this->clientProperties->getKeepAliveInterval(), [$this, 'sendServerInfo']);
         $this->sendStat();
         Timer::tick($this->clientProperties->getReportInterval(), [$this, 'sendStat']);
+        $this->sendMonitorInfo();
+        Timer::tick($this->clientProperties->getReportInterval(), [$this, 'sendMonitorInfo']);
     }
 
     public function sendServerInfo()
@@ -83,5 +93,11 @@ class ReportTaskHandler implements TaskHandlerInterface, LoggerAwareInterface
 
     public function sendStat()
     {
+        $this->statClient->send();
+    }
+
+    private function sendMonitorInfo()
+    {
+        $this->monitor->monitor();
     }
 }

@@ -28,6 +28,11 @@ class ConnectionFactory implements ConnectionFactoryInterface
         $this->routes[$route->getServantName()] = $route;
     }
 
+    public function has(string $servantName): bool
+    {
+        return isset($this->routes[$servantName]);
+    }
+
     public function create(string $servantName): ConnectionInterface
     {
         return new SocketTcpConnection(new RouteHolder($this->getRoute($servantName)));

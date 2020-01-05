@@ -72,6 +72,13 @@ class ServerProperties
     private $local;
 
     /**
+     * @ConfigItem
+     *
+     * @var string
+     */
+    private $localIp;
+
+    /**
      * @ConfigItem()
      *
      * @var string
@@ -194,6 +201,16 @@ class ServerProperties
     public function setLocal(Route $local): void
     {
         $this->local = $local;
+    }
+
+    public function getLocalIp(): string
+    {
+        return $this->localIp;
+    }
+
+    public function setLocalIp(string $localIp): void
+    {
+        $this->localIp = $localIp;
     }
 
     public function getLogServantName(): string

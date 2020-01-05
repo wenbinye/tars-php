@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\di;
 
+use DI\Annotation\Inject;
 use DI\ContainerBuilder;
 use Monolog\Test\TestCase;
 use wenbinye\tars\di\annotation\Bean;
@@ -19,6 +20,18 @@ class BeanConfigurationSourceTest extends TestCase
         // var_export($bar);
         $this->assertInstanceOf(Bar::class, $bar);
         $this->assertEquals('bar', $bar->name);
+    }
+
+    public function testInject()
+    {
+        $builder = new ContainerBuilder();
+        $builder->useAnnotations(true);
+        $builder->addDefinitions(new BeanConfigurationSource([new BeanProvider()]));
+        $container = $builder->build();
+        $bar = $container->get('foo');
+        // var_export($bar);
+        $this->assertInstanceOf(Bar::class, $bar);
+        $this->assertEquals('other', $bar->name);
     }
 }
 
@@ -45,5 +58,22 @@ class BeanProvider
     public function bar(): Bar
     {
         return new Bar('bar');
+    }
+
+    /**
+     * @Bean(name="otherBar")
+     */
+    public function otherBar(): Bar
+    {
+        return new Bar('other');
+    }
+
+    /**
+     * @Bean("foo")
+     * @Inject({"bar"="otherBar"})
+     */
+    public function foo(Bar $bar): Bar
+    {
+        return $bar;
     }
 }

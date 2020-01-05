@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\di;
 
+use DI\Annotation\Inject;
+use DI\Definition\FactoryDefinition;
 use DI\Definition\Source\Autowiring;
 use DI\Definition\Source\DefinitionArray;
 use Doctrine\Common\Annotations\AnnotationReader;
@@ -103,11 +105,29 @@ class BeanConfigurationSource extends DefinitionArray
                             $name = $method->getName();
                         }
                     }
-                    $definitions[$name] = \DI\factory([$configuration, $method->getName()]);
+                    /** @var Inject $annotation */
+                    $annotation = $this->getAnnotationReader()->getMethodAnnotation($method, Inject::class);
+                    if ($annotation) {
+                        $definitions[$name] = new FactoryDefinition(
+                            $name, [$configuration, $method->getName()], $this->getMethodParameterInjections($annotation)
+                        );
+                    } else {
+                        $definitions[$name] = \DI\factory([$configuration, $method->getName()]);
+                    }
                 }
             }
         }
         $this->addDefinitions($definitions);
         $this->initialized = true;
+    }
+
+    private function getMethodParameterInjections(Inject $annotation): array
+    {
+        $parameters = [];
+        foreach ($annotation->getParameters() as $key => $parameter) {
+            $parameters[$key] = \DI\get($parameter);
+        }
+
+        return $parameters;
     }
 }

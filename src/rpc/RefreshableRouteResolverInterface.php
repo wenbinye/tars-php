@@ -6,5 +6,5 @@ namespace wenbinye\tars\rpc;
 
 interface RefreshableRouteResolverInterface extends RouteResolverInterface
 {
-    public function refresh(): void;
+    public function refresh(bool $force = false): void;
 }

@@ -10,7 +10,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webmozart\Assert\Assert;
-use wenbinye\tars\support\ContainerFactoryInterface;
+use wenbinye\tars\di\ContainerFactoryInterface;
 
 class ServerCommand extends Command
 {

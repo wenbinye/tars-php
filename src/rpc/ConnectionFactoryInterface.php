@@ -6,5 +6,7 @@ namespace wenbinye\tars\rpc;
 
 interface ConnectionFactoryInterface
 {
+    public function has(string $servantName): bool;
+
     public function create(string $servantName): ConnectionInterface;
 }

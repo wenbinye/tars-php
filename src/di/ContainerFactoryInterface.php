@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace wenbinye\tars\support;
+namespace wenbinye\tars\di;
 
 use Psr\Container\ContainerInterface;
 

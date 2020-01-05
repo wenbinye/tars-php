@@ -24,6 +24,7 @@ use wenbinye\tars\di\BeanConfigurationSourceAwareInterface;
 use wenbinye\tars\di\ConfigDefinitionSource;
 use wenbinye\tars\di\ContainerBuilder;
 use wenbinye\tars\di\ContainerBuilderAwareInterface;
+use wenbinye\tars\di\ContainerFactoryInterface;
 use wenbinye\tars\rpc\DefaultErrorHandler;
 use wenbinye\tars\rpc\ErrorHandlerInterface;
 use wenbinye\tars\rpc\MethodMetadataFactory;
@@ -42,7 +43,6 @@ use wenbinye\tars\server\SwooleServer;
 use wenbinye\tars\server\task\Queue;
 use wenbinye\tars\server\task\QueueInterface;
 use wenbinye\tars\server\task\TaskProcessorInterface;
-use wenbinye\tars\support\ContainerFactoryInterface;
 
 class PhpDiContainerFactory implements ContainerFactoryInterface
 {
@@ -74,7 +74,7 @@ class PhpDiContainerFactory implements ContainerFactoryInterface
     /**
      * PhpDiContainerFactory constructor.
      */
-    public function __construct(ClassLoader $classLoader)
+    public function __construct(?ClassLoader $classLoader = null)
     {
         $this->classLoader = $classLoader;
     }
@@ -188,7 +188,7 @@ class PhpDiContainerFactory implements ContainerFactoryInterface
             ErrorHandlerInterface::class => autowire(DefaultErrorHandler::class),
             MethodMetadataFactoryInterface::class => autowire(MethodMetadataFactory::class),
         ]);
-        $builder->addDefinitions($this->getBeanConfigurationSource());
+        $builder->addDefinitions($this->getBeanConfigurationSource()->addConfiguration(new ServerConfiguration()));
 
         return $builder;
     }

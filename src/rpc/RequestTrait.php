@@ -88,7 +88,7 @@ trait RequestTrait
         $new = clone $this;
         $new->version = $version;
 
-        return $this;
+        return $new;
     }
 
     public function getServantName(): string
@@ -101,7 +101,7 @@ trait RequestTrait
         $new = clone $this;
         $new->servantName = $servantName;
 
-        return $this;
+        return $new;
     }
 
     public function getMethodName(): string
@@ -114,7 +114,7 @@ trait RequestTrait
         $new = clone $this;
         $new->methodName = $methodName;
 
-        return $this;
+        return $new;
     }
 
     public function getRequestId(): int
@@ -127,7 +127,7 @@ trait RequestTrait
         $new = clone $this;
         $new->requestId = $requestId;
 
-        return $this;
+        return $new;
     }
 
     public function getParameters(): array
@@ -143,7 +143,7 @@ trait RequestTrait
         $new = clone $this;
         $new->parameters = $parameters;
 
-        return $this;
+        return $new;
     }
 
     public function getPacketType(): int
@@ -156,7 +156,7 @@ trait RequestTrait
         $new = clone $this;
         $new->packetType = $packetType;
 
-        return $this;
+        return $new;
     }
 
     public function getMessageType(): int
@@ -169,7 +169,7 @@ trait RequestTrait
         $new = clone $this;
         $new->messageType = $messageType;
 
-        return $this;
+        return $new;
     }
 
     public function getAttribute(string $attribute)
