@@ -8,7 +8,7 @@ use wenbinye\tars\protocol\annotation\TarsParameter;
 use wenbinye\tars\protocol\PackerInterface;
 use wenbinye\tars\protocol\TypeParser;
 
-class RpcPacker
+class TarsRpcPacker
 {
     /**
      * @var PackerInterface

@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\di\annotation;
 
-use wenbinye\tars\di\BeanConfigurationSourceAwareInterface;
-use wenbinye\tars\di\BeanConfigurationSourceAwareTrait;
+use wenbinye\tars\di\ContainerBuilderAwareInterface;
+use wenbinye\tars\di\ContainerBuilderAwareTrait;
 
 /**
  * @Annotation
  * @Target({"CLASS"})
  */
-class Configuration implements ComponentInterface, BeanConfigurationSourceAwareInterface
+class Configuration implements ComponentInterface, ContainerBuilderAwareInterface
 {
     use ComponentTrait;
-    use BeanConfigurationSourceAwareTrait;
+    use ContainerBuilderAwareTrait;
 
     public function process(): void
     {
-        $this->beanConfigurationSource->addConfiguration($this->class->newInstance());
+        $this->containerBuilder->addConfiguration($this->class->newInstance());
     }
 }

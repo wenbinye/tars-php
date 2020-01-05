@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\log;
 
+use wenbinye\tars\protocol\annotation\TarsClient;
 use wenbinye\tars\protocol\annotation\TarsParameter;
 use wenbinye\tars\protocol\annotation\TarsReturnType;
-use wenbinye\tars\protocol\annotation\TarsServant;
 
 /**
- * @TarsServant(servant="tars.tarslog.LogObj")
+ * @TarsClient(name="tars.tarslog.LogObj")
  */
 interface LogServant
 {

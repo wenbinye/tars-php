@@ -15,7 +15,7 @@ use wenbinye\tars\protocol\TarsTypeFactory;
 use wenbinye\tars\rpc\MethodMetadataFactory;
 use wenbinye\tars\rpc\RequestFactory;
 use wenbinye\tars\rpc\RequestIdGenerator;
-use wenbinye\tars\rpc\RpcPacker;
+use wenbinye\tars\rpc\TarsRpcPacker;
 use wenbinye\tars\server\Config;
 
 class TarsRequestHandlerTest extends TestCase
@@ -32,7 +32,7 @@ class TarsRequestHandlerTest extends TestCase
         $requestFactory = new RequestFactory(new RequestIdGenerator());
         $methodMetadataFactory = new MethodMetadataFactory($annotationReader);
         $packer = new Packer(new TarsTypeFactory($annotationReader));
-        $rpcPacker = new RpcPacker($packer);
+        $rpcPacker = new TarsRpcPacker($packer);
 
         $fooServantImpl = new HelloService();
         $tarsRequestHandler = new TarsRequestHandler([$fooServantImpl], $annotationReader, $packer);

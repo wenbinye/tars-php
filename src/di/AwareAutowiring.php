@@ -22,15 +22,27 @@ class AwareAutowiring implements DefinitionSource, Autowiring
      */
     private $awareInjections;
 
-    public function __construct($autowiring, array $awareInjections = [])
+    public function __construct(array $awareInjections = [])
     {
-        $this->autowiring = $autowiring;
         $this->awareInjections = $awareInjections;
     }
 
     public function add(AwareInjection $awareInjection): void
     {
         $this->awareInjections[] = $awareInjection;
+    }
+
+    public function hasInjections(): bool
+    {
+        return !empty($this->awareInjections);
+    }
+
+    /**
+     * @param AnnotationBasedAutowiring|ReflectionBasedAutowiring $autowiring
+     */
+    public function setAutowiring($autowiring): void
+    {
+        $this->autowiring = $autowiring;
     }
 
     /**

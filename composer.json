@@ -35,6 +35,7 @@
     "symfony/console": "^5.0",
     "symfony/validator": "^5.0",
     "webmozart/assert": "^1.6",
+    "zendframework/zend-code": "^3.4",
     "zendframework/zend-diactoros": "^2.2"
   },
   "require-dev": {

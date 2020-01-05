@@ -9,27 +9,29 @@ use Psr\Container\ContainerInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Slim\Factory\AppFactory;
 use wenbinye\tars\di\annotation\Bean;
+use wenbinye\tars\di\ContainerBuilder;
 use wenbinye\tars\di\ContainerFactoryInterface;
 use wenbinye\tars\server\ServerProperties;
 
 class Slim implements ContainerFactoryInterface
 {
     /**
-     * @var PhpDiContainerFactory
+     * @var ContainerBuilder
      */
-    private $phpDiContainerFactory;
+    private $containerBuilder;
 
     public function __construct(ClassLoader $classLoader, array $namespaces = [])
     {
-        $this->phpDiContainerFactory = new PhpDiContainerFactory($classLoader);
+        $this->containerBuilder = new ContainerBuilder();
+        $this->containerBuilder->setClassLoader($classLoader);
         if (!empty($namespaces)) {
             $this->componentScan($namespaces);
         }
     }
 
-    public function getPhpDiContainerFactory(): PhpDiContainerFactory
+    public function getContainerBuilder(): ContainerBuilder
     {
-        return $this->phpDiContainerFactory;
+        return $this->containerBuilder;
     }
 
     /**
@@ -48,17 +50,17 @@ class Slim implements ContainerFactoryInterface
 
     public function componentScan(array $namespaces): self
     {
-        $this->phpDiContainerFactory->componentScan($namespaces);
+        $this->containerBuilder->componentScan($namespaces);
 
         return $this;
     }
 
     public function create(): ContainerInterface
     {
-        $this->phpDiContainerFactory->getBeanConfigurationSource()
-            ->addConfiguration(new ServerConfiguration())
+        $builder = $this->containerBuilder;
+        $builder->addConfiguration(new ServerConfiguration())
             ->addConfiguration($this);
 
-        return $this->phpDiContainerFactory->create();
+        return $builder->create();
     }
 }

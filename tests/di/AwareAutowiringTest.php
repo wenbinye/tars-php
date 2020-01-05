@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\di;
 
-use DI\ContainerBuilder;
-use DI\Definition\Source\ReflectionBasedAutowiring;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
@@ -17,13 +15,12 @@ class AwareAutowiringTest extends TestCase
     public function testAware()
     {
         $builder = new ContainerBuilder();
-        $builder->addDefinitions(new AwareAutowiring(new ReflectionBasedAutowiring(), [
-            AwareInjection::create(LoggerAwareInterface::class),
-        ]));
+        $builder->addAwareInjection(AwareInjection::create(LoggerAwareInterface::class));
         $builder->addDefinitions([
             LoggerInterface::class => new NullLogger(),
         ]);
-        $foo = $builder->build()->get(Foo::class);
+        $container = $builder->build();
+        $foo = $container->get(Foo::class);
         $this->assertInstanceOf(LoggerInterface::class, $foo->getLogger());
     }
 }

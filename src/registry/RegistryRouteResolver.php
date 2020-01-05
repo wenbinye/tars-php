@@ -16,7 +16,7 @@ class RegistryRouteResolver implements RefreshableRouteResolverInterface, Logger
     use LoggerAwareTrait;
 
     /**
-     * @var QueryFClient
+     * @var QueryFServant
      */
     private $queryFClient;
 
@@ -46,7 +46,7 @@ class RegistryRouteResolver implements RefreshableRouteResolverInterface, Logger
     /**
      * RegistryConnectionFactory constructor.
      */
-    public function __construct(string $servantName, QueryFClient $queryFClient, CacheInterface $cache, int $ttl)
+    public function __construct(string $servantName, QueryFServant $queryFClient, CacheInterface $cache, int $ttl)
     {
         $this->queryFClient = $queryFClient;
         $this->cache = $cache;

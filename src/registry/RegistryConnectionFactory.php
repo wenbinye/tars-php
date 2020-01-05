@@ -21,7 +21,7 @@ class RegistryConnectionFactory implements ConnectionFactoryInterface, LoggerAwa
      */
     private $routeResolvers;
     /**
-     * @var QueryFClient
+     * @var QueryFServant
      */
     private $queryFClient;
     /**
@@ -36,7 +36,7 @@ class RegistryConnectionFactory implements ConnectionFactoryInterface, LoggerAwa
     /**
      * RegistryConnectionFactory constructor.
      */
-    public function __construct(QueryFClient $queryFClient, CacheInterface $cache, int $ttl = 60)
+    public function __construct(QueryFServant $queryFClient, CacheInterface $cache, int $ttl = 60)
     {
         $this->queryFClient = $queryFClient;
         $this->cache = $cache;

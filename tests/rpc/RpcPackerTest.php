@@ -29,7 +29,7 @@ class RpcPackerTest extends TestCase
         $annotationReader = new AnnotationReader();
         $methodMetadataFactory = new MethodMetadataFactory($annotationReader);
         $packer = new Packer(new TarsTypeFactory($annotationReader));
-        $rpcPacker = new RpcPacker($packer);
+        $rpcPacker = new TarsRpcPacker($packer);
         $method = $methodMetadataFactory->create($servant, 'hello');
         $parameters = ['world'];
         $request = $requestFactory->createRequest($method->getServantName(), $method->getMethodName(),

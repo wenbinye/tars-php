@@ -6,6 +6,7 @@ namespace wenbinye\tars\server\framework;
 
 use DI\Annotation\Inject;
 use function DI\autowire;
+use function DI\factory;
 use function DI\get;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\AnnotationRegistry;
@@ -14,17 +15,22 @@ use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use wenbinye\tars\di\annotation\Bean;
+use wenbinye\tars\di\AwareInjection;
+use wenbinye\tars\di\ConfigDefinitionSource;
+use wenbinye\tars\di\ContainerBuilderAwareTrait;
 use wenbinye\tars\di\DefinitionConfiguration;
+use wenbinye\tars\log\LogServant;
 use wenbinye\tars\protocol\Packer;
 use wenbinye\tars\protocol\PackerInterface;
 use wenbinye\tars\protocol\TarsTypeFactory;
-use wenbinye\tars\registry\QueryFClient;
+use wenbinye\tars\registry\QueryFServant;
 use wenbinye\tars\registry\RegistryConnectionFactory;
 use wenbinye\tars\registry\SwooleTableRegistryCache;
 use wenbinye\tars\rpc\ConnectionFactory;
@@ -38,6 +44,11 @@ use wenbinye\tars\rpc\RequestFactory;
 use wenbinye\tars\rpc\RequestFactoryInterface;
 use wenbinye\tars\rpc\RequestIdGenerator;
 use wenbinye\tars\rpc\RequestIdGeneratorInterface;
+use wenbinye\tars\rpc\TarsClient;
+use wenbinye\tars\rpc\TarsClientFactory;
+use wenbinye\tars\rpc\TarsClientFactoryInterface;
+use wenbinye\tars\rpc\TarsClientGenerator;
+use wenbinye\tars\rpc\TarsClientGeneratorInterface;
 use wenbinye\tars\server\ClientProperties;
 use wenbinye\tars\server\Config;
 use wenbinye\tars\server\event\BeforeStartEvent;
@@ -58,17 +69,24 @@ use wenbinye\tars\server\task\TaskProcessorInterface;
 use wenbinye\tars\stat\collector\SystemCpuCollector;
 use wenbinye\tars\stat\Monitor;
 use wenbinye\tars\stat\MonitorInterface;
-use wenbinye\tars\stat\PropertyFClient;
+use wenbinye\tars\stat\PropertyFServant;
+use wenbinye\tars\stat\ServerFServant;
 use wenbinye\tars\stat\Stat;
+use wenbinye\tars\stat\StatFServant;
 use wenbinye\tars\stat\StatInterface;
 use wenbinye\tars\stat\StatStoreAdapter;
 use wenbinye\tars\stat\SwooleTableStatStore;
 
 class ServerConfiguration implements DefinitionConfiguration
 {
+    use ContainerBuilderAwareTrait;
+
     public function getDefinitions(): array
     {
-        return [
+        $this->containerBuilder->addAwareInjection(AwareInjection::create(LoggerAwareInterface::class));
+        $this->containerBuilder->addDefinitions(new ConfigDefinitionSource(Config::getInstance()));
+
+        $definitions = [
             ServerInterface::class => autowire(SwooleServer::class),
             SwooleServer::class => get(ServerInterface::class),
             QueueInterface::class => autowire(Queue::class),
@@ -78,6 +96,8 @@ class ServerConfiguration implements DefinitionConfiguration
             ServerRequestFactoryInterface::class => autowire(ZendDiactorosServerRequestFactory::class),
             RequestFactoryInterface::class => autowire(RequestFactory::class),
             RequestIdGeneratorInterface::class => autowire(RequestIdGenerator::class),
+            TarsClientGeneratorInterface::class => autowire(TarsClientGenerator::class),
+            TarsClientFactoryInterface::class => autowire(TarsClientFactory::class),
             ResponseSenderInterface::class => autowire(ResponseSender::class),
             ErrorHandlerInterface::class => autowire(DefaultErrorHandler::class),
             MethodMetadataFactoryInterface::class => autowire(MethodMetadataFactory::class),
@@ -85,6 +105,13 @@ class ServerConfiguration implements DefinitionConfiguration
                 \DI\get(SystemCpuCollector::class),
             ],
         ];
+        foreach ([LogServant::class, ServerFServant::class,
+                     StatFServant::class, PropertyFServant::class, ] as $clientClass) {
+            $definitions[$clientClass] = factory([TarsClientFactoryInterface::class, 'create'])
+                ->parameter('clientClassName', $clientClass);
+        }
+
+        return $definitions;
     }
 
     /**
@@ -254,18 +281,21 @@ class ServerConfiguration implements DefinitionConfiguration
     /**
      * @Bean()
      */
-    public function queryFClient(
-        ConnectionFactory $connectionFactory, PackerInterface $packer, RequestFactoryInterface $requestFactory,
-        MethodMetadataFactoryInterface $methodMetadataFactory, ErrorHandlerInterface $errorHandler): QueryFClient
+    public function queryFServant(
+        TarsClientGeneratorInterface $clientGenerator, ConnectionFactory $connectionFactory,
+        PackerInterface $packer, RequestFactoryInterface $requestFactory,
+        MethodMetadataFactoryInterface $methodMetadataFactory, ErrorHandlerInterface $errorHandler): QueryFServant
     {
-        return new QueryFClient($connectionFactory, $packer, $requestFactory, $methodMetadataFactory, $errorHandler);
+        $client = new TarsClient($connectionFactory, $packer, $requestFactory, $methodMetadataFactory, $errorHandler);
+
+        return (new TarsClientFactory($client, $clientGenerator))->create(QueryFServant::class);
     }
 
     /**
      * @Bean()
      * @Inject({"cache" = "registryCache"})
      */
-    public function registryConnectionFactory(QueryFClient $queryFClient, CacheInterface $cache, LoggerInterface $logger): RegistryConnectionFactory
+    public function registryConnectionFactory(QueryFServant $queryFClient, CacheInterface $cache, LoggerInterface $logger): RegistryConnectionFactory
     {
         $registryConnectionFactory = new RegistryConnectionFactory($queryFClient, $cache);
         $registryConnectionFactory->setLogger($logger);
@@ -285,7 +315,7 @@ class ServerConfiguration implements DefinitionConfiguration
      * @Bean()
      * @Inject({"collectors" = "monitorCollectors"})
      */
-    public function monitor(ServerProperties $serverProperties, PropertyFClient $propertyFClient, array $collectors): MonitorInterface
+    public function monitor(ServerProperties $serverProperties, PropertyFServant $propertyFClient, array $collectors): MonitorInterface
     {
         return new Monitor($serverProperties, $propertyFClient, $collectors);
     }

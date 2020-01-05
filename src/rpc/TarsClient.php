@@ -6,7 +6,7 @@ namespace wenbinye\tars\rpc;
 
 use wenbinye\tars\protocol\PackerInterface;
 
-abstract class AbstractClient
+class TarsClient
 {
     /**
      * @var PackerInterface
@@ -45,7 +45,7 @@ abstract class AbstractClient
                                 ErrorHandlerInterface $errorHandler,
                                 array $middlewares = [])
     {
-        $this->packer = new RpcPacker($packer);
+        $this->packer = new TarsRpcPacker($packer);
         $this->requestFactory = $requestFactory;
         $this->methodMetadataFactory = $methodMetadataFactory;
         $this->errorHandler = $errorHandler;
@@ -57,9 +57,15 @@ abstract class AbstractClient
         });
     }
 
-    protected function _send(string $method, ...$args): array
+    /**
+     * @param object $servant
+     * @param string $method
+     * @param mixed ...$args
+     * @return array
+     */
+    public function send($servant, string $method, ...$args): array
     {
-        $methodMetadata = $this->methodMetadataFactory->create($this, $method);
+        $methodMetadata = $this->methodMetadataFactory->create($servant, $method);
 
         $request = $this->requestFactory->createRequest($methodMetadata->getServantName(), $method,
             $this->packer->packRequest($methodMetadata, $args, $this->requestFactory->getVersion()));

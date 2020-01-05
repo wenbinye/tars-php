@@ -11,7 +11,7 @@ use wenbinye\tars\stat\collector\CollectorInterface;
 class Monitor implements MonitorInterface
 {
     /**
-     * @var PropertyFClient
+     * @var PropertyFServant
      */
     private $propertyFClient;
     /**
@@ -23,7 +23,7 @@ class Monitor implements MonitorInterface
      */
     private $serverProperties;
 
-    public function __construct(ServerProperties $serverProperties, PropertyFClient $propertyFClient, array $collectors)
+    public function __construct(ServerProperties $serverProperties, PropertyFServant $propertyFClient, array $collectors)
     {
         $this->propertyFClient = $propertyFClient;
         $this->collectors = $collectors;

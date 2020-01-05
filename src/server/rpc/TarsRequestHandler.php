@@ -13,7 +13,7 @@ use wenbinye\tars\rpc\MethodMetadataFactoryInterface;
 use wenbinye\tars\rpc\MiddlewareInterface;
 use wenbinye\tars\rpc\MiddlewareStack;
 use wenbinye\tars\rpc\ResponseInterface;
-use wenbinye\tars\rpc\RpcPacker;
+use wenbinye\tars\rpc\TarsRpcPacker;
 
 class TarsRequestHandler implements RequestHandlerInterface
 {
@@ -22,7 +22,7 @@ class TarsRequestHandler implements RequestHandlerInterface
      */
     private $servants;
     /**
-     * @var RpcPacker
+     * @var TarsRpcPacker
      */
     private $packer;
     /**
@@ -46,7 +46,7 @@ class TarsRequestHandler implements RequestHandlerInterface
                 $this->servants[$servantName] = $servant;
             }
         }
-        $this->packer = new RpcPacker($packer);
+        $this->packer = new TarsRpcPacker($packer);
         $this->methodMetadataFactory = new MethodMetadataFactory($annotationReader);
         $this->middlewareStack = new MiddlewareStack($middlewares, [$this, 'invoke']);
     }

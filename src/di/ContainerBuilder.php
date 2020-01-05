@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\di;
 
+use Composer\Autoload\ClassLoader;
 use DI\CompiledContainer;
 use DI\Compiler\Compiler;
 use DI\Container;
@@ -17,6 +18,9 @@ use DI\Definition\Source\ReflectionBasedAutowiring;
 use DI\Definition\Source\SourceCache;
 use DI\Definition\Source\SourceChain;
 use DI\Proxy\ProxyFactory;
+use Doctrine\Common\Annotations\AnnotationReader;
+use Doctrine\Common\Annotations\AnnotationRegistry;
+use Doctrine\Common\Annotations\Reader;
 use Psr\Container\ContainerInterface;
 
 class ContainerBuilder
@@ -46,9 +50,9 @@ class ContainerBuilder
     private $useAnnotations = false;
 
     /**
-     * @var AwareInjection[]
+     * @var AwareAutowiring
      */
-    private $awareInjections = [];
+    private $awareAutowiring;
 
     /**
      * @var bool
@@ -104,9 +108,24 @@ class ContainerBuilder
     protected $sourceCacheNamespace;
 
     /**
-     * @var Autowiring
+     * @var ComponentScannerInterface
      */
-    private $autowiring;
+    private $componentScanner;
+
+    /**
+     * @var ClassLoader
+     */
+    private $classLoader;
+
+    /**
+     * @var ConfigurationDefinition
+     */
+    private $configurationDefinition;
+
+    /**
+     * @var Reader
+     */
+    private $annotationReader;
 
     /**
      * Build a container configured for the dev environment.
@@ -137,7 +156,6 @@ class ContainerBuilder
         if ($autowiring instanceof DefinitionSource) {
             $sources[] = $autowiring;
         }
-
         $sources = array_map(function ($definitions) use ($autowiring) {
             if (is_string($definitions)) {
                 // File
@@ -221,9 +239,18 @@ class ContainerBuilder
         return $this;
     }
 
+    public function getAwareAutowiring(): AwareAutowiring
+    {
+        if (!$this->awareAutowiring) {
+            $this->awareAutowiring = new AwareAutowiring();
+        }
+
+        return $this->awareAutowiring;
+    }
+
     public function addAwareInjection(AwareInjection $awareInjection): self
     {
-        $this->awareInjections[] = $awareInjection;
+        $this->getAwareAutowiring()->add($awareInjection);
 
         return $this;
     }
@@ -333,7 +360,7 @@ class ContainerBuilder
 
         foreach ($definitions as $definition) {
             if (!is_string($definition) && !is_array($definition) && !($definition instanceof DefinitionSource)) {
-                throw new InvalidArgumentException(sprintf('%s parameter must be a string, an array or a DefinitionSource object, %s given', 'ContainerBuilder::addDefinitions()', is_object($definition) ? get_class($definition) : gettype($definition)));
+                throw new \InvalidArgumentException(sprintf('%s parameter must be a string, an array or a DefinitionSource object, %s given', 'ContainerBuilder::addDefinitions()', is_object($definition) ? get_class($definition) : gettype($definition)));
             }
 
             $this->definitionSources[] = $definition;
@@ -388,6 +415,83 @@ class ContainerBuilder
         }
     }
 
+    public function addConfiguration($configuration): self
+    {
+        if ($configuration instanceof ContainerBuilderAwareInterface) {
+            $configuration->setContainerBuilder($this);
+        }
+        $this->addDefinitions($this->getConfigurationDefinition()->getDefinitions($configuration));
+
+        return $this;
+    }
+
+    /**
+     * @throws \Doctrine\Common\Annotations\AnnotationException
+     */
+    public function getAnnotationReader(): Reader
+    {
+        if (!$this->annotationReader) {
+            AnnotationRegistry::registerLoader('class_exists');
+            $this->annotationReader = new AnnotationReader();
+        }
+
+        return $this->annotationReader;
+    }
+
+    public function setAnnotationReader(Reader $annotationReader): void
+    {
+        $this->annotationReader = $annotationReader;
+    }
+
+    public function getConfigurationDefinition(): ConfigurationDefinition
+    {
+        if (!$this->configurationDefinition) {
+            $this->configurationDefinition = new ConfigurationDefinition($this->getAnnotationReader());
+        }
+
+        return $this->configurationDefinition;
+    }
+
+    public function setConfigurationDefinition(ConfigurationDefinition $configurationDefinition): void
+    {
+        $this->configurationDefinition = $configurationDefinition;
+    }
+
+    public function getClassLoader(): ClassLoader
+    {
+        if (!$this->classLoader) {
+            throw new \InvalidArgumentException('class loader is not set yet');
+        }
+
+        return $this->classLoader;
+    }
+
+    public function setClassLoader(ClassLoader $classLoader): void
+    {
+        $this->classLoader = $classLoader;
+    }
+
+    public function getComponentScanner(): ComponentScannerInterface
+    {
+        if (!$this->componentScanner) {
+            $this->componentScanner = new ComponentScanner($this->getContainerBuilder());
+        }
+
+        return $this->componentScanner;
+    }
+
+    public function setComponentScanner(ComponentScannerInterface $componentScanner): void
+    {
+        $this->componentScanner = $componentScanner;
+    }
+
+    public function componentScan(array $namespaces): self
+    {
+        $this->getComponentScanner()->scan($namespaces);
+
+        return $this;
+    }
+
     /**
      * @return AnnotationBasedAutowiring|NoAutowiring|ReflectionBasedAutowiring|AwareAutowiring
      */
@@ -395,16 +499,15 @@ class ContainerBuilder
     {
         if ($this->useAnnotations) {
             $autowiring = new AnnotationBasedAutowiring($this->ignorePhpDocErrors);
-            if ($this->awareInjections) {
-                $autowiring = new AwareAutowiring($autowiring);
-            }
         } elseif ($this->useAutowiring) {
             $autowiring = new ReflectionBasedAutowiring();
-            if ($this->awareInjections) {
-                $autowiring = new AwareAutowiring($autowiring);
-            }
         } else {
             $autowiring = new NoAutowiring();
+        }
+        if ($autowiring instanceof DefinitionSource && $this->getAwareAutowiring()->hasInjections()) {
+            $this->getAwareAutowiring()->setAutowiring($autowiring);
+
+            return $this->getAwareAutowiring();
         }
 
         return $autowiring;

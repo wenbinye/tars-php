@@ -17,7 +17,7 @@ class Stat implements StatInterface
     private $store;
 
     /**
-     * @var StatFClient
+     * @var StatFServant
      */
     private $statClient;
 
@@ -33,7 +33,7 @@ class Stat implements StatInterface
     /**
      * Stat constructor.
      */
-    public function __construct(StatFClient $statClient, StatStoreAdapter $store, ClientProperties $clientProperties, ServerProperties $serverProperties)
+    public function __construct(StatFServant $statClient, StatStoreAdapter $store, ClientProperties $clientProperties, ServerProperties $serverProperties)
     {
         $this->store = $store;
         $this->statClient = $statClient;

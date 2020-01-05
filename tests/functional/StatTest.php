@@ -30,5 +30,6 @@ class StatTest extends FunctionalTestCase
             $stat->timedOut($response, 3000);
         }
         $stat->send();
+        $this->assertTrue(true);
     }
 }

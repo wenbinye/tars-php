@@ -6,8 +6,8 @@ namespace wenbinye\tars\functional;
 
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
+use wenbinye\tars\di\ContainerBuilder;
 use wenbinye\tars\server\Config;
-use wenbinye\tars\server\framework\PhpDiContainerFactory;
 use wenbinye\tars\server\framework\ServerConfiguration;
 
 abstract class FunctionalTestCase extends TestCase
@@ -19,10 +19,9 @@ abstract class FunctionalTestCase extends TestCase
 
     public function getContainer(): ContainerInterface
     {
-        $containerFactory = new PhpDiContainerFactory();
-        $containerFactory->getBeanConfigurationSource()
-            ->addConfiguration(new ServerConfiguration());
+        $containerBuilder = new ContainerBuilder();
+        $containerBuilder->addConfiguration(new ServerConfiguration());
 
-        return $containerFactory->create();
+        return $containerBuilder->build();
     }
 }

@@ -12,5 +12,6 @@ class MonitorTest extends FunctionalTestCase
     {
         $monitor = $this->getContainer()->get(MonitorInterface::class);
         $monitor->monitor();
+        $this->assertTrue(true);
     }
 }

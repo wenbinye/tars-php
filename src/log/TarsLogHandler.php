@@ -15,7 +15,7 @@ class TarsLogHandler extends AbstractProcessingHandler
      */
     private $serverProperties;
     /**
-     * @var LogClient
+     * @var LogServant
      */
     private $logClient;
     /**
@@ -23,7 +23,7 @@ class TarsLogHandler extends AbstractProcessingHandler
      */
     private $dateFormat;
 
-    public function __construct(ServerProperties $serverProperties, LogClient $logClient, string $dateFormat = '%Y%m%d', bool $bubble = true)
+    public function __construct(ServerProperties $serverProperties, LogServant $logClient, string $dateFormat = '%Y%m%d', bool $bubble = true)
     {
         $logLevel = constant(Logger::class.'::'.strtoupper($serverProperties->getLogLevel()));
         parent::__construct($logLevel, $bubble);

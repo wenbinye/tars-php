@@ -17,5 +17,6 @@ class LogTest extends FunctionalTestCase
         $logger->pushHandler($handler);
 
         $logger->info('hello', ['message' => 'world']);
+        $this->assertTrue(true);
     }
 }
