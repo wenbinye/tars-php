@@ -31,7 +31,8 @@
     "psr/event-dispatcher": "^1.0",
     "psr/http-factory": "^1.0",
     "psr/http-server-handler": "^1.0",
-    "psr/simple-cache": "^1.0",
+      "psr/simple-cache": "^1.0",
+      "kuiper/kuiper": "0.5.0.x-dev",
     "symfony/console": "^5.0",
     "symfony/validator": "^5.0",
     "webmozart/assert": "^1.6",
@@ -50,5 +51,11 @@
     "swoft/swoole-ide-helper": "^4.4",
     "symfony/event-dispatcher": "^5.0",
     "winwin/composer-phpcs-plugin": "^0.1"
-  }
+  },
+    "repositories": {
+        "kuiper": {
+            "type": "path",
+            "url": "/home/ywb/work/kuiper/kuiper"
+        }
+    }
 }

@@ -8,9 +8,24 @@ use DI\Annotation\Inject;
 use function DI\autowire;
 use function DI\factory;
 use function DI\get;
-use Doctrine\Common\Annotations\AnnotationReader;
-use Doctrine\Common\Annotations\AnnotationRegistry;
-use Doctrine\Common\Annotations\Reader;
+use kuiper\annotations\AnnotationReader;
+use kuiper\annotations\AnnotationReaderInterface;
+use kuiper\di\annotation\Bean;
+use kuiper\di\AwareInjection;
+use kuiper\di\ContainerBuilderAwareTrait;
+use kuiper\di\DefinitionConfiguration;
+use kuiper\di\PropertiesDefinitionSource;
+use kuiper\swoole\event\BeforeStartEvent;
+use kuiper\swoole\http\ResponseSender;
+use kuiper\swoole\http\ResponseSenderInterface;
+use kuiper\swoole\http\ServerRequestFactoryInterface;
+use kuiper\swoole\http\ZendDiactorosServerRequestFactory;
+use kuiper\swoole\listener\EventListenerInterface;
+use kuiper\swoole\ServerInterface;
+use kuiper\swoole\SwooleServer;
+use kuiper\swoole\task\ProcessorInterface;
+use kuiper\swoole\task\Queue;
+use kuiper\swoole\task\QueueInterface;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Psr\Container\ContainerInterface;
@@ -21,11 +36,6 @@ use Psr\SimpleCache\CacheInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use wenbinye\tars\di\annotation\Bean;
-use wenbinye\tars\di\AwareInjection;
-use wenbinye\tars\di\ConfigDefinitionSource;
-use wenbinye\tars\di\ContainerBuilderAwareTrait;
-use wenbinye\tars\di\DefinitionConfiguration;
 use wenbinye\tars\log\LogServant;
 use wenbinye\tars\protocol\Packer;
 use wenbinye\tars\protocol\PackerInterface;
@@ -51,21 +61,10 @@ use wenbinye\tars\rpc\TarsClientGenerator;
 use wenbinye\tars\rpc\TarsClientGeneratorInterface;
 use wenbinye\tars\server\ClientProperties;
 use wenbinye\tars\server\Config;
-use wenbinye\tars\server\event\BeforeStartEvent;
-use wenbinye\tars\server\event\listener\EventListenerInterface;
-use wenbinye\tars\server\http\ResponseSender;
-use wenbinye\tars\server\http\ResponseSenderInterface;
-use wenbinye\tars\server\http\ServerRequestFactoryInterface;
-use wenbinye\tars\server\http\ZendDiactorosServerRequestFactory;
 use wenbinye\tars\server\PropertyLoader;
 use wenbinye\tars\server\rpc\RequestHandlerInterface;
 use wenbinye\tars\server\rpc\TarsRequestHandler;
-use wenbinye\tars\server\ServerInterface;
 use wenbinye\tars\server\ServerProperties;
-use wenbinye\tars\server\SwooleServer;
-use wenbinye\tars\server\task\Queue;
-use wenbinye\tars\server\task\QueueInterface;
-use wenbinye\tars\server\task\TaskProcessorInterface;
 use wenbinye\tars\stat\collector\SystemCpuCollector;
 use wenbinye\tars\stat\Monitor;
 use wenbinye\tars\stat\MonitorInterface;
@@ -84,15 +83,16 @@ class ServerConfiguration implements DefinitionConfiguration
     public function getDefinitions(): array
     {
         $this->containerBuilder->addAwareInjection(AwareInjection::create(LoggerAwareInterface::class));
-        $this->containerBuilder->addDefinitions(new ConfigDefinitionSource(Config::getInstance()));
+        $this->containerBuilder->addDefinitions(new PropertiesDefinitionSource(Config::getInstance()));
 
         $definitions = [
+            AnnotationReaderInterface::class => factory(AnnotationReader::class, 'getInstance'),
             ServerInterface::class => autowire(SwooleServer::class),
             SwooleServer::class => get(ServerInterface::class),
             QueueInterface::class => autowire(Queue::class),
+            ProcessorInterface::class => get(QueueInterface::class),
             StatInterface::class => autowire(Stat::class),
             StatStoreAdapter::class => autowire(SwooleTableStatStore::class),
-            TaskProcessorInterface::class => get(QueueInterface::class),
             ServerRequestFactoryInterface::class => autowire(ZendDiactorosServerRequestFactory::class),
             RequestFactoryInterface::class => autowire(RequestFactory::class),
             RequestIdGeneratorInterface::class => autowire(RequestIdGenerator::class),
@@ -123,21 +123,9 @@ class ServerConfiguration implements DefinitionConfiguration
     }
 
     /**
-     * @Bean
-     *
-     * @throws \Doctrine\Common\Annotations\AnnotationException
-     */
-    public function annotationReader(): Reader
-    {
-        AnnotationRegistry::registerLoader('class_exists');
-
-        return new AnnotationReader();
-    }
-
-    /**
      * @Bean()
      */
-    public function validator(Reader $annotationReader): ValidatorInterface
+    public function validator(AnnotationReaderInterface $annotationReader): ValidatorInterface
     {
         return Validation::createValidatorBuilder()
             ->enableAnnotationMapping($annotationReader)
@@ -170,7 +158,7 @@ class ServerConfiguration implements DefinitionConfiguration
     /**
      * @Bean()
      */
-    public function tarsRequestHandler(ContainerInterface $container, Config $config, Reader $reader, PackerInterface $packer): RequestHandlerInterface
+    public function tarsRequestHandler(ContainerInterface $container, Config $config, AnnotationReaderInterface $reader, PackerInterface $packer): RequestHandlerInterface
     {
         $servants = [];
         $middlewares = [];
@@ -238,7 +226,7 @@ class ServerConfiguration implements DefinitionConfiguration
     /**
      * @Bean()
      */
-    public function packer(Reader $annotationReader): PackerInterface
+    public function packer(AnnotationReaderInterface $annotationReader): PackerInterface
     {
         return new Packer(new TarsTypeFactory($annotationReader));
     }

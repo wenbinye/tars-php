@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server;
 
+use kuiper\swoole\exception\ServerStateException;
+use kuiper\swoole\ServerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webmozart\Assert\Assert;
-use wenbinye\tars\di\ContainerFactoryInterface;
 
 class ServerCommand extends Command
 {
@@ -42,8 +43,11 @@ class ServerCommand extends Command
         Config::parseFile($configFile);
         /** @var ServerInterface $server */
         $server = $this->containerFactory->create()->get(ServerInterface::class);
-        $server->setOutput($output);
-        $server->$action();
+        try {
+            $server->$action();
+        } catch (ServerStateException $e) {
+            $output->writeln('<error>'.$e->getMessage().'</error>');
+        }
     }
 
     public function setContainerFactory(ContainerFactoryInterface $containerFactory): void

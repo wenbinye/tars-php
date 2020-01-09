@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server;
 
+use kuiper\helper\Properties;
 use wenbinye\tars\server\exception\ConfigException;
 
-class Config extends \ArrayIterator
+class Config extends Properties
 {
     /**
      * @var Config
@@ -27,84 +28,6 @@ class Config extends \ArrayIterator
     private static function setInstance(Config $instance): void
     {
         self::$INSTANCE = $instance;
-    }
-
-    public function __get($name)
-    {
-        return $this[$name] ?? null;
-    }
-
-    public function __set($name, $value)
-    {
-        throw new \BadMethodCallException('Cannot modify config');
-    }
-
-    public function __isset($name)
-    {
-        return isset($this[$name]);
-    }
-
-    public function has(string $key): bool
-    {
-        return null !== $this->get($key);
-    }
-
-    /**
-     * @param $key
-     *
-     * @return mixed
-     */
-    public function get(string $key, $default = null)
-    {
-        $pos = strpos($key, '.');
-        if (false === $pos) {
-            return $this[$key] ?? $default;
-        }
-        $current = substr($key, 0, $pos);
-        if (isset($this[$current]) && $this[$current] instanceof self) {
-            return $this[$current]->get(substr($key, $pos + 1), $default);
-        }
-
-        return $default;
-    }
-
-    public function merge(array $configArray): void
-    {
-        foreach ($configArray as $key => $value) {
-            if (isset($this[$key]) && is_array($value) && $this[$key] instanceof self) {
-                $this[$key]->merge($value);
-                continue;
-            }
-            $this[$key] = is_array($value) ? static::fromArray($value) : $value;
-        }
-    }
-
-    public function toArray(): array
-    {
-        $result = [];
-        foreach ($this as $key => $value) {
-            if ($value instanceof self) {
-                $result[$key] = $value->toArray();
-            } else {
-                $result[$key] = $value;
-            }
-        }
-
-        return $result;
-    }
-
-    public static function fromArray(array $configArray): Config
-    {
-        $config = new static();
-        foreach ($configArray as $key => $value) {
-            if (is_array($value)) {
-                $config[$key] = static::fromArray($value);
-            } else {
-                $config[$key] = $value;
-            }
-        }
-
-        return $config;
     }
 
     public static function parseFile(string $fileName): Config

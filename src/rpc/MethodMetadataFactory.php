@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc;
 
-use Doctrine\Common\Annotations\Reader;
+use kuiper\annotations\AnnotationReaderInterface;
 use wenbinye\tars\protocol\annotation\TarsParameter;
 use wenbinye\tars\protocol\annotation\TarsReturnType;
 use wenbinye\tars\protocol\annotation\TarsServant;
@@ -18,7 +18,7 @@ use wenbinye\tars\rpc\exception\InvalidClientException;
 class MethodMetadataFactory implements MethodMetadataFactoryInterface
 {
     /**
-     * @var Reader
+     * @var AnnotationReaderInterface
      */
     private $annotationReader;
 
@@ -27,7 +27,7 @@ class MethodMetadataFactory implements MethodMetadataFactoryInterface
      */
     private $cache;
 
-    public function __construct(Reader $annotationReader)
+    public function __construct(AnnotationReaderInterface $annotationReader)
     {
         $this->annotationReader = $annotationReader;
     }

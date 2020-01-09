@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server\event\listener;
 
-use wenbinye\tars\server\event\ReceiveEvent;
+use kuiper\swoole\event\ReceiveEvent;
+use kuiper\swoole\listener\EventListenerInterface;
 use wenbinye\tars\server\rpc\RequestHandlerInterface;
 use wenbinye\tars\server\rpc\ServerRequest;
 
-class TarsRequestHandler implements EventListenerInterface
+class TarsRpc implements EventListenerInterface
 {
     /**
      * @var RequestHandlerInterface

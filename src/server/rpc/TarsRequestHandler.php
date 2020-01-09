@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server\rpc;
 
-use Doctrine\Common\Annotations\Reader;
+use kuiper\annotations\AnnotationReaderInterface;
 use wenbinye\tars\protocol\annotation\TarsServant;
 use wenbinye\tars\protocol\PackerInterface;
 use wenbinye\tars\rpc\ErrorCode;
@@ -39,7 +39,7 @@ class TarsRequestHandler implements RequestHandlerInterface
      *
      * @param MiddlewareInterface[] $middlewares
      */
-    public function __construct(array $servants, Reader $annotationReader, PackerInterface $packer, array $middlewares = [])
+    public function __construct(array $servants, AnnotationReaderInterface $annotationReader, PackerInterface $packer, array $middlewares = [])
     {
         foreach ($servants as $servant) {
             foreach ($this->getServantNames($annotationReader, $servant) as $servantName) {
@@ -80,7 +80,7 @@ class TarsRequestHandler implements RequestHandlerInterface
             ErrorCode::SERVER_SUCCESS, 'ok');
     }
 
-    private function getServantNames(Reader $annotationReader, $servant): array
+    private function getServantNames(AnnotationReaderInterface $annotationReader, $servant): array
     {
         $servantNames = [];
         $reflectionClass = new \ReflectionClass($servant);

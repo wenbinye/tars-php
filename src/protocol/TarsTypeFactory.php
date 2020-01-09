@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\protocol;
 
-use Doctrine\Common\Annotations\Reader;
+use kuiper\annotations\AnnotationReaderInterface;
 use wenbinye\tars\protocol\annotation\TarsProperty;
 use wenbinye\tars\protocol\type\GenericTarsStruct;
 use wenbinye\tars\protocol\type\Type;
@@ -12,7 +12,7 @@ use wenbinye\tars\protocol\type\Type;
 class TarsTypeFactory
 {
     /**
-     * @var Reader
+     * @var AnnotationReaderInterface
      */
     private $annotationReader;
 
@@ -29,7 +29,7 @@ class TarsTypeFactory
     /**
      * TarsTypeFactory constructor.
      */
-    public function __construct(Reader $annotationReader)
+    public function __construct(AnnotationReaderInterface $annotationReader)
     {
         $this->annotationReader = $annotationReader;
         $this->parser = new TypeParser();

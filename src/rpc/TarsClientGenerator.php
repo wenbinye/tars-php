@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc;
 
-use Doctrine\Common\Annotations\Reader;
+use kuiper\annotations\AnnotationReaderInterface;
 use ProxyManager\Generator\ClassGenerator;
 use wenbinye\tars\protocol\annotation\TarsReturnType;
 use Zend\Code\Generator\MethodGenerator;
@@ -13,7 +13,7 @@ use Zend\Code\Generator\PropertyGenerator;
 class TarsClientGenerator implements TarsClientGeneratorInterface
 {
     /**
-     * @var Reader
+     * @var AnnotationReaderInterface
      */
     private $annotationReader;
     /**
@@ -21,7 +21,7 @@ class TarsClientGenerator implements TarsClientGeneratorInterface
      */
     private $eval;
 
-    public function __construct(Reader $annotationReader, $eval = true)
+    public function __construct(AnnotationReaderInterface $annotationReader, $eval = true)
     {
         $this->annotationReader = $annotationReader;
         $this->eval = $eval;

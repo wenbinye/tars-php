@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace wenbinye\tars\server\framework;
 
 use Composer\Autoload\ClassLoader;
+use kuiper\di\ContainerBuilder;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Slim\Factory\AppFactory;
-use wenbinye\tars\di\annotation\Bean;
-use wenbinye\tars\di\ContainerBuilder;
-use wenbinye\tars\di\ContainerFactoryInterface;
+use wenbinye\tars\server\ContainerFactoryInterface;
 use wenbinye\tars\server\ServerProperties;
 
 class Slim implements ContainerFactoryInterface

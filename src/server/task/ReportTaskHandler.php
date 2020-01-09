@@ -4,25 +4,30 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server\task;
 
+use kuiper\swoole\SwooleServer;
+use kuiper\swoole\task\ProcessorInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Swoole\Timer;
 use wenbinye\tars\server\ClientProperties;
-use wenbinye\tars\server\SwooleServer;
+use wenbinye\tars\server\ServerProperties;
 use wenbinye\tars\stat\MonitorInterface;
-use wenbinye\tars\stat\ServerFClient;
+use wenbinye\tars\stat\ServerFServant;
 use wenbinye\tars\stat\ServerInfo;
-use wenbinye\tars\stat\StatFClient;
 use wenbinye\tars\stat\StatInterface;
 
-class ReportTaskHandler implements TaskHandlerInterface, LoggerAwareInterface
+class ReportTaskHandler implements ProcessorInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
     /**
-     * @var ServerFClient
+     * @var ServerFServant
      */
     private $serverFClient;
+    /**
+     * @var ServerProperties
+     */
+    private $serverProperties;
     /**
      * @var SwooleServer
      */
@@ -32,7 +37,7 @@ class ReportTaskHandler implements TaskHandlerInterface, LoggerAwareInterface
      */
     private $clientProperties;
     /**
-     * @var StatFClient
+     * @var StatInterface
      */
     private $statClient;
     /**
@@ -43,7 +48,8 @@ class ReportTaskHandler implements TaskHandlerInterface, LoggerAwareInterface
     /**
      * KeepAliveTaskHandler constructor.
      */
-    public function __construct(ClientProperties $clientProperties, SwooleServer $server, ServerFClient $serverFClient,
+    public function __construct(ServerProperties $serverProperties, ClientProperties $clientProperties,
+                                SwooleServer $server, ServerFServant $serverFClient,
                                 StatInterface $statClient, MonitorInterface $monitor)
     {
         $this->clientProperties = $clientProperties;
@@ -51,6 +57,7 @@ class ReportTaskHandler implements TaskHandlerInterface, LoggerAwareInterface
         $this->serverFClient = $serverFClient;
         $this->statClient = $statClient;
         $this->monitor = $monitor;
+        $this->serverProperties = $serverProperties;
     }
 
     /**
@@ -72,18 +79,17 @@ class ReportTaskHandler implements TaskHandlerInterface, LoggerAwareInterface
         if (!$swooleServer) {
             return;
         }
-        $serverProperties = $this->server->getServerProperties();
         $pids = $this->server->getWorkerPidList();
         if (empty($pids)) {
-            $this->logger->error($serverProperties->getServerName().' all workers are gone, wait for restart');
+            $this->logger->error($this->server->getServerConfig()->getServerName().' all workers are gone, wait for restart');
 
             return;
         }
         $serverInfo = new ServerInfo();
-        $serverInfo->serverName = $serverProperties->getServer();
-        $serverInfo->application = $serverProperties->getApp();
+        $serverInfo->serverName = $this->serverProperties->getServer();
+        $serverInfo->application = $this->serverProperties->getApp();
         $serverInfo->pid = $swooleServer->master_pid;
-        foreach ($serverProperties->getAdapters() as $adapter) {
+        foreach ($this->serverProperties->getAdapters() as $adapter) {
             $serverInfo->adapter = $adapter->getAdapterName();
             $this->serverFClient->keepAlive($serverInfo);
         }

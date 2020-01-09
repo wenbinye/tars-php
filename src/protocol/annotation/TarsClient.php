@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace wenbinye\tars\protocol\annotation;
 
 use function DI\factory;
-use wenbinye\tars\di\annotation\ComponentInterface;
-use wenbinye\tars\di\annotation\ComponentTrait;
-use wenbinye\tars\di\ContainerBuilderAwareInterface;
-use wenbinye\tars\di\ContainerBuilderAwareTrait;
+use kuiper\di\annotation\ComponentInterface;
+use kuiper\di\annotation\ComponentTrait;
+use kuiper\di\ContainerBuilderAwareInterface;
+use kuiper\di\ContainerBuilderAwareTrait;
 use wenbinye\tars\rpc\TarsClientFactoryInterface;
 
 /**
@@ -25,7 +25,7 @@ class TarsClient extends TarsServant implements ComponentInterface, ContainerBui
      */
     public $name;
 
-    public function process(): void
+    public function handle(): void
     {
         $name = $this->class->getName();
         $this->containerBuilder->addDefinitions([

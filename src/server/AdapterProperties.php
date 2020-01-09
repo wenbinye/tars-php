@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server;
 
+use kuiper\swoole\ServerType;
 use Symfony\Component\Validator\Constraints as Assert;
 use wenbinye\tars\rpc\Route;
 use wenbinye\tars\server\annotation\ConfigItem;
@@ -169,7 +170,7 @@ class AdapterProperties
     public function getSwooleSockType(): int
     {
         return $this->swooleSockType
-            ?? (SwooleServerType::UDP === $this->getSwooleServerType() ? SWOOLE_SOCK_UDP : SWOOLE_SOCK_TCP);
+            ?? (ServerType::UDP === $this->getSwooleServerType() ? SWOOLE_SOCK_UDP : SWOOLE_SOCK_TCP);
     }
 
     public function setSwooleSockType(int $swooleSockType): void

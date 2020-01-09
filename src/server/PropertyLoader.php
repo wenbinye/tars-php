@@ -4,18 +4,19 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server;
 
-use Doctrine\Common\Annotations\Reader;
+use kuiper\annotations\AnnotationReaderInterface;
+use kuiper\helper\Text;
+use kuiper\reflection\ReflectionType;
+use kuiper\swoole\SwooleSetting;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use wenbinye\tars\server\annotation\ConfigItem;
 use wenbinye\tars\support\exception\ValidationException;
-use wenbinye\tars\support\Text;
-use wenbinye\tars\support\Type;
 
 class PropertyLoader
 {
-    const ADAPTER_SUFFIX = 'Adapter';
+    private const ADAPTER_SUFFIX = 'Adapter';
     /**
-     * @var Reader
+     * @var AnnotationReaderInterface
      */
     private $annotationReader;
 
@@ -27,7 +28,7 @@ class PropertyLoader
     /**
      * PropertyLoader constructor.
      */
-    public function __construct(Reader $annotationReader, ValidatorInterface $validator)
+    public function __construct(AnnotationReaderInterface $annotationReader, ValidatorInterface $validator)
     {
         $this->annotationReader = $annotationReader;
         $this->validator = $validator;
@@ -65,13 +66,13 @@ class PropertyLoader
                 if ($errors->count() > 0) {
                     throw new ValidationException($errors);
                 }
-            } elseif (SwooleServerSetting::hasValue($key)) {
-                $swooleServerSettings[$key] = Type::fromString(SwooleServerSetting::fromValue($key)->type, (string) $value);
+            } elseif (SwooleSetting::hasValue($key)) {
+                $swooleServerSettings[$key] = ReflectionType::forName(SwooleSetting::fromValue($key)->type)->sanitize($value);
             }
         }
-        if (empty($swooleServerSettings[SwooleServerSetting::TASK_WORKER_NUM])) {
+        if (empty($swooleServerSettings[SwooleSetting::TASK_WORKER_NUM])) {
             // at least one task worker
-            $swooleServerSettings[SwooleServerSetting::TASK_WORKER_NUM] = 1;
+            $swooleServerSettings[SwooleSetting::TASK_WORKER_NUM] = 1;
         }
         $serverProperties->setAdapters($adapters);
         $serverProperties->setSwooleServerSettings($swooleServerSettings);
@@ -139,7 +140,7 @@ class PropertyLoader
                     }
                 } else {
                     $type = $reflectionClass->getMethod($getter)->getReturnType();
-                    $value = Type::fromString($type, (string) $value);
+                    $value = ReflectionType::forName((string) $type)->sanitize($value);
                 }
                 $reflectionClass->getMethod('set'.$property->getName())->invoke($properties, $value);
             }
