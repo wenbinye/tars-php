@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace wenbinye\tars\rpc;
 
 use PHPUnit\Framework\TestCase;
+use wenbinye\tars\rpc\route\Route;
 
 class RouteTest extends TestCase
 {

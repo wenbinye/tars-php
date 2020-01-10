@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace wenbinye\tars\server;
 
 use Symfony\Component\Validator\Constraints as Assert;
-use wenbinye\tars\rpc\Route;
+use wenbinye\tars\rpc\route\Route;
 use wenbinye\tars\server\annotation\ConfigItem;
 
 class ServerProperties
@@ -29,7 +29,7 @@ class ServerProperties
     /**
      * @var array
      */
-    private $swooleServerSettings;
+    private $swooleSettings;
 
     /**
      * @ConfigItem()
@@ -128,19 +128,19 @@ class ServerProperties
         return $this->app.'.'.$this->server;
     }
 
-    public function getSwooleServerSettings(): array
+    public function getSwooleSettings(): array
     {
-        return $this->swooleServerSettings;
+        return $this->swooleSettings;
     }
 
     public function getSwooleServerSetting(string $name)
     {
-        return $this->swooleServerSettings[$name] ?? null;
+        return $this->swooleSettings[$name] ?? null;
     }
 
-    public function setSwooleServerSettings(array $swooleServerSettings): void
+    public function setSwooleSettings(array $swooleSettings): void
     {
-        $this->swooleServerSettings = $swooleServerSettings;
+        $this->swooleSettings = $swooleSettings;
     }
 
     public function getBasePath(): string

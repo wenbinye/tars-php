@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace wenbinye\tars\stat;
 
 use wenbinye\tars\rpc\exception\TimedOutException;
+use wenbinye\tars\rpc\message\RequestInterface;
+use wenbinye\tars\rpc\message\Response;
+use wenbinye\tars\rpc\message\ResponseInterface;
 use wenbinye\tars\rpc\MiddlewareInterface;
-use wenbinye\tars\rpc\RequestInterface;
-use wenbinye\tars\rpc\Response;
-use wenbinye\tars\rpc\ResponseInterface;
 
 class RpcStatMiddleware implements MiddlewareInterface
 {

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\stat;
 
-use wenbinye\tars\rpc\ResponseInterface;
-use wenbinye\tars\rpc\Route;
+use wenbinye\tars\rpc\message\ResponseInterface;
+use wenbinye\tars\rpc\route\Route;
 use wenbinye\tars\server\ServerProperties;
 
 class StatEntry
@@ -129,7 +129,7 @@ class StatEntry
         $head->masterIp = $serverProperties->getLocalIp();
         $request = $response->getRequest();
         $head->slaveName = self::removeObj($request->getServantName());
-        $head->interfaceName = $request->getMethodName();
+        $head->interfaceName = $request->getFuncName();
         /** @var Route $route */
         $route = $request->getAttribute('route');
         $head->slaveIp = $route->getHost();

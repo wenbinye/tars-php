@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace wenbinye\tars\functional;
 
 use wenbinye\tars\registry\RegistryConnectionFactory;
-use wenbinye\tars\rpc\RequestFactoryInterface;
-use wenbinye\tars\rpc\Response;
+use wenbinye\tars\rpc\message\RequestFactoryInterface;
+use wenbinye\tars\rpc\message\Response;
 use wenbinye\tars\stat\StatInterface;
 
 class StatTest extends FunctionalTestCase

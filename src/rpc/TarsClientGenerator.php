@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace wenbinye\tars\rpc;
 
 use kuiper\annotations\AnnotationReaderInterface;
-use ProxyManager\Generator\ClassGenerator;
 use wenbinye\tars\protocol\annotation\TarsReturnType;
+use Zend\Code\Generator\ClassGenerator;
 use Zend\Code\Generator\MethodGenerator;
 use Zend\Code\Generator\PropertyGenerator;
 
@@ -27,6 +27,9 @@ class TarsClientGenerator implements TarsClientGeneratorInterface
         $this->eval = $eval;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function generate(string $clientClassName): string
     {
         $class = new \ReflectionClass($clientClassName);

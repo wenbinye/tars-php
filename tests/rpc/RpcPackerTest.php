@@ -4,29 +4,27 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc;
 
-use Doctrine\Common\Annotations\AnnotationReader;
-use Doctrine\Common\Annotations\AnnotationRegistry;
+use kuiper\annotations\AnnotationReader;
 use Monolog\Test\TestCase;
 use wenbinye\tars\protocol\annotation\TarsParameter;
 use wenbinye\tars\protocol\annotation\TarsReturnType;
 use wenbinye\tars\protocol\annotation\TarsServant;
 use wenbinye\tars\protocol\Packer;
 use wenbinye\tars\protocol\TarsTypeFactory;
+use wenbinye\tars\rpc\message\MethodMetadataFactory;
+use wenbinye\tars\rpc\message\RequestFactory;
+use wenbinye\tars\rpc\message\RequestIdGenerator;
+use wenbinye\tars\rpc\message\Response;
 use wenbinye\tars\server\rpc\ServerRequest;
 use wenbinye\tars\server\rpc\ServerResponse;
 
 class RpcPackerTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        AnnotationRegistry::registerLoader('class_exists');
-    }
-
     public function testRequestPackAndUnpack()
     {
         $servant = new HelloService();
-        $requestFactory = new RequestFactory(new RequestIdGenerator());
-        $annotationReader = new AnnotationReader();
+        $requestFactory = new RequestFactory(, new RequestIdGenerator());
+        $annotationReader = AnnotationReader::getInstance();
         $methodMetadataFactory = new MethodMetadataFactory($annotationReader);
         $packer = new Packer(new TarsTypeFactory($annotationReader));
         $rpcPacker = new TarsRpcPacker($packer);
@@ -51,7 +49,7 @@ class RpcPackerTest extends TestCase
 }
 
 /**
- * @TarsServant(servant="PHPTest.PHPTcpServer.obj")
+ * @TarsServant("PHPTest.PHPTcpServer.obj")
  */
 interface HelloServiceServant
 {

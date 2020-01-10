@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server;
 
-use Doctrine\Common\Annotations\AnnotationReader;
-use Doctrine\Common\Annotations\AnnotationRegistry;
+use kuiper\annotations\AnnotationReader;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Validator\Validation;
 
@@ -36,8 +35,7 @@ bar=2
             ],
         ]);
 
-        AnnotationRegistry::registerLoader('class_exists');
-        $annotationReader = new AnnotationReader();
+        $annotationReader = AnnotationReader::getInstance();
         $validator = Validation::createValidatorBuilder()
             ->enableAnnotationMapping($annotationReader)
             ->getValidator();

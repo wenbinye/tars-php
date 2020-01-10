@@ -75,7 +75,7 @@ class PropertyLoader
             $swooleServerSettings[SwooleSetting::TASK_WORKER_NUM] = 1;
         }
         $serverProperties->setAdapters($adapters);
-        $serverProperties->setSwooleServerSettings($swooleServerSettings);
+        $serverProperties->setSwooleSettings($swooleServerSettings);
         $errors = $this->validator->validate($serverProperties);
         if ($errors->count() > 0) {
             throw new ValidationException($errors);

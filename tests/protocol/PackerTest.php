@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\protocol;
 
-use Doctrine\Common\Annotations\AnnotationReader;
-use Doctrine\Common\Annotations\AnnotationRegistry;
+use kuiper\annotations\AnnotationReader;
 use PHPUnit\Framework\TestCase;
 use wenbinye\tars\protocol\fixtures\NestedStruct;
 use wenbinye\tars\protocol\fixtures\NestedStructOld;
@@ -36,15 +35,10 @@ class PackerTest extends TestCase
      */
     private $parser;
 
-    public static function setUpBeforeClass(): void
-    {
-        AnnotationRegistry::registerLoader('class_exists');
-    }
-
     protected function setUp(): void
     {
         $this->parser = new TypeParser();
-        $this->packer = new Packer(new TarsTypeFactory(new AnnotationReader()));
+        $this->packer = new Packer(new TarsTypeFactory(AnnotationReader::getInstance()));
     }
 
     /**

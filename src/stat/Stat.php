@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace wenbinye\tars\stat;
 
 use wenbinye\tars\protocol\type\StructMap;
-use wenbinye\tars\rpc\ResponseInterface;
+use wenbinye\tars\rpc\message\ResponseInterface;
 use wenbinye\tars\server\ClientProperties;
 use wenbinye\tars\server\ServerProperties;
 

@@ -4,104 +4,55 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server\rpc;
 
-use wenbinye\tars\rpc\ErrorCode;
-use wenbinye\tars\rpc\RequestInterface;
-use wenbinye\tars\rpc\ResponseInterface;
+use wenbinye\tars\rpc\message\RequestInterface;
+use wenbinye\tars\rpc\message\ResponseInterface;
+use wenbinye\tars\rpc\message\ResponseTrait;
+use wenbinye\tars\rpc\message\ReturnValueInterface;
 
 class ServerResponse implements ResponseInterface
 {
-    /**
-     * @var ServerRequestInterface
-     */
-    private $request;
+    use ResponseTrait;
 
-    /**
-     * @var string
-     */
-    private $body;
-
-    /**
-     * @var array
-     */
-    private $parsedBody;
-    /**
-     * @var int
-     */
-    private $returnCode;
-    /**
-     * @var string
-     */
-    private $message;
-
-    public function __construct(ServerRequestInterface $request, array $parsedBody, int $returnCode, string $message = null)
+    public function __construct(RequestInterface $request, array $returnValues, int $returnCode)
     {
         $this->request = $request;
-        $this->parsedBody = $parsedBody;
+        $this->returnValues = $returnValues;
         $this->returnCode = $returnCode;
-        $this->message = $message;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getVersion(): int
-    {
-        return $this->request->getVersion();
     }
 
     public function getBody(): string
     {
-        if (null === $this->body) {
-            if (self::TUP_VERSION === $this->getVersion()) {
-                $this->body = \TUPAPI::encode($this->getVersion(),
-                    $this->request->getRequestId(),
-                    $this->request->getServantName(),
-                    $this->request->getMethodName(),
-                    $this->request->getPacketType(),
-                    $this->request->getMessageType(),
-                    0, [], ['STATUS_RESULT_CODE' => $this->getReturnCode()],
-                    $this->getParsedBody());
-            } else {
-                $this->body = \TUPAPI::encodeRspPacket($this->getVersion(),
-                    $this->request->getPacketType(), $this->request->getMessageType(), $this->request->getRequestId(),
-                    $this->getReturnCode(), $this->getMessage(), $this->getParsedBody(), []);
-            }
+        if (self::TUP_VERSION === $this->getVersion()) {
+            return \TUPAPI::encode($this->getVersion(),
+                $this->request->getRequestId(),
+                $this->request->getServantName(),
+                $this->request->getFuncName(),
+                $this->request->getPacketType(),
+                $this->request->getMessageType(),
+                0,
+                [],
+                ['STATUS_RESULT_CODE' => $this->getReturnCode()],
+                $this->getReturnValueArray());
         }
 
-        return $this->body;
+        return \TUPAPI::encodeRspPacket($this->getVersion(),
+            $this->request->getPacketType(),
+            $this->request->getMessageType(),
+            $this->request->getRequestId(),
+            $this->getReturnCode(),
+            $this->getMessage(),
+            $this->getReturnValueArray(),
+            []);
     }
 
-    public function getRequest(): RequestInterface
+    private function getReturnValueArray(): array
     {
-        return $this->request;
-    }
-
-    public function getParsedBody(): array
-    {
-        return $this->parsedBody;
-    }
-
-    public function getReturnCode(): int
-    {
-        return $this->returnCode;
-    }
-
-    public function isSuccess(): bool
-    {
-        return ErrorCode::SERVER_SUCCESS === $this->returnCode;
-    }
-
-    public function getMessage(): string
-    {
-        if (!isset($this->message)) {
-            $this->message = ErrorCode::fromValue($this->returnCode, ErrorCode::fromValue(ErrorCode::UNKNOWN))->message;
+        $ret = [];
+        /** @var ReturnValueInterface $returnValue */
+        foreach ($this->returnValues as $returnValue) {
+            $ret[$returnValue->getName()] = $returnValue->getPayload();
         }
 
-        return $this->message;
-    }
-
-    public function getPayload(): string
-    {
-        return $this->getBody();
+        return self::TUP_VERSION === $this->getVersion() ? $ret : array_values($ret);
     }
 }

@@ -8,8 +8,8 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\SimpleCache\CacheInterface;
 use wenbinye\tars\registry\exception\RegistryException;
-use wenbinye\tars\rpc\RefreshableRouteResolverInterface;
-use wenbinye\tars\rpc\Route;
+use wenbinye\tars\rpc\route\RefreshableRouteResolverInterface;
+use wenbinye\tars\rpc\route\Route;
 
 class RegistryRouteResolver implements RefreshableRouteResolverInterface, LoggerAwareInterface
 {

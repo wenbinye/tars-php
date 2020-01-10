@@ -21,7 +21,10 @@ use kuiper\swoole\http\ResponseSenderInterface;
 use kuiper\swoole\http\ServerRequestFactoryInterface;
 use kuiper\swoole\http\ZendDiactorosServerRequestFactory;
 use kuiper\swoole\listener\EventListenerInterface;
+use kuiper\swoole\ServerConfig;
 use kuiper\swoole\ServerInterface;
+use kuiper\swoole\ServerPort;
+use kuiper\swoole\ServerType;
 use kuiper\swoole\SwooleServer;
 use kuiper\swoole\task\ProcessorInterface;
 use kuiper\swoole\task\Queue;
@@ -43,17 +46,17 @@ use wenbinye\tars\protocol\TarsTypeFactory;
 use wenbinye\tars\registry\QueryFServant;
 use wenbinye\tars\registry\RegistryConnectionFactory;
 use wenbinye\tars\registry\SwooleTableRegistryCache;
-use wenbinye\tars\rpc\ConnectionFactory;
-use wenbinye\tars\rpc\ConnectionFactoryChain;
-use wenbinye\tars\rpc\ConnectionFactoryInterface;
+use wenbinye\tars\rpc\connection\ConnectionFactory;
+use wenbinye\tars\rpc\connection\ConnectionFactoryChain;
+use wenbinye\tars\rpc\connection\ConnectionFactoryInterface;
 use wenbinye\tars\rpc\DefaultErrorHandler;
 use wenbinye\tars\rpc\ErrorHandlerInterface;
-use wenbinye\tars\rpc\MethodMetadataFactory;
-use wenbinye\tars\rpc\MethodMetadataFactoryInterface;
-use wenbinye\tars\rpc\RequestFactory;
-use wenbinye\tars\rpc\RequestFactoryInterface;
-use wenbinye\tars\rpc\RequestIdGenerator;
-use wenbinye\tars\rpc\RequestIdGeneratorInterface;
+use wenbinye\tars\rpc\message\MethodMetadataFactory;
+use wenbinye\tars\rpc\message\MethodMetadataFactoryInterface;
+use wenbinye\tars\rpc\message\RequestFactory;
+use wenbinye\tars\rpc\message\RequestFactoryInterface;
+use wenbinye\tars\rpc\message\RequestIdGenerator;
+use wenbinye\tars\rpc\message\RequestIdGeneratorInterface;
 use wenbinye\tars\rpc\TarsClient;
 use wenbinye\tars\rpc\TarsClientFactory;
 use wenbinye\tars\rpc\TarsClientFactoryInterface;
@@ -86,7 +89,7 @@ class ServerConfiguration implements DefinitionConfiguration
         $this->containerBuilder->addDefinitions(new PropertiesDefinitionSource(Config::getInstance()));
 
         $definitions = [
-            AnnotationReaderInterface::class => factory(AnnotationReader::class, 'getInstance'),
+            AnnotationReaderInterface::class => factory([AnnotationReader::class, 'getInstance']),
             ServerInterface::class => autowire(SwooleServer::class),
             SwooleServer::class => get(ServerInterface::class),
             QueueInterface::class => autowire(Queue::class),
@@ -197,6 +200,20 @@ class ServerConfiguration implements DefinitionConfiguration
     public function clientProperties(PropertyLoader $propertyLoader, Config $config): ClientProperties
     {
         return $propertyLoader->loadClientProperties($config);
+    }
+
+    /**
+     * @Bean()
+     */
+    public function serverConfig(ServerProperties $serverProperties): ServerConfig
+    {
+        $ports = [];
+        foreach ($serverProperties->getAdapters() as $adapter) {
+            $ports[] = new ServerPort($adapter->getEndpoint()->getHost(), $adapter->getEndpoint()->getPort(),
+                ServerType::fromValue($adapter->getSwooleServerType()));
+        }
+
+        return new ServerConfig($serverProperties->getServerName(), $serverProperties->getSwooleSettings(), $ports);
     }
 
     /**

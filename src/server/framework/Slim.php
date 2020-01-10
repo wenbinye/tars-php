@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace wenbinye\tars\server\framework;
 
 use Composer\Autoload\ClassLoader;
+use kuiper\di\annotation\Bean;
 use kuiper\di\ContainerBuilder;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -60,6 +61,6 @@ class Slim implements ContainerFactoryInterface
         $builder->addConfiguration(new ServerConfiguration())
             ->addConfiguration($this);
 
-        return $builder->create();
+        return $builder->build();
     }
 }

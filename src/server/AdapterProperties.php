@@ -6,7 +6,7 @@ namespace wenbinye\tars\server;
 
 use kuiper\swoole\ServerType;
 use Symfony\Component\Validator\Constraints as Assert;
-use wenbinye\tars\rpc\Route;
+use wenbinye\tars\rpc\route\Route;
 use wenbinye\tars\server\annotation\ConfigItem;
 
 class AdapterProperties
@@ -68,10 +68,6 @@ class AdapterProperties
      * @var int
      */
     private $threads;
-    /**
-     * @var int
-     */
-    private $swooleSockType;
 
     public function getName(): string
     {
@@ -169,13 +165,7 @@ class AdapterProperties
 
     public function getSwooleSockType(): int
     {
-        return $this->swooleSockType
-            ?? (ServerType::UDP === $this->getSwooleServerType() ? SWOOLE_SOCK_UDP : SWOOLE_SOCK_TCP);
-    }
-
-    public function setSwooleSockType(int $swooleSockType): void
-    {
-        $this->swooleSockType = $swooleSockType;
+        return ServerType::UDP === $this->getSwooleServerType() ? SWOOLE_SOCK_UDP : SWOOLE_SOCK_TCP;
     }
 
     public function protocols(): array

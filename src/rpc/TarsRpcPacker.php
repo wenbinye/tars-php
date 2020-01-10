@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc;
 
-use wenbinye\tars\protocol\annotation\TarsParameter;
 use wenbinye\tars\protocol\PackerInterface;
 use wenbinye\tars\protocol\TypeParser;
+use wenbinye\tars\rpc\message\MethodMetadata;
+use wenbinye\tars\rpc\message\MethodMetadataInterface;
+use wenbinye\tars\rpc\message\Parameter;
+use wenbinye\tars\rpc\message\ParameterInterface;
+use wenbinye\tars\rpc\message\ReturnValue;
+use wenbinye\tars\rpc\message\ReturnValueInterface;
 
 class TarsRpcPacker
 {
@@ -29,62 +34,103 @@ class TarsRpcPacker
         $this->parser = new TypeParser();
     }
 
-    public function packRequest(MethodMetadata $method, array $parameters, int $version): array
+    /**
+     * Pack request parameters.
+     *
+     * @param MethodMetadata $method
+     *
+     * @return ParameterInterface[]
+     */
+    public function packRequest(MethodMetadataInterface $method, array $parameters, int $version): array
     {
-        $payload = [];
+        $paramObjs = [];
         foreach ($method->getParameters() as $i => $parameter) {
-            /* @var TarsParameter $parameter */
-            $payload[$parameter->name] = $this->packer->pack($this->parser->parse($parameter->type, $method->getNamespace()),
-                $parameter->name, $parameters[$i] ?? null, $version);
+            if ($parameter->out) {
+                continue;
+            }
+            $data = $parameters[$i] ?? null;
+            $type = $this->parser->parse($parameter->type, $method->getNamespace());
+            $paramObjs[] = new Parameter($i, $parameter->name, false, $data,
+                $this->packer->pack($type, $parameter->name, $data, $version));
         }
 
-        return $payload;
+        return $paramObjs;
     }
 
-    public function unpackResponse(MethodMetadata $method, string $data, int $version): array
+    /**
+     * @param MethodMetadata $method
+     *
+     * @return ReturnValueInterface[]
+     */
+    public function unpackResponse(MethodMetadataInterface $method, string $data, int $version): array
     {
         $result = [];
-        foreach ($method->getOutputParameters() as $outputParameter) {
-            $type = $this->parser->parse($outputParameter->type, $method->getNamespace());
-            $result[] = $this->packer->unpack($type, $outputParameter->name, $data, $version);
+        foreach ($method->getParameters() as $parameter) {
+            if (!$parameter->out) {
+                continue;
+            }
+            $type = $this->parser->parse($parameter->type, $method->getNamespace());
+            $result[] = new ReturnValue($parameter->name,
+                $this->packer->unpack($type, $parameter->name, $data, $version), '');
         }
         if (null !== $method->getReturnType()) {
             $type = $this->parser->parse($method->getReturnType()->type, $method->getNamespace());
             if (!$type->isVoid()) {
-                $result[] = $this->packer->unpack($type, '', $data, $version);
+                $result[] = new ReturnValue('', $this->packer->unpack($type, '', $data, $version), '');
             }
         }
 
         return $result;
     }
 
-    public function unpackRequest(MethodMetadata $method, string $data, int $version): array
+    /**
+     * Unpack request parameters.
+     *
+     * @param MethodMetadata $method
+     *
+     * @return ParameterInterface[]
+     */
+    public function unpackRequest(MethodMetadataInterface $method, string $data, int $version): array
     {
         $parameters = [];
-        foreach ($method->getParameters() as $parameter) {
-            $type = $this->parser->parse($parameter->type, $method->getNamespace());
-            $parameters[] = $this->packer->unpack($type, $parameter->name, $data, $version);
-        }
-        foreach ($method->getOutputParameters() as $parameter) {
-            $parameters[] = null;
+        foreach ($method->getParameters() as $i => $parameter) {
+            if ($parameter->out) {
+                $parameters[] = new Parameter($parameter->order ?? $i, $parameter->name, true, null, '');
+            } else {
+                $type = $this->parser->parse($parameter->type, $method->getNamespace());
+                $paramData = $this->packer->unpack($type, $parameter->name, $data, $version);
+
+                $parameters[] = new Parameter($parameter->order ?? $i, $parameter->name, false, $paramData, '');
+            }
         }
 
         return $parameters;
     }
 
-    public function packResponse(MethodMetadata $method, array $data, int $version): array
+    /**
+     * Pack server response.
+     *
+     * @param MethodMetadata $method
+     * @param array          $data   method parameters and return value
+     *
+     * @return ReturnValueInterface[] return packed output value array
+     */
+    public function packResponse(MethodMetadataInterface $method, array $data, int $version): array
     {
         $result = [];
         if (null !== $method->getReturnType()) {
             $type = $this->parser->parse($method->getReturnType()->type, $method->getNamespace());
             if (!$type->isVoid()) {
-                $result[''] = $this->packer->pack($type, '', end($data), $version);
+                $ret = end($data);
+                $result[] = new ReturnValue('', $ret, $this->packer->pack($type, '', $ret, $version));
             }
         }
-        $offset = count($method->getParameters());
-        foreach ($method->getOutputParameters() as $i => $outputParameter) {
-            $type = $this->parser->parse($outputParameter->type, $method->getNamespace());
-            $result[$outputParameter->name] = $this->packer->pack($type, $outputParameter->name, $data[$offset + $i], $version);
+        foreach ($method->getParameters() as $i => $parameter) {
+            if (!$parameter->out) {
+                continue;
+            }
+            $type = $this->parser->parse($parameter->type, $method->getNamespace());
+            $result[] = new ReturnValue($parameter->name, $data[i], $this->packer->pack($type, $parameter->name, $data[$i], $version));
         }
 
         return $result;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc\exception;
 
-use wenbinye\tars\rpc\ConnectionInterface;
+use wenbinye\tars\rpc\connection\ConnectionInterface;
 
 abstract class CommunicationException extends \Exception
 {

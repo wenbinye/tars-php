@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc;
 
-use Doctrine\Common\Annotations\AnnotationReader;
-use Doctrine\Common\Annotations\AnnotationRegistry;
+use kuiper\annotations\AnnotationReader;
 use Monolog\Test\TestCase;
 use wenbinye\tars\log\LogServant;
 
@@ -13,8 +12,7 @@ class TarsClientGeneratorTest extends TestCase
 {
     public function testGenerate()
     {
-        AnnotationRegistry::registerLoader('class_exists');
-        $annotationReader = new AnnotationReader();
+        $annotationReader = AnnotationReader::getInstance();
         $generator = new TarsClientGenerator($annotationReader);
         $clientClass = $generator->generate(LogServant::class);
         // $this->assertTrue(class_exists($clientClass));

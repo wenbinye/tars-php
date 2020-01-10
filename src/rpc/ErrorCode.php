@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc;
 
-use wenbinye\tars\support\Enum;
+use kuiper\helper\Enum;
 
 /**
  * Class ErrorCode.
@@ -14,65 +14,61 @@ use wenbinye\tars\support\Enum;
 class ErrorCode extends Enum
 {
     // 错误码定义（需要从扩展开始规划）
-    const TARS_SUCCESS = 0; // taf
-    const TARS_FAILED = 1; // taf失败（通用失败）
-    const TARS_MALLOC_FAILED = -1; // 内存分配失败
+    public const TARS_SOCKET_SET_NONBLOCK_FAILED = -1002; // socket设置非阻塞失败
+    public const TARS_SOCKET_SEND_FAILED = -1003; // socket发送失败
+    public const TARS_SOCKET_RECEIVE_FAILED = -1004; // socket接收失败
+    public const TARS_SOCKET_SELECT_TIMEOUT = -1005; // socket的select超时，也可以认为是svr超时
+    public const TARS_SOCKET_TIMEOUT = -1006; // socket超时，一般是svr后台没回包，或者seq错误
+    public const TARS_SOCKET_CONNECT_FAILED = -1007; // socket tcp 连接失败
+    public const TARS_SOCKET_CLOSED = -1008; // socket tcp 服务端连接关闭
+    public const TARS_SOCKET_CREATE_FAILED = -1009;
 
-    const TARS_SOCKET_SET_NONBLOCK_FAILED = -1002; // socket设置非阻塞失败
-    const TARS_SOCKET_SEND_FAILED = -1003; // socket发送失败
-    const TARS_SOCKET_RECEIVE_FAILED = -1004; // socket接收失败
-    const TARS_SOCKET_SELECT_TIMEOUT = -1005; // socket的select超时，也可以认为是svr超时
-    const TARS_SOCKET_TIMEOUT = -1006; // socket超时，一般是svr后台没回包，或者seq错误
-    const TARS_SOCKET_CONNECT_FAILED = -1007; // socket tcp 连接失败
-    const TARS_SOCKET_CLOSED = -1008; // socket tcp 服务端连接关闭
-    const TARS_SOCKET_CREATE_FAILED = -1009;
+    public const TARS_PUT_STRUCT_FAILED = -10009;
+    public const TARS_PUT_VECTOR_FAILED = -10010;
+    public const TARS_PUT_INT64_FAILED = -10011;
+    public const TARS_PUT_INT32_FAILED = -10012;
+    public const TARS_PUT_STRING_FAILED = -10013;
+    public const TARS_PUT_MAP_FAILED = -10014;
+    public const TARS_PUT_BOOL_FAILED = -10015;
+    public const TARS_PUT_FLOAT_FAILED = -10016;
+    public const TARS_PUT_CHAR_FAILED = -10017;
+    public const TARS_PUT_UINT8_FAILED = -10018;
+    public const TARS_PUT_SHORT_FAILED = -10019;
+    public const TARS_PUT_UINT16_FAILED = -10020;
+    public const TARS_PUT_UINT32_FAILED = -10021;
+    public const TARS_PUT_DOUBLE_FAILED = -10022;
 
-    const TARS_PUT_STRUCT_FAILED = -10009;
-    const TARS_PUT_VECTOR_FAILED = -10010;
-    const TARS_PUT_INT64_FAILED = -10011;
-    const TARS_PUT_INT32_FAILED = -10012;
-    const TARS_PUT_STRING_FAILED = -10013;
-    const TARS_PUT_MAP_FAILED = -10014;
-    const TARS_PUT_BOOL_FAILED = -10015;
-    const TARS_PUT_FLOAT_FAILED = -10016;
-    const TARS_PUT_CHAR_FAILED = -10017;
-    const TARS_PUT_UINT8_FAILED = -10018;
-    const TARS_PUT_SHORT_FAILED = -10019;
-    const TARS_PUT_UINT16_FAILED = -10020;
-    const TARS_PUT_UINT32_FAILED = -10021;
-    const TARS_PUT_DOUBLE_FAILED = -10022;
-
-    const TARS_ENCODE_FAILED = -10025;
-    const TARS_DECODE_FAILED = -10026;
-    const TARS_GET_INT64_FAILED = -10031;
-    const TARS_GET_MAP_FAILED = -10032;
-    const TARS_GET_STRUCT_FAILED = -10033;
-    const TARS_GET_STRING_FAILED = -10034;
-    const TARS_GET_VECTOR_FAILED = -10035;
-    const TARS_GET_INT32_FAILED = -10036;
-    const TARS_GET_BOOL_FAILED = -10037;
-    const TARS_GET_CHAR_FAILED = -10038;
-    const TARS_GET_UINT8_FAILED = -10039;
-    const TARS_GET_SHORT_FAILED = -10040;
-    const TARS_GET_UINT16_FAILED = -10041;
-    const TARS_GET_UINT32_FAILED = -10042;
-    const TARS_GET_DOUBLE_FAILED = -10043;
-    const TARS_GET_FLOAT_FAILED = -10044;
+    public const TARS_ENCODE_FAILED = -10025;
+    public const TARS_DECODE_FAILED = -10026;
+    public const TARS_GET_INT64_FAILED = -10031;
+    public const TARS_GET_MAP_FAILED = -10032;
+    public const TARS_GET_STRUCT_FAILED = -10033;
+    public const TARS_GET_STRING_FAILED = -10034;
+    public const TARS_GET_VECTOR_FAILED = -10035;
+    public const TARS_GET_INT32_FAILED = -10036;
+    public const TARS_GET_BOOL_FAILED = -10037;
+    public const TARS_GET_CHAR_FAILED = -10038;
+    public const TARS_GET_UINT8_FAILED = -10039;
+    public const TARS_GET_SHORT_FAILED = -10040;
+    public const TARS_GET_UINT16_FAILED = -10041;
+    public const TARS_GET_UINT32_FAILED = -10042;
+    public const TARS_GET_DOUBLE_FAILED = -10043;
+    public const TARS_GET_FLOAT_FAILED = -10044;
 
     // tars服务端可能返回的错误码
-    const SERVER_SUCCESS = 0; //服务器端处理成功
-    const SERVER_DECODE_ERR = -1; //服务器端解码异常
-    const SERVER_ENCODE_ERR = -2; //服务器端编码异常
-    const SERVER_NO_FUNC_ERR = -3; //服务器端没有该函数
-    const SERVER_NO_SERVANT_ERR = -4; //服务器端五该Servant对象
-    const SERVER_RESET_GRID = -5; //服务器端灰度状态不一致
-    const SERVER_QUEUE_TIMEOUT = -6; //服务器队列超过限制
-    const SERVER_ASYNC_CALL_TIMEOUT = -7; //异步调用超时
-    const SERVER_PROXY_CONNECT_ERR = -8; //proxy链接异常
-    const SERVER_UNKNOWN_ERR = -99; //服务器端未知异常
+    public const SERVER_SUCCESS = 0; //服务器端处理成功
+    public const SERVER_DECODE_ERR = -1; //服务器端解码异常
+    public const SERVER_ENCODE_ERR = -2; //服务器端编码异常
+    public const SERVER_NO_FUNC_ERR = -3; //服务器端没有该函数
+    public const SERVER_NO_SERVANT_ERR = -4; //服务器端五该Servant对象
+    public const SERVER_RESET_GRID = -5; //服务器端灰度状态不一致
+    public const SERVER_QUEUE_TIMEOUT = -6; //服务器队列超过限制
+    public const SERVER_ASYNC_CALL_TIMEOUT = -7; //异步调用超时
+    public const SERVER_PROXY_CONNECT_ERR = -8; //proxy链接异常
+    public const SERVER_UNKNOWN_ERR = -99; //服务器端未知异常
 
-    const ROUTE_FAIL = -100;
-    const UNKNOWN = 99999;
+    public const ROUTE_FAIL = -100;
+    public const UNKNOWN = 99999;
 
     protected static $PROPERTIES = [
         'message' => [

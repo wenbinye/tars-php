@@ -8,9 +8,9 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\SimpleCache\CacheInterface;
 use wenbinye\tars\registry\exception\RegistryException;
-use wenbinye\tars\rpc\ConnectionFactoryInterface;
-use wenbinye\tars\rpc\ConnectionInterface;
-use wenbinye\tars\rpc\SocketTcpConnection;
+use wenbinye\tars\rpc\connection\ConnectionFactoryInterface;
+use wenbinye\tars\rpc\connection\ConnectionInterface;
+use wenbinye\tars\rpc\connection\SocketTcpConnection;
 
 class RegistryConnectionFactory implements ConnectionFactoryInterface, LoggerAwareInterface
 {

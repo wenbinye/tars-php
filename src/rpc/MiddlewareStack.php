@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc;
 
+use wenbinye\tars\rpc\message\RequestInterface;
+use wenbinye\tars\rpc\message\ResponseInterface;
+
 class MiddlewareStack
 {
     /**

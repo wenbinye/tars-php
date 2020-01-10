@@ -4,35 +4,25 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server\rpc;
 
-use wenbinye\tars\rpc\RequestTrait;
+use wenbinye\tars\rpc\message\MethodMetadataInterface;
+use wenbinye\tars\rpc\message\RequestTrait;
 
 class ServerRequest implements ServerRequestInterface
 {
     use RequestTrait;
 
     /**
-     * @var string
-     */
-    private $payload;
-
-    /**
      * ServerRequest constructor.
      */
-    public function __construct(string $body)
+    public function __construct($servant, MethodMetadataInterface $methodMetadata, string $requestBody, array $parameters, int $version, int $requestId)
     {
-        $this->body = $body;
-        $unpackResult = \TUPAPI::decodeReqPacket($body);
-        $this->requestId = $unpackResult['iRequestId'];
-        $this->version = $unpackResult['iVersion'];
-        $this->servantName = $unpackResult['sServantName'];
-        $this->methodName = $unpackResult['sFuncName'];
-        $this->payload = $unpackResult['sBuffer'];
+        $this->servant = $servant;
+        $this->methodMetadata = $methodMetadata;
+        $this->body = $requestBody;
+        $this->requestId = $requestId;
+        $this->version = $version;
         $this->packetType = self::PACKET_TYPE;
         $this->messageType = self::MESSAGE_TYPE;
-    }
-
-    public function getPayload(): string
-    {
-        return $this->payload;
+        $this->parameters = $parameters;
     }
 }

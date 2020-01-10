@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\functional;
 
+use kuiper\di\ContainerBuilder;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
-use wenbinye\tars\di\ContainerBuilder;
 use wenbinye\tars\server\Config;
 use wenbinye\tars\server\framework\ServerConfiguration;
 
