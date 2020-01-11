@@ -7,10 +7,14 @@ namespace wenbinye\tars\server\listener;
 use kuiper\swoole\event\WorkerStartEvent;
 use kuiper\swoole\listener\EventListenerInterface;
 use kuiper\swoole\task\QueueInterface;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use wenbinye\tars\server\task\ReportTask;
 
-class WorkerKeepAlive implements EventListenerInterface
+class WorkerKeepAlive implements EventListenerInterface, LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     /**
      * @var QueueInterface
      */
@@ -22,6 +26,7 @@ class WorkerKeepAlive implements EventListenerInterface
     public function __invoke($event): void
     {
         if (0 === $event->getWorkerId()) {
+            $this->logger->debug('[WorkerKeepAlive] send report task');
             $this->taskQueue->put(new ReportTask());
         }
     }

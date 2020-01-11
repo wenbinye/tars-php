@@ -12,6 +12,7 @@ use kuiper\annotations\AnnotationReader;
 use kuiper\annotations\AnnotationReaderInterface;
 use kuiper\di\annotation\Bean;
 use kuiper\di\AwareInjection;
+use kuiper\di\ComponentCollection;
 use kuiper\di\ContainerBuilderAwareTrait;
 use kuiper\di\DefinitionConfiguration;
 use kuiper\di\PropertiesDefinitionSource;
@@ -193,7 +194,7 @@ class ServerConfiguration implements DefinitionConfiguration
             $this->addTarsServantMiddleware($container, $config);
 
             foreach ($config->get('application.listeners', []) as $event => $listenerId) {
-                $logger->debug("attach $listenerId");
+                $logger->debug("[ServerConfiguration] attach $listenerId");
                 $listener = $container->get($listenerId);
                 if ($listener instanceof EventListenerInterface) {
                     $dispatcher->addListener($listener->getSubscribedEvent(), $listener);
@@ -221,8 +222,16 @@ class ServerConfiguration implements DefinitionConfiguration
 
     private function addTarsServantMiddleware(ContainerInterface $container, Config $config): void
     {
-        foreach ($config->get('application.servants', []) as $servantName => $servantInterface) {
-            TarsServant::register($servantName, $servantInterface);
+        $serverRequestFactory = $container->get(ServerRequestFactoryInterface::class);
+        if ($serverRequestFactory instanceof ServerRequestFactory) {
+            foreach (ComponentCollection::getComponents(TarsServant::class) as $servantInterface) {
+                /** @var TarsServant $annotation */
+                $annotation = ComponentCollection::getAnnotation($servantInterface, TarsServant::class);
+                $serverRequestFactory->register($annotation->name, $servantInterface);
+            }
+            foreach ($config->get('application.servants', []) as $servantName => $servantInterface) {
+                $serverRequestFactory->register($servantName, $servantInterface);
+            }
         }
 
         $middlewares = $config->get('application.middleware.servant', []);
@@ -242,7 +251,7 @@ class ServerConfiguration implements DefinitionConfiguration
     public function serverProperties(PropertyLoader $propertyLoader, Config $config): ServerProperties
     {
         $serverProperties = $propertyLoader->loadServerProperties($config);
-        $configFile = $serverProperties->getBasePath().'/config.php';
+        $configFile = $serverProperties->getBasePath().'/src/config.php';
         if (file_exists($configFile)) {
             $config->merge(require $configFile);
         }

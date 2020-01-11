@@ -65,7 +65,7 @@ class ServerProperties
     private $logSize;
 
     /**
-     * @ConfigItem(factory="fromString")
+     * @ConfigItem(factory="wenbinye\tars\rpc\route\Route::fromString")
      *
      * @Assert\NotNull()
      *
@@ -73,7 +73,7 @@ class ServerProperties
      */
     private $node;
     /**
-     * @ConfigItem(factory="fromString")
+     * @ConfigItem(factory="wenbinye\tars\rpc\route\Route::fromString")
      *
      * @var Route
      */
@@ -158,7 +158,12 @@ class ServerProperties
 
     public function setBasePath(string $basePath): void
     {
-        $this->basePath = $basePath;
+        $this->basePath = rtrim($basePath, '/');
+    }
+
+    public function getSourcePath(): string
+    {
+        return $this->basePath.'/src';
     }
 
     public function getDataPath(): string
@@ -168,7 +173,7 @@ class ServerProperties
 
     public function setDataPath(string $dataPath): void
     {
-        $this->dataPath = $dataPath;
+        $this->dataPath = rtrim($dataPath, '/');
     }
 
     public function getLogPath(): string

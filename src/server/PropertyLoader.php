@@ -106,18 +106,7 @@ class PropertyLoader
             if (!$configItem) {
                 continue;
             }
-            $value = null;
-            foreach ([$configItem->name,
-                         $property->name,
-                         strtolower($property->name),
-                         Text::snakeCase($property->name, '-'),
-                         str_replace('ServantName', '', $property->name),
-                     ] as $candidate) {
-                if (isset($candidate, $config[$candidate])) {
-                    $value = $config[$candidate];
-                    break;
-                }
-            }
+            $value = $this->readConfigValue($config, $configItem, $property);
             if (!isset($value)) {
                 continue;
             }
@@ -134,9 +123,11 @@ class PropertyLoader
             } else {
                 if ($configItem->factory) {
                     if (false !== strpos($configItem->factory, '::')) {
-                        $value = call_user_func(explode('::', 2), $value);
+                        $value = call_user_func(explode('::', $configItem->factory, 2), $value);
+                    } elseif (method_exists(get_class($properties), $configItem->factory)) {
+                        $value = call_user_func([get_class($properties), $configItem->factory], $value);
                     } else {
-                        $value = call_user_func([(string) $reflectionClass->getMethod($getter)->getReturnType(), $configItem->factory], $value);
+                        $value = call_user_func($configItem->factory, $value);
                     }
                 } else {
                     $type = $reflectionClass->getMethod($getter)->getReturnType();
@@ -145,5 +136,24 @@ class PropertyLoader
                 $reflectionClass->getMethod('set'.$property->getName())->invoke($properties, $value);
             }
         }
+    }
+
+    /**
+     * @return string
+     */
+    private function readConfigValue(Config $config, ConfigItem $configItem, \ReflectionProperty $property): ?string
+    {
+        foreach ([$configItem->name,
+                     $property->name,
+                     strtolower($property->name),
+                     Text::snakeCase($property->name, '-'),
+                     str_replace('ServantName', '', $property->name),
+                 ] as $candidate) {
+            if (isset($candidate, $config[$candidate])) {
+                return $config[$candidate];
+            }
+        }
+
+        return null;
     }
 }

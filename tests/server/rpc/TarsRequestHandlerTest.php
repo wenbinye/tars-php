@@ -50,7 +50,6 @@ class TarsRequestHandlerTest extends TestCase
             ->andReturn(true);
         $container->shouldReceive('get')
             ->andReturn($this->servant);
-        TarsServant::register('PHPTest.PHPTcpServer.obj', HelloServiceServant::class);
 
         $annotationReader = AnnotationReader::getInstance();
         $packer = new Packer(new TarsTypeFactory($annotationReader));
@@ -59,6 +58,7 @@ class TarsRequestHandlerTest extends TestCase
         $this->serverRequestFactory = new ServerRequestFactory($container, $packer, $methodMetadataFactory);
         $this->responseFactory = new ResponseFactory($packer);
         $this->tarsRequestHandler = new TarsRequestHandler($packer);
+        $this->serverRequestFactory->register('PHPTest.PHPTcpServer.obj', HelloServiceServant::class);
     }
 
     public function testName()

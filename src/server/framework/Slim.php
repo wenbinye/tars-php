@@ -40,7 +40,7 @@ class Slim implements ContainerFactoryInterface
     public function requestHandler(ContainerInterface $container, ServerProperties $serverProperties): RequestHandlerInterface
     {
         $app = AppFactory::create(null, $container);
-        $routeFile = $serverProperties->getBasePath().'/routes.php';
+        $routeFile = $serverProperties->getBasePath().'/src/routes.php';
         if (file_exists($routeFile)) {
             require $routeFile;
         }

@@ -17,7 +17,7 @@ class ClientProperties
      */
     private $asyncThread;
     /**
-     * @ConfigItem(factory="fromString")
+     * @ConfigItem(factory="wenbinye\tars\rpc\route\Route::fromString")
      * @Assert\NotNull()
      *
      * @var Route
@@ -47,7 +47,7 @@ class ClientProperties
      *
      * @var int
      */
-    private $keepAliveInterval = 60000;
+    private $keepAliveInterval = 20000;
     /**
      * @ConfigItem()
      * @Assert\Range(min=1000)

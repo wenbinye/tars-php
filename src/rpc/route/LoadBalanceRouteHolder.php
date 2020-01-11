@@ -50,7 +50,7 @@ class LoadBalanceRouteHolder implements RefreshableRouteHolderInterface, LoggerA
             try {
                 $routes = $this->routeResolver->resolve($this->servantName);
             } catch (\Exception $e) {
-                $this->logger->error("Resolve {$this->servantName} failed: ".get_class($e).': '.$e->getMessage());
+                $this->logger->error("[LoadBalanceRouteHolder] Resolve {$this->servantName} failed: ".get_class($e).': '.$e->getMessage());
                 throw new \InvalidArgumentException('Cannot resolve route for servant '.$this->servantName, 0, $e);
             }
             if (empty($routes)) {

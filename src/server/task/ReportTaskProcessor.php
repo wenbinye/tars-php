@@ -65,7 +65,7 @@ class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
      */
     public function process($task): void
     {
-        $this->sendServerInfo();
+        $this->sendServerInfo(true);
         Timer::tick($this->clientProperties->getKeepAliveInterval(), function () {
             $this->sendServerInfo();
         });
@@ -79,17 +79,20 @@ class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
         });
     }
 
-    public function sendServerInfo()
+    public function sendServerInfo($firstTime = false)
     {
         $swooleServer = $this->server->getSwooleServer();
         if (!$swooleServer) {
             return;
         }
-        $pids = $this->server->getWorkerPidList();
-        if (empty($pids)) {
-            $this->logger->error($this->server->getServerConfig()->getServerName().' all workers are gone, wait for restart');
+        if (!$firstTime) {
+            // 首次不检查 pid，可能所有子进程还不能通过 ps 查到，可能是进程标题未修改
+            $pids = $this->server->getWorkerPidList();
+            if (empty($pids)) {
+                $this->logger->error('[ReportTaskProcessor] '.$this->server->getServerConfig()->getServerName().' all workers are gone, wait for restart');
 
-            return;
+                return;
+            }
         }
         $serverInfo = new ServerInfo();
         $serverInfo->serverName = $this->serverProperties->getServer();
@@ -97,6 +100,7 @@ class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
         $serverInfo->pid = $swooleServer->master_pid;
         foreach ($this->serverProperties->getAdapters() as $adapter) {
             $serverInfo->adapter = $adapter->getAdapterName();
+            $this->logger->info('[ReportTaskProcessor] send keep alive message', ['server' => $serverInfo]);
             $this->serverFClient->keepAlive($serverInfo);
         }
         $serverInfo->adapter = 'AdminAdapter';

@@ -50,6 +50,7 @@
     "slim/slim": "^4.3",
     "swoft/swoole-ide-helper": "^4.4",
     "symfony/event-dispatcher": "^5.0",
+    "symfony/finder": "^5.0",
     "winwin/composer-phpcs-plugin": "^0.1"
   },
     "repositories": {

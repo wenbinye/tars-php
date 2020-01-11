@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace wenbinye\tars\server\rpc;
 
 use Psr\Container\ContainerInterface;
-use wenbinye\tars\protocol\annotation\TarsServant;
 use wenbinye\tars\protocol\PackerInterface;
 use wenbinye\tars\rpc\message\MethodMetadata;
 use wenbinye\tars\rpc\message\MethodMetadataFactoryInterface;
@@ -25,21 +24,31 @@ class ServerRequestFactory implements ServerRequestFactoryInterface
      * @var TarsRpcPacker
      */
     private $packer;
+    /**
+     * @var array
+     */
+    private $servants;
 
     /**
      * ServerRequestFactory constructor.
      */
-    public function __construct(ContainerInterface $container, PackerInterface $packer, MethodMetadataFactoryInterface $methodMetadataFactory)
+    public function __construct(ContainerInterface $container, PackerInterface $packer, MethodMetadataFactoryInterface $methodMetadataFactory, array $servants = [])
     {
         $this->container = $container;
         $this->packer = new TarsRpcPacker($packer);
         $this->methodMetadataFactory = $methodMetadataFactory;
+        $this->servants = $servants;
+    }
+
+    public function register(string $servantName, string $servantInterface): void
+    {
+        $this->servants[$servantName] = $servantInterface;
     }
 
     public function create(string $requestBody): ServerRequestInterface
     {
         $unpackResult = \TUPAPI::decodeReqPacket($requestBody);
-        $servantInterface = TarsServant::getServantInterface($unpackResult['sServantName']);
+        $servantInterface = $this->servants[$unpackResult['sServantName']] ?? null;
         $version = $unpackResult['iVersion'];
         $requestId = $unpackResult['iRequestId'];
         if (!isset($servantInterface) || !$this->container->has($servantInterface)) {

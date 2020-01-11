@@ -1,0 +1,43 @@
+{
+    "name": "wenbinye/tars-demo",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ye Wenbin",
+            "email": "wenbinye@gmail.com"
+        }
+    ],
+    "repositories": {
+        "tars": {
+            "type": "path",
+            "url": "/home/ywb/src/php/tars"
+        },
+        "kuiper": {
+            "type": "path",
+            "url": "/home/ywb/work/kuiper/kuiper"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "extra": {
+        "tars": {
+            "server-name": "PHPHttpServer",
+            "manifest": [
+                "index.php",
+                {
+                    "name": "*.php",
+                    "in": "src"
+                },
+                {
+                    "followLinks": true,
+                    "name": "*.php",
+                    "exclude": [
+                        "composer"
+                    ],
+                    "in": "vendor"
+                }
+            ]
+        }
+    }
+}

@@ -23,7 +23,7 @@ class AdapterProperties
     private $name;
 
     /**
-     * @ConfigItem(factory="fromString")
+     * @ConfigItem(factory="wenbinye\tars\rpc\route\Route::fromString")
      * @Assert\NotNull()
      *
      * @var Route

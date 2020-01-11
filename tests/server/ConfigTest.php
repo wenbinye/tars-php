@@ -7,6 +7,7 @@ namespace wenbinye\tars\server;
 use kuiper\annotations\AnnotationReader;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Validator\Validation;
+use wenbinye\tars\rpc\route\Route;
 
 class ConfigTest extends TestCase
 {
@@ -43,6 +44,7 @@ bar=2
         $clientProperties = $propertyLoader->loadClientProperties($config);
         $serverProperties = $propertyLoader->loadServerProperties($config);
         $this->assertInstanceOf(ClientProperties::class, $clientProperties);
+        $this->assertInstanceOf(Route::class, $clientProperties->getLocator());
         // var_export([$clientProperties, $serverProperties]);
         // var_export($result->toArray());
     }

@@ -45,8 +45,12 @@ class ServerCommand extends Command
         $server = $this->containerFactory->create()->get(ServerInterface::class);
         try {
             $server->$action();
+
+            return 0;
         } catch (ServerStateException $e) {
             $output->writeln('<error>'.$e->getMessage().'</error>');
+
+            return -1;
         }
     }
 
