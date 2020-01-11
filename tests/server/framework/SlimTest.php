@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace wenbinye\tars\server\framework;
 
 use Composer\Autoload\ClassLoader;
-use kuiper\swoole\listener\HttpRequestHandler;
+use kuiper\swoole\listener\HttpRequestEventListener;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -29,8 +29,11 @@ class SlimTest extends TestCase
     public function testAware()
     {
         $container = (new Slim($this->loader))->create();
-        $requestEventListener = $container->get(HttpRequestHandler::class);
-        $this->assertAttributeInstanceOf(LoggerInterface::class, 'logger', $requestEventListener);
+        $requestEventListener = $container->get(HttpRequestEventListener::class);
+        $property = new \ReflectionProperty($requestEventListener, 'logger');
+        $property->setAccessible(true);
+        $this->assertInstanceOf(LoggerInterface::class, $property->getValue($requestEventListener));
+        // $this->assertAttributeInstanceOf(LoggerInterface::class, 'logger', $requestEventListener);
     }
 
     public function testRequestHandle()

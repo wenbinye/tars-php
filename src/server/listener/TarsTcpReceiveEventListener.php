@@ -9,7 +9,7 @@ use kuiper\swoole\listener\EventListenerInterface;
 use wenbinye\tars\server\rpc\RequestHandlerInterface;
 use wenbinye\tars\server\rpc\ServerRequestFactoryInterface;
 
-class TarsRpc implements EventListenerInterface
+class TarsTcpReceiveEventListener implements EventListenerInterface
 {
     /**
      * @var RequestHandlerInterface

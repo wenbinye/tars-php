@@ -10,7 +10,7 @@ use wenbinye\tars\rpc\message\Response;
 use wenbinye\tars\rpc\message\ResponseInterface;
 use wenbinye\tars\rpc\MiddlewareInterface;
 
-class RpcStatMiddleware implements MiddlewareInterface
+class StatMiddleware implements MiddlewareInterface
 {
     /**
      * @var StatInterface

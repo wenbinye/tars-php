@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc;
 
-interface TarsClientGeneratorInterface
+interface ServantProxyGeneratorInterface
 {
     /**
      * Generates servant client proxy class.

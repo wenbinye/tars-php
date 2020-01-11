@@ -10,7 +10,7 @@ use wenbinye\tars\rpc\message\RequestInterface;
 use wenbinye\tars\rpc\message\ResponseFactoryInterface;
 use wenbinye\tars\rpc\message\ReturnValueInterface;
 
-class TarsClient
+class TarsClient implements TarsClientInterface
 {
     /**
      * @var RequestFactoryInterface
@@ -48,10 +48,9 @@ class TarsClient
     }
 
     /**
-     * @param object $servant
-     * @param mixed  ...$args
+     * {@inheritdoc}
      */
-    public function send($servant, string $method, ...$args): array
+    public function call($servant, string $method, ...$args): array
     {
         $request = $this->requestFactory->createRequest($servant, $method, $args);
         $response = $this->middlewareStack->__invoke($request);

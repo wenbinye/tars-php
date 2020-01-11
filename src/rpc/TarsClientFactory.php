@@ -7,15 +7,15 @@ namespace wenbinye\tars\rpc;
 class TarsClientFactory implements TarsClientFactoryInterface
 {
     /**
-     * @var TarsClient
+     * @var TarsClientInterface
      */
     private $tarsClient;
     /**
-     * @var TarsClientGeneratorInterface
+     * @var ServantProxyGeneratorInterface
      */
     private $tarsClientGenerator;
 
-    public function __construct(TarsClient $tarsClient, TarsClientGeneratorInterface $tarsClientGenerator)
+    public function __construct(TarsClientInterface $tarsClient, ServantProxyGeneratorInterface $tarsClientGenerator)
     {
         $this->tarsClient = $tarsClient;
         $this->tarsClientGenerator = $tarsClientGenerator;

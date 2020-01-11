@@ -21,6 +21,11 @@ use kuiper\swoole\http\ResponseSenderInterface;
 use kuiper\swoole\http\ServerRequestFactoryInterface;
 use kuiper\swoole\http\ZendDiactorosServerRequestFactory;
 use kuiper\swoole\listener\EventListenerInterface;
+use kuiper\swoole\listener\HttpRequestEventListener;
+use kuiper\swoole\listener\ManagerStartEventListener;
+use kuiper\swoole\listener\StartEventListener;
+use kuiper\swoole\listener\TaskEventListener;
+use kuiper\swoole\listener\WorkerStartEventListener;
 use kuiper\swoole\ServerConfig;
 use kuiper\swoole\ServerInterface;
 use kuiper\swoole\ServerPort;
@@ -40,6 +45,7 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use wenbinye\tars\log\LogServant;
+use wenbinye\tars\protocol\annotation\TarsServant;
 use wenbinye\tars\protocol\Packer;
 use wenbinye\tars\protocol\PackerInterface;
 use wenbinye\tars\protocol\TarsTypeFactory;
@@ -57,15 +63,22 @@ use wenbinye\tars\rpc\message\RequestFactory;
 use wenbinye\tars\rpc\message\RequestFactoryInterface;
 use wenbinye\tars\rpc\message\RequestIdGenerator;
 use wenbinye\tars\rpc\message\RequestIdGeneratorInterface;
+use wenbinye\tars\rpc\message\ResponseFactory;
+use wenbinye\tars\rpc\message\ResponseFactoryInterface;
+use wenbinye\tars\rpc\ServantProxyGenerator;
+use wenbinye\tars\rpc\ServantProxyGeneratorInterface;
 use wenbinye\tars\rpc\TarsClient;
 use wenbinye\tars\rpc\TarsClientFactory;
 use wenbinye\tars\rpc\TarsClientFactoryInterface;
-use wenbinye\tars\rpc\TarsClientGenerator;
-use wenbinye\tars\rpc\TarsClientGeneratorInterface;
+use wenbinye\tars\rpc\TarsClientInterface;
 use wenbinye\tars\server\ClientProperties;
 use wenbinye\tars\server\Config;
+use wenbinye\tars\server\event\listener\TarsTcpReceiveEventListener;
+use wenbinye\tars\server\event\listener\WorkerKeepAlive;
 use wenbinye\tars\server\PropertyLoader;
 use wenbinye\tars\server\rpc\RequestHandlerInterface;
+use wenbinye\tars\server\rpc\ServerRequestFactory;
+use wenbinye\tars\server\rpc\ServerRequestFactoryInterface as TarsServerRequestFactoryInterface;
 use wenbinye\tars\server\rpc\TarsRequestHandler;
 use wenbinye\tars\server\ServerProperties;
 use wenbinye\tars\stat\collector\SystemCpuCollector;
@@ -76,6 +89,7 @@ use wenbinye\tars\stat\ServerFServant;
 use wenbinye\tars\stat\Stat;
 use wenbinye\tars\stat\StatFServant;
 use wenbinye\tars\stat\StatInterface;
+use wenbinye\tars\stat\StatMiddleware;
 use wenbinye\tars\stat\StatStoreAdapter;
 use wenbinye\tars\stat\SwooleTableStatStore;
 
@@ -85,28 +99,54 @@ class ServerConfiguration implements DefinitionConfiguration
 
     public function getDefinitions(): array
     {
+        Config::getInstance()->merge([
+            'application' => [
+                'monitor' => [
+                    'collectors' => [
+                        SystemCpuCollector::class,
+                    ],
+                ],
+                'middleware' => [
+                    'client' => [
+                        StatMiddleware::class,
+                    ],
+                ],
+                'listeners' => [
+                    StartEventListener::class,
+                    ManagerStartEventListener::class,
+                    WorkerStartEventListener::class,
+                    TaskEventListener::class,
+                    HttpRequestEventListener::class,
+                    TarsTcpReceiveEventListener::class,
+                    WorkerKeepAlive::class,
+                ],
+            ],
+        ]);
         $this->containerBuilder->addAwareInjection(AwareInjection::create(LoggerAwareInterface::class));
         $this->containerBuilder->addDefinitions(new PropertiesDefinitionSource(Config::getInstance()));
 
         $definitions = [
             AnnotationReaderInterface::class => factory([AnnotationReader::class, 'getInstance']),
+
             ServerInterface::class => autowire(SwooleServer::class),
             SwooleServer::class => get(ServerInterface::class),
             QueueInterface::class => autowire(Queue::class),
             ProcessorInterface::class => get(QueueInterface::class),
+
             StatInterface::class => autowire(Stat::class),
             StatStoreAdapter::class => autowire(SwooleTableStatStore::class),
+
             ServerRequestFactoryInterface::class => autowire(ZendDiactorosServerRequestFactory::class),
             RequestFactoryInterface::class => autowire(RequestFactory::class),
+            ResponseFactoryInterface::class => autowire(ResponseFactory::class),
+            TarsServerRequestFactoryInterface::class => autowire(ServerRequestFactory::class),
             RequestIdGeneratorInterface::class => autowire(RequestIdGenerator::class),
-            TarsClientGeneratorInterface::class => autowire(TarsClientGenerator::class),
-            TarsClientFactoryInterface::class => autowire(TarsClientFactory::class),
-            ResponseSenderInterface::class => autowire(ResponseSender::class),
-            ErrorHandlerInterface::class => autowire(DefaultErrorHandler::class),
+            ServantProxyGeneratorInterface::class => autowire(ServantProxyGenerator::class),
             MethodMetadataFactoryInterface::class => autowire(MethodMetadataFactory::class),
-            'monitorCollectors' => [
-                \DI\get(SystemCpuCollector::class),
-            ],
+            ErrorHandlerInterface::class => autowire(DefaultErrorHandler::class),
+            TarsClientFactoryInterface::class => autowire(TarsClientFactory::class),
+
+            ResponseSenderInterface::class => autowire(ResponseSender::class),
         ];
         foreach ([LogServant::class, ServerFServant::class,
                      StatFServant::class, PropertyFServant::class, ] as $clientClass) {
@@ -161,19 +201,36 @@ class ServerConfiguration implements DefinitionConfiguration
     /**
      * @Bean()
      */
-    public function tarsRequestHandler(ContainerInterface $container, Config $config, AnnotationReaderInterface $reader, PackerInterface $packer): RequestHandlerInterface
+    public function tarsRequestHandler(ContainerInterface $container, PackerInterface $packer, Config $config): RequestHandlerInterface
     {
-        $servants = [];
         $middlewares = [];
-        foreach ($config->get('application.servants', []) as $servantId) {
-            $servants[] = $container->get($servantId);
+        foreach ($config->get('application.servants', []) as $servantName => $servantInterface) {
+            TarsServant::register($servantName, $servantInterface);
         }
 
-        foreach ($config->get('application.servant_middlewares', []) as $middlewareId) {
+        foreach ($config->get('application.middleware.servant', []) as $middlewareId) {
             $middlewares[] = $container->get($middlewareId);
         }
 
-        return new TarsRequestHandler($servants, $reader, $packer, $middlewares);
+        return new TarsRequestHandler($packer, $middlewares);
+    }
+
+    /**
+     * @Bean()
+     */
+    public function tarsClient(ContainerInterface $container, Config $config): TarsClientInterface
+    {
+        $middlewares = [];
+
+        foreach ($config->get('application.middleware.client', []) as $middlewareId) {
+            $middlewares[] = $container->get($middlewareId);
+        }
+
+        return new TarsClient($container->get(ConnectionFactoryInterface::class),
+            $container->get(RequestFactoryInterface::class),
+            $container->get(ResponseFactoryInterface::class),
+            $container->get(ErrorHandlerInterface::class),
+            $middlewares);
     }
 
     /**
@@ -287,11 +344,11 @@ class ServerConfiguration implements DefinitionConfiguration
      * @Bean()
      */
     public function queryFServant(
-        TarsClientGeneratorInterface $clientGenerator, ConnectionFactory $connectionFactory,
-        PackerInterface $packer, RequestFactoryInterface $requestFactory,
-        MethodMetadataFactoryInterface $methodMetadataFactory, ErrorHandlerInterface $errorHandler): QueryFServant
+        ServantProxyGeneratorInterface $clientGenerator,
+        ConnectionFactory $connectionFactory, RequestFactoryInterface $requestFactory,
+        ResponseFactoryInterface $responseFactory, ErrorHandlerInterface $errorHandler): QueryFServant
     {
-        $client = new TarsClient($connectionFactory, $packer, $requestFactory, $methodMetadataFactory, $errorHandler);
+        $client = new TarsClient($connectionFactory, $requestFactory, $responseFactory, $errorHandler);
 
         return (new TarsClientFactory($client, $clientGenerator))->create(QueryFServant::class);
     }
@@ -318,10 +375,14 @@ class ServerConfiguration implements DefinitionConfiguration
 
     /**
      * @Bean()
-     * @Inject({"collectors" = "monitorCollectors"})
      */
-    public function monitor(ServerProperties $serverProperties, PropertyFServant $propertyFClient, array $collectors): MonitorInterface
+    public function monitor(ContainerInterface $container, Config $config, ServerProperties $serverProperties, PropertyFServant $propertyFClient): MonitorInterface
     {
+        $collectors = [];
+        foreach ($config->get('application.monitor.collectors', []) as $collector) {
+            $collectors[] = $container->get($collector);
+        }
+
         return new Monitor($serverProperties, $propertyFClient, $collectors);
     }
 }

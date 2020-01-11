@@ -13,13 +13,13 @@ class TarsClientGeneratorTest extends TestCase
     public function testGenerate()
     {
         $annotationReader = AnnotationReader::getInstance();
-        $generator = new TarsClientGenerator($annotationReader);
+        $generator = new ServantProxyGenerator($annotationReader);
         $clientClass = $generator->generate(LogServant::class);
         // $this->assertTrue(class_exists($clientClass));
 
         /** @var LogServant $client */
         $tarsClient = \Mockery::mock(TarsClient::class);
-        $tarsClient->shouldReceive('send')
+        $tarsClient->shouldReceive('call')
             ->withArgs(function (...$args) use ($clientClass) {
                 $this->assertInstanceOf($clientClass, $args[0]);
                 $this->assertEquals(array_slice($args, 1), [

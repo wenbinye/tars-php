@@ -20,37 +20,57 @@ use wenbinye\tars\server\Config;
 
 class TarsRequestHandlerTest extends TestCase
 {
+    /**
+     * @var RequestFactory
+     */
+    private $requestFactory;
+    /**
+     * @var HelloService
+     */
+    private $servant;
+    /**
+     * @var ServerRequestFactory
+     */
+    private $serverRequestFactory;
+    /**
+     * @var ResponseFactory
+     */
+    private $responseFactory;
+    /**
+     * @var TarsRequestHandler
+     */
+    private $tarsRequestHandler;
+
     protected function setUp(): void
     {
         Config::parseFile(__DIR__.'/../fixtures/PHPTest.PHPHttpServer.config.conf');
-    }
-
-    public function testName()
-    {
-        $servant = new HelloService();
+        $this->servant = new HelloService();
         $container = \Mockery::mock(ContainerInterface::class);
         $container->shouldReceive('has')
             ->andReturn(true);
         $container->shouldReceive('get')
-            ->andReturn($servant);
+            ->andReturn($this->servant);
         TarsServant::register('PHPTest.PHPTcpServer.obj', HelloServiceServant::class);
 
         $annotationReader = AnnotationReader::getInstance();
         $packer = new Packer(new TarsTypeFactory($annotationReader));
         $methodMetadataFactory = new MethodMetadataFactory($annotationReader);
-        $requestFactory = new RequestFactory($methodMetadataFactory, $packer, new RequestIdGenerator());
-        $serverRequestFactory = new ServerRequestFactory($container, $packer, $methodMetadataFactory);
-        $responseFactory = new ResponseFactory($packer);
-        $tarsRequestHandler = new TarsRequestHandler($packer);
+        $this->requestFactory = new RequestFactory($methodMetadataFactory, $packer, new RequestIdGenerator());
+        $this->serverRequestFactory = new ServerRequestFactory($container, $packer, $methodMetadataFactory);
+        $this->responseFactory = new ResponseFactory($packer);
+        $this->tarsRequestHandler = new TarsRequestHandler($packer);
+    }
 
+    public function testName()
+    {
         $message = 'world';
-        $request = $requestFactory->createRequest($servant, 'hello', [$message]);
+        $request = $this->requestFactory->createRequest($this->servant, 'hello', [$message]);
 
-        $response = $tarsRequestHandler->handle($serverRequestFactory->create($request->getBody()));
+        $response = $this->tarsRequestHandler->handle($this->serverRequestFactory->create($request->getBody()));
         // var_export($response);
         $this->assertTrue($response->isSuccess());
 
-        $clientResponse = $responseFactory->create($response->getBody(), $request);
+        $clientResponse = $this->responseFactory->create($response->getBody(), $request);
         // var_export($clientResponse);
         $this->assertEquals('hello '.$message, $clientResponse->getReturnValues()[0]->getData());
     }

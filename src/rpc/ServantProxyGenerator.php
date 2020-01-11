@@ -10,7 +10,7 @@ use Zend\Code\Generator\ClassGenerator;
 use Zend\Code\Generator\MethodGenerator;
 use Zend\Code\Generator\PropertyGenerator;
 
-class TarsClientGenerator implements TarsClientGeneratorInterface
+class ServantProxyGenerator implements ServantProxyGeneratorInterface
 {
     /**
      * @var AnnotationReaderInterface
@@ -42,7 +42,7 @@ class TarsClientGenerator implements TarsClientGeneratorInterface
         $phpClass->addMethod('__construct',
             [
                 [
-                    'type' => TarsClient::class,
+                    'type' => TarsClientInterface::class,
                     'name' => 'client',
                 ],
             ],
@@ -110,7 +110,7 @@ class TarsClientGenerator implements TarsClientGeneratorInterface
             }
             $outParameters[] = $returnValueName;
         }
-        $call = '$this->client->send($this, __FUNCTION__'.
+        $call = '$this->client->call($this, __FUNCTION__'.
             (empty($parameters) ? '' : ', '.$this->buildParameters($parameters)).');';
         if (empty($outParameters)) {
             return $call;
