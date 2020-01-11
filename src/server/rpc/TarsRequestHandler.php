@@ -9,19 +9,17 @@ use wenbinye\tars\rpc\ErrorCode;
 use wenbinye\tars\rpc\message\ParameterInterface;
 use wenbinye\tars\rpc\message\ResponseInterface;
 use wenbinye\tars\rpc\MiddlewareInterface;
-use wenbinye\tars\rpc\MiddlewareStack;
+use wenbinye\tars\rpc\MiddlewareSupport;
 use wenbinye\tars\rpc\TarsRpcPacker;
 
 class TarsRequestHandler implements RequestHandlerInterface
 {
+    use MiddlewareSupport;
+
     /**
      * @var TarsRpcPacker
      */
     private $packer;
-    /**
-     * @var MiddlewareStack
-     */
-    private $middlewareStack;
 
     /**
      * TarsRequestHandler constructor.
@@ -30,13 +28,13 @@ class TarsRequestHandler implements RequestHandlerInterface
      */
     public function __construct(PackerInterface $packer, array $middlewares = [])
     {
-        $this->middlewareStack = new MiddlewareStack($middlewares, [$this, 'invoke']);
         $this->packer = new TarsRpcPacker($packer);
+        $this->middlewares = $middlewares;
     }
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        return $this->middlewareStack->__invoke($request);
+        return $this->buildMiddlewareStack([$this, 'invoke'])->__invoke($request);
     }
 
     public function invoke(ServerRequestInterface $request): ResponseInterface

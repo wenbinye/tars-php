@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server\framework;
 
-use DI\Annotation\Inject;
 use function DI\autowire;
 use function DI\factory;
 use function DI\get;
+use function DI\value;
 use kuiper\annotations\AnnotationReader;
 use kuiper\annotations\AnnotationReaderInterface;
 use kuiper\di\annotation\Bean;
@@ -40,7 +40,6 @@ use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
-use Psr\SimpleCache\CacheInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -76,7 +75,6 @@ use wenbinye\tars\server\Config;
 use wenbinye\tars\server\event\listener\TarsTcpReceiveEventListener;
 use wenbinye\tars\server\event\listener\WorkerKeepAlive;
 use wenbinye\tars\server\PropertyLoader;
-use wenbinye\tars\server\rpc\RequestHandlerInterface;
 use wenbinye\tars\server\rpc\ServerRequestFactory;
 use wenbinye\tars\server\rpc\ServerRequestFactoryInterface as TarsServerRequestFactoryInterface;
 use wenbinye\tars\server\rpc\TarsRequestHandler;
@@ -126,6 +124,7 @@ class ServerConfiguration implements DefinitionConfiguration
         $this->containerBuilder->addDefinitions(new PropertiesDefinitionSource(Config::getInstance()));
 
         $definitions = [
+            Config::class => value(Config::getInstance()),
             AnnotationReaderInterface::class => factory([AnnotationReader::class, 'getInstance']),
 
             ServerInterface::class => autowire(SwooleServer::class),
@@ -145,24 +144,24 @@ class ServerConfiguration implements DefinitionConfiguration
             MethodMetadataFactoryInterface::class => autowire(MethodMetadataFactory::class),
             ErrorHandlerInterface::class => autowire(DefaultErrorHandler::class),
             TarsClientFactoryInterface::class => autowire(TarsClientFactory::class),
+            TarsClientInterface::class => autowire(TarsClient::class),
+            'registryCache' => autowire(SwooleTableRegistryCache::class),
+            RegistryConnectionFactory::class => autowire()
+                ->constructorParameter('cache', get('registryCache')),
+            ConnectionFactoryInterface::class => autowire(ConnectionFactoryChain::class)
+                ->constructorParameter('connectionFactories', [
+                    get(ConnectionFactory::class),
+                    get(RegistryConnectionFactory::class),
+                ]),
 
             ResponseSenderInterface::class => autowire(ResponseSender::class),
         ];
-        foreach ([LogServant::class, ServerFServant::class,
-                     StatFServant::class, PropertyFServant::class, ] as $clientClass) {
+        foreach ([LogServant::class, StatFServant::class, ServerFServant::class, PropertyFServant::class] as $clientClass) {
             $definitions[$clientClass] = factory([TarsClientFactoryInterface::class, 'create'])
                 ->parameter('clientClassName', $clientClass);
         }
 
         return $definitions;
-    }
-
-    /**
-     * @Bean()
-     */
-    public function config(): Config
-    {
-        return Config::getInstance();
     }
 
     /**
@@ -182,6 +181,9 @@ class ServerConfiguration implements DefinitionConfiguration
     {
         $dispatcher = new EventDispatcher();
         $dispatcher->addListener(BeforeStartEvent::class, static function () use ($container, $dispatcher, $config, $logger) {
+            $this->addTarsClientMiddleware($container, $config);
+            $this->addTarsServantMiddleware($container, $config);
+
             foreach ($config->get('application.listeners', []) as $event => $listenerId) {
                 $logger->debug("attach $listenerId");
                 $listener = $container->get($listenerId);
@@ -198,39 +200,30 @@ class ServerConfiguration implements DefinitionConfiguration
         return $dispatcher;
     }
 
-    /**
-     * @Bean()
-     */
-    public function tarsRequestHandler(ContainerInterface $container, PackerInterface $packer, Config $config): RequestHandlerInterface
+    private function addTarsClientMiddleware(ContainerInterface $container, Config $config): void
     {
-        $middlewares = [];
+        $middlewares = $config->get('application.middleware.client', []);
+        if (!empty($middlewares)) {
+            $tarsClient = $container->get(TarsClient::class);
+            foreach ($middlewares as $middlewareId) {
+                $tarsClient->addMiddleware($container->get($middlewareId));
+            }
+        }
+    }
+
+    private function addTarsServantMiddleware(ContainerInterface $container, Config $config): void
+    {
         foreach ($config->get('application.servants', []) as $servantName => $servantInterface) {
             TarsServant::register($servantName, $servantInterface);
         }
 
-        foreach ($config->get('application.middleware.servant', []) as $middlewareId) {
-            $middlewares[] = $container->get($middlewareId);
+        $middlewares = $config->get('application.middleware.servant', []);
+        if (!empty($middlewares)) {
+            $tarsRequestHandler = $container->get(TarsRequestHandler::class);
+            foreach ($middlewares as $middlewareId) {
+                $tarsRequestHandler->addMiddleware($container->get($middlewareId));
+            }
         }
-
-        return new TarsRequestHandler($packer, $middlewares);
-    }
-
-    /**
-     * @Bean()
-     */
-    public function tarsClient(ContainerInterface $container, Config $config): TarsClientInterface
-    {
-        $middlewares = [];
-
-        foreach ($config->get('application.middleware.client', []) as $middlewareId) {
-            $middlewares[] = $container->get($middlewareId);
-        }
-
-        return new TarsClient($container->get(ConnectionFactoryInterface::class),
-            $container->get(RequestFactoryInterface::class),
-            $container->get(ResponseFactoryInterface::class),
-            $container->get(ErrorHandlerInterface::class),
-            $middlewares);
     }
 
     /**
@@ -306,30 +299,6 @@ class ServerConfiguration implements DefinitionConfiguration
     }
 
     /**
-     * @Bean()
-     */
-    public function requestIdGenerator(): RequestIdGeneratorInterface
-    {
-        return new RequestIdGenerator();
-    }
-
-    /**
-     * @Bean()
-     */
-    public function errorHandler(): ErrorHandlerInterface
-    {
-        return new DefaultErrorHandler();
-    }
-
-    /**
-     * @Bean("registryCache")
-     */
-    public function cache(): CacheInterface
-    {
-        return new SwooleTableRegistryCache();
-    }
-
-    /**
      * @Bean
      */
     public function staticConnectionFactory(ClientProperties $clientProperties): ConnectionFactory
@@ -351,26 +320,6 @@ class ServerConfiguration implements DefinitionConfiguration
         $client = new TarsClient($connectionFactory, $requestFactory, $responseFactory, $errorHandler);
 
         return (new TarsClientFactory($client, $clientGenerator))->create(QueryFServant::class);
-    }
-
-    /**
-     * @Bean()
-     * @Inject({"cache" = "registryCache"})
-     */
-    public function registryConnectionFactory(QueryFServant $queryFClient, CacheInterface $cache, LoggerInterface $logger): RegistryConnectionFactory
-    {
-        $registryConnectionFactory = new RegistryConnectionFactory($queryFClient, $cache);
-        $registryConnectionFactory->setLogger($logger);
-
-        return $registryConnectionFactory;
-    }
-
-    /**
-     * @Bean()
-     */
-    public function connectionFactory(ConnectionFactory $staticConnectionFactory, RegistryConnectionFactory $registryConnectionFactory): ConnectionFactoryInterface
-    {
-        return new ConnectionFactoryChain([$staticConnectionFactory, $registryConnectionFactory]);
     }
 
     /**

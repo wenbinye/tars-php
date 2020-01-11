@@ -8,19 +8,30 @@ use wenbinye\tars\rpc\connection\ConnectionFactoryInterface;
 use wenbinye\tars\rpc\message\RequestFactoryInterface;
 use wenbinye\tars\rpc\message\RequestInterface;
 use wenbinye\tars\rpc\message\ResponseFactoryInterface;
+use wenbinye\tars\rpc\message\ResponseInterface;
 use wenbinye\tars\rpc\message\ReturnValueInterface;
 
 class TarsClient implements TarsClientInterface
 {
+    use MiddlewareSupport;
+
     /**
      * @var RequestFactoryInterface
      */
     private $requestFactory;
 
     /**
-     * @var MiddlewareStack
+     * @var ConnectionFactoryInterface
      */
-    private $middlewareStack;
+    private $connectionFactory;
+    /**
+     * @var ResponseFactoryInterface
+     */
+    private $responseFactory;
+    /**
+     * @var ErrorHandlerInterface|null
+     */
+    private $errorHandler;
 
     /**
      * AbstractClient constructor.
@@ -34,17 +45,10 @@ class TarsClient implements TarsClientInterface
                                 array $middlewares = [])
     {
         $this->requestFactory = $requestFactory;
-        $this->middlewareStack = new MiddlewareStack($middlewares, static function (RequestInterface $request) use ($connectionFactory, $errorHandler, $responseFactory) {
-            $connection = $connectionFactory->create($request->getServantName());
-            $rawContent = $connection->send($request);
-
-            $response = $responseFactory->create($rawContent, $request->withAttribute('route', $connection->getRoute()));
-            if (isset($errorHandler) && !$response->isSuccess()) {
-                return $errorHandler->handle($response);
-            }
-
-            return $response;
-        });
+        $this->connectionFactory = $connectionFactory;
+        $this->responseFactory = $responseFactory;
+        $this->errorHandler = $errorHandler;
+        $this->middlewares = $middlewares;
     }
 
     /**
@@ -53,10 +57,33 @@ class TarsClient implements TarsClientInterface
     public function call($servant, string $method, ...$args): array
     {
         $request = $this->requestFactory->createRequest($servant, $method, $args);
-        $response = $this->middlewareStack->__invoke($request);
+        $response = $this->buildMiddlewareStack([$this, 'send'])->__invoke($request);
 
         return array_map(static function (ReturnValueInterface $value) {
             return $value->getData();
         }, $response->getReturnValues());
+    }
+
+    public function addMiddleware(MiddlewareInterface $middleware): self
+    {
+        if ($this->middlewareStack) {
+            throw new \InvalidArgumentException('Cannot add middleware after client first call');
+        }
+        $this->middlewares[] = $middleware;
+
+        return $this;
+    }
+
+    public function send(RequestInterface $request): ResponseInterface
+    {
+        $connection = $this->connectionFactory->create($request->getServantName());
+        $rawContent = $connection->send($request);
+
+        $response = $this->responseFactory->create($rawContent, $request->withAttribute('route', $connection->getRoute()));
+        if (isset($this->errorHandler) && !$response->isSuccess()) {
+            return $this->errorHandler->handle($response);
+        }
+
+        return $response;
     }
 }
