@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-namespace wenbinye\tars\server\event\listener;
+namespace wenbinye\tars\server\listener;
 
-use wenbinye\tars\server\event\WorkerStartEvent;
-use wenbinye\tars\server\task\QueueInterface;
+use kuiper\swoole\event\WorkerStartEvent;
+use kuiper\swoole\listener\EventListenerInterface;
+use kuiper\swoole\task\QueueInterface;
 use wenbinye\tars\server\task\ReportTask;
 
 class WorkerKeepAlive implements EventListenerInterface

@@ -90,6 +90,7 @@ class MethodMetadata implements MethodMetadataInterface
         if (!$dummy) {
             $dummy = new MethodMetadata('', '', '', '', []);
         }
+
         return $dummy;
     }
 }

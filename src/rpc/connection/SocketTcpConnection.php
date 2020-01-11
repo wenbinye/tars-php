@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc\connection;
 
-use wenbinye\tars\rpc\connection\AbstractConnection;
 use wenbinye\tars\rpc\ErrorCode;
 use wenbinye\tars\rpc\exception;
 use wenbinye\tars\rpc\message\RequestInterface;

@@ -2,15 +2,16 @@
 
 declare(strict_types=1);
 
-namespace wenbinye\tars\registry;
+namespace wenbinye\tars\rpc\route;
 
 use Psr\SimpleCache\CacheInterface;
 use Swoole\Table;
+use wenbinye\tars\registry\EndpointF;
 
 class SwooleTableRegistryCache implements CacheInterface
 {
-    const KEY_ROUTES = 'routes';
-    const KEY_EXPIRES = 'expires';
+    public const KEY_ROUTES = 'routes';
+    public const KEY_EXPIRES = 'expires';
     /**
      * @var Table
      */
@@ -41,7 +42,7 @@ class SwooleTableRegistryCache implements CacheInterface
     {
         $result = $this->table->get($key);
         if ($result && time() < $result[self::KEY_EXPIRES]) {
-            return unserialize($result[self::KEY_ROUTES]);
+            return \unserialize($result[self::KEY_ROUTES], ['allowed_classes' => [Route::class]]);
         }
 
         return $default;

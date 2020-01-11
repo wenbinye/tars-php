@@ -31,7 +31,7 @@ use kuiper\swoole\ServerInterface;
 use kuiper\swoole\ServerPort;
 use kuiper\swoole\ServerType;
 use kuiper\swoole\SwooleServer;
-use kuiper\swoole\task\ProcessorInterface;
+use kuiper\swoole\task\DispatcherInterface;
 use kuiper\swoole\task\Queue;
 use kuiper\swoole\task\QueueInterface;
 use Monolog\Handler\StreamHandler;
@@ -49,10 +49,7 @@ use wenbinye\tars\protocol\Packer;
 use wenbinye\tars\protocol\PackerInterface;
 use wenbinye\tars\protocol\TarsTypeFactory;
 use wenbinye\tars\registry\QueryFServant;
-use wenbinye\tars\registry\RegistryConnectionFactory;
-use wenbinye\tars\registry\SwooleTableRegistryCache;
 use wenbinye\tars\rpc\connection\ConnectionFactory;
-use wenbinye\tars\rpc\connection\ConnectionFactoryChain;
 use wenbinye\tars\rpc\connection\ConnectionFactoryInterface;
 use wenbinye\tars\rpc\DefaultErrorHandler;
 use wenbinye\tars\rpc\ErrorHandlerInterface;
@@ -64,6 +61,11 @@ use wenbinye\tars\rpc\message\RequestIdGenerator;
 use wenbinye\tars\rpc\message\RequestIdGeneratorInterface;
 use wenbinye\tars\rpc\message\ResponseFactory;
 use wenbinye\tars\rpc\message\ResponseFactoryInterface;
+use wenbinye\tars\rpc\route\ChainRouteResolver;
+use wenbinye\tars\rpc\route\InMemoryRouteResolver;
+use wenbinye\tars\rpc\route\RegistryRouteResolver;
+use wenbinye\tars\rpc\route\RouteResolverInterface;
+use wenbinye\tars\rpc\route\SwooleTableRegistryCache;
 use wenbinye\tars\rpc\ServantProxyGenerator;
 use wenbinye\tars\rpc\ServantProxyGeneratorInterface;
 use wenbinye\tars\rpc\TarsClient;
@@ -72,9 +74,10 @@ use wenbinye\tars\rpc\TarsClientFactoryInterface;
 use wenbinye\tars\rpc\TarsClientInterface;
 use wenbinye\tars\server\ClientProperties;
 use wenbinye\tars\server\Config;
-use wenbinye\tars\server\event\listener\TarsTcpReceiveEventListener;
-use wenbinye\tars\server\event\listener\WorkerKeepAlive;
+use wenbinye\tars\server\listener\TarsTcpReceiveEventListener;
+use wenbinye\tars\server\listener\WorkerKeepAlive;
 use wenbinye\tars\server\PropertyLoader;
+use wenbinye\tars\server\rpc\RequestHandlerInterface;
 use wenbinye\tars\server\rpc\ServerRequestFactory;
 use wenbinye\tars\server\rpc\ServerRequestFactoryInterface as TarsServerRequestFactoryInterface;
 use wenbinye\tars\server\rpc\TarsRequestHandler;
@@ -90,6 +93,7 @@ use wenbinye\tars\stat\StatInterface;
 use wenbinye\tars\stat\StatMiddleware;
 use wenbinye\tars\stat\StatStoreAdapter;
 use wenbinye\tars\stat\SwooleTableStatStore;
+use wenbinye\tars\support\loadBalance\RoundRobin;
 
 class ServerConfiguration implements DefinitionConfiguration
 {
@@ -130,7 +134,7 @@ class ServerConfiguration implements DefinitionConfiguration
             ServerInterface::class => autowire(SwooleServer::class),
             SwooleServer::class => get(ServerInterface::class),
             QueueInterface::class => autowire(Queue::class),
-            ProcessorInterface::class => get(QueueInterface::class),
+            DispatcherInterface::class => get(QueueInterface::class),
 
             StatInterface::class => autowire(Stat::class),
             StatStoreAdapter::class => autowire(SwooleTableStatStore::class),
@@ -140,19 +144,23 @@ class ServerConfiguration implements DefinitionConfiguration
             ResponseFactoryInterface::class => autowire(ResponseFactory::class),
             TarsServerRequestFactoryInterface::class => autowire(ServerRequestFactory::class),
             RequestIdGeneratorInterface::class => autowire(RequestIdGenerator::class),
+            RequestHandlerInterface::class => autowire(TarsRequestHandler::class),
+
             ServantProxyGeneratorInterface::class => autowire(ServantProxyGenerator::class),
             MethodMetadataFactoryInterface::class => autowire(MethodMetadataFactory::class),
             ErrorHandlerInterface::class => autowire(DefaultErrorHandler::class),
             TarsClientFactoryInterface::class => autowire(TarsClientFactory::class),
             TarsClientInterface::class => autowire(TarsClient::class),
             'registryCache' => autowire(SwooleTableRegistryCache::class),
-            RegistryConnectionFactory::class => autowire()
-                ->constructorParameter('cache', get('registryCache')),
-            ConnectionFactoryInterface::class => autowire(ConnectionFactoryChain::class)
-                ->constructorParameter('connectionFactories', [
-                    get(ConnectionFactory::class),
-                    get(RegistryConnectionFactory::class),
+            RouteResolverInterface::class => autowire(ChainRouteResolver::class)
+                ->constructorParameter('resolvers', [
+                    get(InMemoryRouteResolver::class),
+                    get(RegistryRouteResolver::class),
                 ]),
+            RegistryRouteResolver::class => autowire()
+                ->constructorParameter('cache', get('registryCache')),
+            ConnectionFactoryInterface::class => autowire(ConnectionFactory::class)
+                ->constructorParameter('loadBalanceAlgorithm', RoundRobin::class),
 
             ResponseSenderInterface::class => autowire(ResponseSender::class),
         ];
@@ -180,7 +188,7 @@ class ServerConfiguration implements DefinitionConfiguration
     public function eventDispatcher(ContainerInterface $container, Config $config, LoggerInterface $logger): EventDispatcherInterface
     {
         $dispatcher = new EventDispatcher();
-        $dispatcher->addListener(BeforeStartEvent::class, static function () use ($container, $dispatcher, $config, $logger) {
+        $dispatcher->addListener(BeforeStartEvent::class, function () use ($container, $dispatcher, $config, $logger) {
             $this->addTarsClientMiddleware($container, $config);
             $this->addTarsServantMiddleware($container, $config);
 
@@ -263,7 +271,11 @@ class ServerConfiguration implements DefinitionConfiguration
                 ServerType::fromValue($adapter->getSwooleServerType()));
         }
 
-        return new ServerConfig($serverProperties->getServerName(), $serverProperties->getSwooleSettings(), $ports);
+        $serverConfig = new ServerConfig($serverProperties->getServerName(), $serverProperties->getSwooleSettings(), $ports);
+        $serverConfig->setMasterPidFile($serverProperties->getDataPath().'/master.pid');
+        $serverConfig->setManagerPidFile($serverProperties->getDataPath().'/manager.pid');
+
+        return $serverConfig;
     }
 
     /**
@@ -301,10 +313,11 @@ class ServerConfiguration implements DefinitionConfiguration
     /**
      * @Bean
      */
-    public function staticConnectionFactory(ClientProperties $clientProperties): ConnectionFactory
+    public function inMemoryRouteResolver(ClientProperties $clientProperties, ServerProperties $serverProperties): InMemoryRouteResolver
     {
-        $factory = new ConnectionFactory();
+        $factory = new InMemoryRouteResolver();
         $factory->addRoute($clientProperties->getLocator());
+        $factory->addRoute($serverProperties->getNode());
 
         return $factory;
     }
@@ -312,14 +325,13 @@ class ServerConfiguration implements DefinitionConfiguration
     /**
      * @Bean()
      */
-    public function queryFServant(
-        ServantProxyGeneratorInterface $clientGenerator,
-        ConnectionFactory $connectionFactory, RequestFactoryInterface $requestFactory,
-        ResponseFactoryInterface $responseFactory, ErrorHandlerInterface $errorHandler): QueryFServant
+    public function queryFClient(InMemoryRouteResolver $routeResolver, RequestFactoryInterface $requestFactory,
+                                 ResponseFactoryInterface $responseFactory, ErrorHandlerInterface $errorHandler,
+                                 ServantProxyGeneratorInterface $proxyGenerator): QueryFServant
     {
-        $client = new TarsClient($connectionFactory, $requestFactory, $responseFactory, $errorHandler);
+        $client = new TarsClient(new ConnectionFactory($routeResolver), $requestFactory, $responseFactory, $errorHandler);
 
-        return (new TarsClientFactory($client, $clientGenerator))->create(QueryFServant::class);
+        return (new TarsClientFactory($client, $proxyGenerator))->create(QueryFServant::class);
     }
 
     /**

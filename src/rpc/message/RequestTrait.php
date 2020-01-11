@@ -78,6 +78,7 @@ trait RequestTrait
     {
         return $this->methodMetadata->getServantName();
     }
+
     public function getFuncName(): string
     {
         return $this->methodMetadata->getMethodName();
@@ -177,9 +178,6 @@ trait RequestTrait
         return $new;
     }
 
-    /**
-     * @return MethodMetadataInterface
-     */
     public function getMethod(): MethodMetadataInterface
     {
         return $this->methodMetadata;

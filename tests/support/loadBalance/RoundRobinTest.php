@@ -1,0 +1,17 @@
+<?php
+
+declare(strict_types=1);
+
+namespace wenbinye\tars\support\loadBalance;
+
+use PHPUnit\Framework\TestCase;
+
+class RoundRobinTest extends TestCase
+{
+    public function testSelect()
+    {
+        $hosts = ['a', 'b', 'c'];
+        $rr = new RoundRobin($hosts, [5, 3, 2]);
+        $this->assertContains($rr->select(), $hosts);
+    }
+}

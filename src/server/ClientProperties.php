@@ -47,7 +47,7 @@ class ClientProperties
      *
      * @var int
      */
-    private $keepAliveInterval;
+    private $keepAliveInterval = 60000;
     /**
      * @ConfigItem()
      * @Assert\Range(min=1000)

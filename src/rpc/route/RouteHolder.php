@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc\route;
 
-use wenbinye\tars\rpc\route\Route;
-use wenbinye\tars\rpc\route\RouteResolverInterface;
-
-class RouteHolder implements RouteResolverInterface
+class RouteHolder implements RouteHolderInterface
 {
     /**
      * @var Route
@@ -22,7 +19,7 @@ class RouteHolder implements RouteResolverInterface
         $this->route = $route;
     }
 
-    public function resolve(): Route
+    public function get(): Route
     {
         return $this->route;
     }

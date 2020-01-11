@@ -16,7 +16,7 @@ use wenbinye\tars\stat\ServerFServant;
 use wenbinye\tars\stat\ServerInfo;
 use wenbinye\tars\stat\StatInterface;
 
-class ReportTaskHandler implements ProcessorInterface, LoggerAwareInterface
+class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
@@ -63,14 +63,20 @@ class ReportTaskHandler implements ProcessorInterface, LoggerAwareInterface
     /**
      * @param ReportTask $task
      */
-    public function handle($task): void
+    public function process($task): void
     {
         $this->sendServerInfo();
-        Timer::tick($this->clientProperties->getKeepAliveInterval(), [$this, 'sendServerInfo']);
+        Timer::tick($this->clientProperties->getKeepAliveInterval(), function () {
+            $this->sendServerInfo();
+        });
         $this->sendStat();
-        Timer::tick($this->clientProperties->getReportInterval(), [$this, 'sendStat']);
+        Timer::tick($this->clientProperties->getReportInterval(), function () {
+            $this->sendStat();
+        });
         $this->sendMonitorInfo();
-        Timer::tick($this->clientProperties->getReportInterval(), [$this, 'sendMonitorInfo']);
+        Timer::tick($this->clientProperties->getReportInterval(), function () {
+            $this->sendMonitorInfo();
+        });
     }
 
     public function sendServerInfo()
@@ -102,7 +108,7 @@ class ReportTaskHandler implements ProcessorInterface, LoggerAwareInterface
         $this->statClient->send();
     }
 
-    private function sendMonitorInfo()
+    public function sendMonitorInfo()
     {
         $this->monitor->monitor();
     }

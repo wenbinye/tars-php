@@ -74,8 +74,9 @@ class Request implements RequestInterface
         $ret = [];
         /** @var ParameterInterface $parameter */
         foreach ($this->parameters as $parameter) {
-            $ret[$this->version === self::TARS_VERSION ? $parameter->getOrder() : $parameter->getName()] = $parameter->getPayload();
+            $ret[self::TARS_VERSION === $this->version ? $parameter->getOrder() : $parameter->getName()] = $parameter->getPayload();
         }
+
         return $ret;
     }
 

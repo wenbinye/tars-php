@@ -27,12 +27,14 @@ class RouteTest extends TestCase
                 'port' => 19386,
                 'timeout' => 60000,
                 'servantName' => 'tars.tarsnode.ServerObj',
+                'weight' => 100,
             ]],
             ['tcp -h 127.0.0.1 -p 18080 -t 3000', [
                 'protocol' => 'tcp',
                 'host' => '127.0.0.1',
                 'port' => 18080,
                 'timeout' => 3000,
+                'weight' => 100,
             ]],
         ];
     }

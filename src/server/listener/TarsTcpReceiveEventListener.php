@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace wenbinye\tars\server\event\listener;
+namespace wenbinye\tars\server\listener;
 
 use kuiper\swoole\event\ReceiveEvent;
 use kuiper\swoole\listener\EventListenerInterface;

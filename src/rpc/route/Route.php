@@ -40,6 +40,11 @@ class Route
      */
     private $servantName;
 
+    /**
+     * @var int
+     */
+    private $weight;
+
     private static $SHORT_OPTIONS = [
         'host' => 'h',
         'port' => 'p',
@@ -49,13 +54,14 @@ class Route
     /**
      * Route constructor.
      */
-    public function __construct(string $servantName, string $protocol, string $host, int $port, int $timeout)
+    public function __construct(string $servantName, string $protocol, string $host, int $port, int $timeout, int $weight = 100)
     {
         $this->protocol = $protocol;
         $this->host = $host;
         $this->port = $port;
         $this->timeout = $timeout;
         $this->servantName = $servantName;
+        $this->weight = $weight;
     }
 
     public function getProtocol(): string
@@ -83,7 +89,12 @@ class Route
         return $this->servantName;
     }
 
-    public function toArray()
+    public function getWeight(): int
+    {
+        return $this->weight;
+    }
+
+    public function toArray(): array
     {
         return array_filter(get_object_vars($this));
     }

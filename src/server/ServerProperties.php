@@ -67,6 +67,14 @@ class ServerProperties
     /**
      * @ConfigItem(factory="fromString")
      *
+     * @Assert\NotNull()
+     *
+     * @var Route
+     */
+    private $node;
+    /**
+     * @ConfigItem(factory="fromString")
+     *
      * @var Route
      */
     private $local;
@@ -191,6 +199,16 @@ class ServerProperties
     public function setLogSize(int $logSize): void
     {
         $this->logSize = $logSize;
+    }
+
+    public function getNode(): Route
+    {
+        return $this->node;
+    }
+
+    public function setNode(Route $node): void
+    {
+        $this->node = $node;
     }
 
     public function getLocal(): Route

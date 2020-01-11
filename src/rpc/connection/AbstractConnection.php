@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc\connection;
 
-use wenbinye\tars\rpc\connection\ConnectionInterface;
 use wenbinye\tars\rpc\ErrorCode;
 use wenbinye\tars\rpc\exception\CommunicationException;
 use wenbinye\tars\rpc\exception\ConnectionException;
 use wenbinye\tars\rpc\message\RequestInterface;
-use wenbinye\tars\rpc\route\RefreshableRouteResolverInterface;
+use wenbinye\tars\rpc\route\RefreshableRouteHolderInterface;
 use wenbinye\tars\rpc\route\Route;
-use wenbinye\tars\rpc\route\RouteResolverInterface;
+use wenbinye\tars\rpc\route\RouteHolderInterface;
 
 abstract class AbstractConnection implements ConnectionInterface
 {
@@ -21,14 +20,14 @@ abstract class AbstractConnection implements ConnectionInterface
     private $resource;
 
     /**
-     * @var RouteResolverInterface
+     * @var RouteHolderInterface
      */
     private $routeResolver;
 
     /**
      * AbstractConnection constructor.
      */
-    public function __construct(RouteResolverInterface $routeResolver)
+    public function __construct(RouteHolderInterface $routeResolver)
     {
         $this->routeResolver = $routeResolver;
     }
@@ -91,7 +90,7 @@ abstract class AbstractConnection implements ConnectionInterface
      */
     public function getRoute(): Route
     {
-        return $this->routeResolver->resolve();
+        return $this->routeResolver->get();
     }
 
     /**
@@ -122,19 +121,19 @@ abstract class AbstractConnection implements ConnectionInterface
     protected function onConnectionError(ErrorCode $errorCode): void
     {
         CommunicationException::handle(
-            new ConnectionException($this, static::createExceptionMessage($errorCode->message), $errorCode->value)
+            new ConnectionException($this, static::createExceptionMessage($this, $errorCode->message), $errorCode->value)
         );
     }
 
-    protected static function createExceptionMessage(string $message): string
+    protected static function createExceptionMessage(ConnectionInterface $connection, string $message): string
     {
         // TODO: message format with request info
-        return $message;
+        return $message.'(route='.$connection->getRoute().')';
     }
 
     protected function beforeSend(): void
     {
-        if ($this->routeResolver instanceof RefreshableRouteResolverInterface) {
+        if ($this->routeResolver instanceof RefreshableRouteHolderInterface) {
             $this->routeResolver->refresh();
         }
     }

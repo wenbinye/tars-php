@@ -4,52 +4,61 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc\connection;
 
-use wenbinye\tars\rpc\connection\ConnectionFactoryInterface;
-use wenbinye\tars\rpc\connection\ConnectionInterface;
-use wenbinye\tars\rpc\route\Route;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
+use wenbinye\tars\rpc\route\LoadBalanceRouteHolder;
 use wenbinye\tars\rpc\route\RouteHolder;
-use wenbinye\tars\rpc\connection\SocketTcpConnection;
+use wenbinye\tars\rpc\route\RouteHolderInterface;
+use wenbinye\tars\rpc\route\RouteResolverInterface;
+use wenbinye\tars\support\loadBalance\LoadBalanceInterface;
 
-class ConnectionFactory implements ConnectionFactoryInterface
+// TODO use pool connection
+class ConnectionFactory implements ConnectionFactoryInterface, LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     /**
-     * @var Route[]
+     * @var RouteResolverInterface
      */
-    private $routes;
+    private $routeResolver;
+    /**
+     * @var string
+     */
+    private $loadBalance;
 
     /**
      * ConnectionFactory constructor.
      *
-     * @param Route[] $routes
+     * @param string $loadBalanceAlgorithm the LoadBalanceInterface concrete class
      */
-    public function __construct(array $routes = [])
+    public function __construct(RouteResolverInterface $routeResolver, string $loadBalanceAlgorithm = null)
     {
-        foreach ($routes as $route) {
-            $this->addRoute($route);
-        }
+        $this->routeResolver = $routeResolver;
+        $this->loadBalance = $loadBalanceAlgorithm;
     }
 
-    public function addRoute(Route $route): void
-    {
-        $this->routes[$route->getServantName()] = $route;
-    }
-
-    public function has(string $servantName): bool
-    {
-        return isset($this->routes[$servantName]);
-    }
-
+    /**
+     * {@inheritdoc}
+     */
     public function create(string $servantName): ConnectionInterface
     {
-        return new SocketTcpConnection(new RouteHolder($this->getRoute($servantName)));
+        return new SocketTcpConnection($this->createRouteHolder($servantName));
     }
 
-    private function getRoute(string $servantName): Route
+    private function createRouteHolder(string $servantName): RouteHolderInterface
     {
-        if (!isset($this->routes[$servantName])) {
-            throw new \InvalidArgumentException("unknown servant '$servantName'");
-        }
+        if ($this->loadBalance) {
+            $routeHolder = new LoadBalanceRouteHolder($this->routeResolver, $this->loadBalance, $servantName);
+            $routeHolder->setLogger($this->logger);
 
-        return $this->routes[$servantName];
+            return $routeHolder;
+        } else {
+            $routes = $this->routeResolver->resolve($servantName);
+            if (empty($routes)) {
+                throw new \InvalidArgumentException("Cannot resolve route for $servantName");
+            }
+
+            return new RouteHolder($routes[0]);
+        }
     }
 }
