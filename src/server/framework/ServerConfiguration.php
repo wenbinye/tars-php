@@ -16,6 +16,7 @@ use kuiper\di\ComponentCollection;
 use kuiper\di\ContainerBuilderAwareTrait;
 use kuiper\di\DefinitionConfiguration;
 use kuiper\di\PropertiesDefinitionSource;
+use kuiper\helper\PropertyResolverInterface;
 use kuiper\swoole\event\BeforeStartEvent;
 use kuiper\swoole\http\ResponseSender;
 use kuiper\swoole\http\ResponseSenderInterface;
@@ -65,6 +66,8 @@ use wenbinye\tars\rpc\message\ResponseFactoryInterface;
 use wenbinye\tars\rpc\route\ChainRouteResolver;
 use wenbinye\tars\rpc\route\InMemoryRouteResolver;
 use wenbinye\tars\rpc\route\RegistryRouteResolver;
+use wenbinye\tars\rpc\route\RouteHolderFactory;
+use wenbinye\tars\rpc\route\RouteHolderFactoryInterface;
 use wenbinye\tars\rpc\route\RouteResolverInterface;
 use wenbinye\tars\rpc\route\SwooleTableRegistryCache;
 use wenbinye\tars\rpc\ServantProxyGenerator;
@@ -130,6 +133,7 @@ class ServerConfiguration implements DefinitionConfiguration
 
         $definitions = [
             Config::class => value(Config::getInstance()),
+            PropertyResolverInterface::class => get(Config::class),
             AnnotationReaderInterface::class => factory([AnnotationReader::class, 'getInstance']),
 
             ServerInterface::class => autowire(SwooleServer::class),
@@ -152,6 +156,7 @@ class ServerConfiguration implements DefinitionConfiguration
             ErrorHandlerInterface::class => autowire(DefaultErrorHandler::class),
             TarsClientFactoryInterface::class => autowire(TarsClientFactory::class),
             TarsClientInterface::class => autowire(TarsClient::class),
+            ConnectionFactoryInterface::class => autowire(ConnectionFactory::class),
             'registryCache' => autowire(SwooleTableRegistryCache::class),
             RouteResolverInterface::class => autowire(ChainRouteResolver::class)
                 ->constructorParameter('resolvers', [
@@ -160,7 +165,7 @@ class ServerConfiguration implements DefinitionConfiguration
                 ]),
             RegistryRouteResolver::class => autowire()
                 ->constructorParameter('cache', get('registryCache')),
-            ConnectionFactoryInterface::class => autowire(ConnectionFactory::class)
+            RouteHolderFactoryInterface::class => autowire(RouteHolderFactory::class)
                 ->constructorParameter('loadBalanceAlgorithm', RoundRobin::class),
 
             ResponseSenderInterface::class => autowire(ResponseSender::class),
@@ -336,9 +341,11 @@ class ServerConfiguration implements DefinitionConfiguration
      */
     public function queryFClient(InMemoryRouteResolver $routeResolver, RequestFactoryInterface $requestFactory,
                                  ResponseFactoryInterface $responseFactory, ErrorHandlerInterface $errorHandler,
-                                 ServantProxyGeneratorInterface $proxyGenerator): QueryFServant
+                                 ServantProxyGeneratorInterface $proxyGenerator, LoggerInterface $logger): QueryFServant
     {
-        $client = new TarsClient(new ConnectionFactory($routeResolver), $requestFactory, $responseFactory, $errorHandler);
+        $connectionFactory = new ConnectionFactory(new RouteHolderFactory($routeResolver));
+        $connectionFactory->setLogger($logger);
+        $client = new TarsClient($connectionFactory, $requestFactory, $responseFactory, $errorHandler);
 
         return (new TarsClientFactory($client, $proxyGenerator))->create(QueryFServant::class);
     }

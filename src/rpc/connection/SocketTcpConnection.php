@@ -31,10 +31,12 @@ class SocketTcpConnection extends AbstractConnection
         return $socket;
     }
 
-    public function disconnect(): void
+    /**
+     * {@inheritdoc}
+     */
+    protected function destroyResource(): void
     {
         \socket_close($this->getResource());
-        parent::disconnect();
     }
 
     /**

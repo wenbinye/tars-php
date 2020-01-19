@@ -77,13 +77,17 @@ class TarsClient implements TarsClientInterface
     public function send(RequestInterface $request): ResponseInterface
     {
         $connection = $this->connectionFactory->create($request->getServantName());
-        $rawContent = $connection->send($request);
+        try {
+            $rawContent = $connection->send($request);
 
-        $response = $this->responseFactory->create($rawContent, $request->withAttribute('route', $connection->getRoute()));
-        if (isset($this->errorHandler) && !$response->isSuccess()) {
-            return $this->errorHandler->handle($response);
+            $response = $this->responseFactory->create($rawContent, $request->withAttribute('route', $connection->getRoute()));
+            if (isset($this->errorHandler) && !$response->isSuccess()) {
+                return $this->errorHandler->handle($response);
+            }
+
+            return $response;
+        } finally {
+            $connection->disconnect();
         }
-
-        return $response;
     }
 }

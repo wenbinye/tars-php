@@ -11,7 +11,8 @@ class RegistryTest extends FunctionalTestCase
 {
     public function testQueryLogServant()
     {
-        $queryFClient = $this->getContainer()->get(QueryFServant::class);
+        $container = $this->getContainer();
+        $queryFClient = $container->get(QueryFServant::class);
         $id = 'tars.tarslog.LogObj';
         // $id = 'tars.tarsnode.ServerObj';
         $objectById = $queryFClient->findObjectById($id);

@@ -4,37 +4,54 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc\connection;
 
+use kuiper\swoole\coroutine\Coroutine;
+use kuiper\swoole\pool\PoolConfig;
+use kuiper\swoole\pool\PoolInterface;
+use kuiper\swoole\pool\SimplePool;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
-use wenbinye\tars\rpc\route\LoadBalanceRouteHolder;
-use wenbinye\tars\rpc\route\RouteHolder;
-use wenbinye\tars\rpc\route\RouteHolderInterface;
-use wenbinye\tars\rpc\route\RouteResolverInterface;
-use wenbinye\tars\support\loadBalance\LoadBalanceInterface;
+use wenbinye\tars\rpc\route\RouteHolderFactoryInterface;
 
-// TODO use pool connection
 class ConnectionFactory implements ConnectionFactoryInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
     /**
-     * @var RouteResolverInterface
+     * @var RouteHolderFactoryInterface
      */
-    private $routeResolver;
+    private $routeHolderFactory;
+
     /**
-     * @var string
+     * @var PoolConfig[]
      */
-    private $loadBalance;
+    private $poolConfig;
+
+    /**
+     * @var array
+     */
+    private $clientSettings;
+
+    /**
+     * @var PoolInterface[]
+     */
+    private $pools;
 
     /**
      * ConnectionFactory constructor.
-     *
-     * @param string $loadBalanceAlgorithm the LoadBalanceInterface concrete class
      */
-    public function __construct(RouteResolverInterface $routeResolver, string $loadBalanceAlgorithm = null)
+    public function __construct(RouteHolderFactoryInterface $routeHolderFactory)
     {
-        $this->routeResolver = $routeResolver;
-        $this->loadBalance = $loadBalanceAlgorithm;
+        $this->routeHolderFactory = $routeHolderFactory;
+    }
+
+    public function setPoolConfig(string $servantName, PoolConfig $poolConfig): void
+    {
+        $this->poolConfig[$servantName] = $poolConfig;
+    }
+
+    public function setClientSetting(string $servantName, array $setting): void
+    {
+        $this->clientSettings[$servantName] = $setting;
     }
 
     /**
@@ -42,23 +59,28 @@ class ConnectionFactory implements ConnectionFactoryInterface, LoggerAwareInterf
      */
     public function create(string $servantName): ConnectionInterface
     {
-        return new SocketTcpConnection($this->createRouteHolder($servantName));
+        return new PoolConnection($this->getConnectionPool($servantName));
     }
 
-    private function createRouteHolder(string $servantName): RouteHolderInterface
+    public function getConnectionPool(string $servantName): PoolInterface
     {
-        if ($this->loadBalance) {
-            $routeHolder = new LoadBalanceRouteHolder($this->routeResolver, $this->loadBalance, $servantName);
-            $routeHolder->setLogger($this->logger);
+        if (!isset($this->pools[$servantName])) {
+            $this->logger && $this->logger->debug('[ConnectionFactory] create pool', ['servant' => $servantName]);
+            $this->pools[$servantName] = new SimplePool(function () use ($servantName) {
+                $connectionClass = Coroutine::isEnabled() ? SwooleCoroutineTcpConnection::class : SwooleTcpConnection::class;
+                $routeHolder = $this->routeHolderFactory->create($servantName);
+                $conn = new $connectionClass($routeHolder);
+                if (isset($this->clientSettings[$servantName])) {
+                    $conn->setOptions($this->clientSettings[$servantName]);
+                }
+                if ($this->logger) {
+                    $conn->setLogger($this->logger);
+                }
 
-            return $routeHolder;
-        } else {
-            $routes = $this->routeResolver->resolve($servantName);
-            if (empty($routes)) {
-                throw new \InvalidArgumentException("Cannot resolve route for $servantName");
-            }
-
-            return new RouteHolder($routes[0]);
+                return $conn;
+            }, $this->poolConfig[$servantName] ?? new PoolConfig());
         }
+
+        return $this->pools[$servantName];
     }
 }

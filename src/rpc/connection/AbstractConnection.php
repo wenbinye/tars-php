@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc\connection;
 
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use wenbinye\tars\rpc\ErrorCode;
 use wenbinye\tars\rpc\exception\CommunicationException;
 use wenbinye\tars\rpc\exception\ConnectionException;
@@ -12,8 +14,10 @@ use wenbinye\tars\rpc\route\RefreshableRouteHolderInterface;
 use wenbinye\tars\rpc\route\Route;
 use wenbinye\tars\rpc\route\RouteHolderInterface;
 
-abstract class AbstractConnection implements ConnectionInterface
+abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     /**
      * @var mixed
      */
@@ -45,8 +49,15 @@ abstract class AbstractConnection implements ConnectionInterface
      * Creates the underlying resource used to communicate with server.
      *
      * @return mixed
+     *
+     * @throws CommunicationException
      */
     abstract protected function createResource();
+
+    /**
+     * Destroy the underlying resource.
+     */
+    abstract protected function destroyResource(): void;
 
     /**
      * {@inheritdoc}

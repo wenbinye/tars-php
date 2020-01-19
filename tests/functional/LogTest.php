@@ -6,6 +6,7 @@ namespace wenbinye\tars\functional;
 
 use Monolog\Logger;
 use wenbinye\tars\log\TarsLogHandler;
+use wenbinye\tars\rpc\connection\ConnectionFactoryInterface;
 
 class LogTest extends FunctionalTestCase
 {
@@ -13,6 +14,7 @@ class LogTest extends FunctionalTestCase
     {
         $logger = new Logger('app');
         $container = $this->getContainer();
+        $containerFactory = $container->get(ConnectionFactoryInterface::class);
         $handler = $container->get(TarsLogHandler::class);
         $logger->pushHandler($handler);
 
