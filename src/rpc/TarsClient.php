@@ -78,9 +78,9 @@ class TarsClient implements TarsClientInterface
     {
         $connection = $this->connectionFactory->create($request->getServantName());
         try {
-            $rawContent = $connection->send($request);
+            $rawContent = $connection->send($request = $request->withAttribute('route', $connection->getRoute()));
 
-            $response = $this->responseFactory->create($rawContent, $request->withAttribute('route', $connection->getRoute()));
+            $response = $this->responseFactory->create($rawContent, $request);
             if (isset($this->errorHandler) && !$response->isSuccess()) {
                 return $this->errorHandler->handle($response);
             }

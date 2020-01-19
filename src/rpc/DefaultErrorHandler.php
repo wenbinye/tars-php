@@ -11,6 +11,6 @@ class DefaultErrorHandler implements ErrorHandlerInterface
 {
     public function handle(ResponseInterface $response)
     {
-        throw new ServerException($response->getReturnCode(), $response->getMessage());
+        throw new ServerException($response);
     }
 }
