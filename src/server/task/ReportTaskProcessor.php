@@ -109,11 +109,19 @@ class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
 
     public function sendStat()
     {
-        $this->statClient->send();
+        try {
+            $this->statClient->send();
+        } catch (\Exception $e) {
+            $this->logger && $this->logger->error('[Stat] send stat fail', ['error' => $e->getMessage()]);
+        }
     }
 
     public function sendMonitorInfo()
     {
-        $this->monitor->monitor();
+        try {
+            $this->monitor->monitor();
+        } catch (\Exception $e) {
+            $this->logger && $this->logger->error('[Stat] send monitor fail', ['error' => $e->getMessage()]);
+        }
     }
 }

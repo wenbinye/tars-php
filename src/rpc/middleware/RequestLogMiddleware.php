@@ -49,7 +49,7 @@ class RequestLogMiddleware implements MiddlewareInterface, LoggerAwareInterface
      *
      * @param $template
      */
-    public function __construct(string $template = self::SHORT)
+    public function __construct(string $template = self::DEBUG)
     {
         $this->template = $template;
     }
@@ -159,11 +159,16 @@ class RequestLogMiddleware implements MiddlewareInterface, LoggerAwareInterface
         if ($message instanceof RequestInterface) {
             return sprintf('[%d]%s::%s(%s)', $message->getRequestId(), $message->getServantName(), $message->getFuncName(),
                 json_encode($this->getParameters($message)));
-        } elseif ($message instanceof ResponseInterface) {
-            $route = $message->getRequest()->getAttribute('route');
+        }
 
-            return sprintf('%s:%d->[%d %s](%s)', $route->getHost(), $route->getPort(), $message->getReturnCode(), $message->getMessage(),
-                json_encode($this->getReturnValues($message)));
+        if ($message instanceof ResponseInterface) {
+            $route = $message->getRequest()->getAttribute('route');
+            if ($route) {
+                return sprintf('%s:%d->[%d %s](%s)', $route->getHost(), $route->getPort(), $message->getReturnCode(), $message->getMessage(),
+                    json_encode($this->getReturnValues($message)));
+            } else {
+                return sprintf('[%d %s](%s)', $message->getReturnCode(), $message->getMessage(), json_encode($message->getReturnValues()));
+            }
         }
     }
 

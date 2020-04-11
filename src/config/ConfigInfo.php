@@ -9,65 +9,51 @@ declare(strict_types=1);
  * Tars Generator version: 1.0-SNAPSHOT
  */
 
-namespace wenbinye\tars\stat;
+namespace wenbinye\tars\config;
 
 use wenbinye\tars\protocol\annotation\TarsProperty;
 
-final class StatPropMsgHead
+final class ConfigInfo
 {
     /**
      * @TarsProperty(order = 0, required = true, type = "string")
      *
      * @var string
      */
-    public $moduleName;
+    public $appname;
 
     /**
      * @TarsProperty(order = 1, required = true, type = "string")
      *
      * @var string
      */
-    public $ip;
+    public $servername;
 
     /**
      * @TarsProperty(order = 2, required = true, type = "string")
      *
      * @var string
      */
-    public $propertyName;
+    public $filename;
 
     /**
-     * @TarsProperty(order = 3, required = false, type = "string")
+     * @TarsProperty(order = 3, required = true, type = "bool")
      *
-     * @var string
+     * @var bool
      */
-    public $setName;
+    public $bAppOnly = false;
 
     /**
      * @TarsProperty(order = 4, required = false, type = "string")
      *
      * @var string
      */
-    public $setArea;
+    public $host;
 
     /**
      * @TarsProperty(order = 5, required = false, type = "string")
      *
      * @var string
      */
-    public $setID;
-
-    /**
-     * @TarsProperty(order = 6, required = false, type = "string")
-     *
-     * @var string
-     */
-    public $sContainer;
-
-    /**
-     * @TarsProperty(order = 7, required = false, type = "int")
-     *
-     * @var int
-     */
-    public $iPropertyVer = 1;
+    public $setdivision;
 }

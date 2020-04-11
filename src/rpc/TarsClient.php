@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc;
 
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use wenbinye\tars\rpc\connection\ConnectionFactoryInterface;
 use wenbinye\tars\rpc\message\RequestFactoryInterface;
 use wenbinye\tars\rpc\message\RequestInterface;
@@ -11,9 +13,10 @@ use wenbinye\tars\rpc\message\ResponseFactoryInterface;
 use wenbinye\tars\rpc\message\ResponseInterface;
 use wenbinye\tars\rpc\message\ReturnValueInterface;
 
-class TarsClient implements TarsClientInterface
+class TarsClient implements TarsClientInterface, LoggerAwareInterface
 {
     use MiddlewareSupport;
+    use LoggerAwareTrait;
 
     /**
      * @var RequestFactoryInterface

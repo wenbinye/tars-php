@@ -129,10 +129,10 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
      *
      * @throws CommunicationException
      */
-    protected function onConnectionError(ErrorCode $errorCode): void
+    protected function onConnectionError(ErrorCode $errorCode, string $message = null): void
     {
         CommunicationException::handle(
-            new ConnectionException($this, static::createExceptionMessage($this, $errorCode->message), $errorCode->value)
+            new ConnectionException($this, static::createExceptionMessage($this, $message ?? $errorCode->message), $errorCode->value)
         );
     }
 

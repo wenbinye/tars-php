@@ -59,7 +59,7 @@ class Route
         $this->protocol = $protocol;
         $this->host = $host;
         $this->port = $port;
-        $this->timeout = $timeout;
+        $this->timeout = $timeout > 0 ? $timeout : 20000;
         $this->servantName = $servantName;
         $this->weight = $weight;
     }

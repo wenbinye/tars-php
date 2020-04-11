@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc;
 
+use Psr\Log\LoggerInterface;
+
 trait MiddlewareSupport
 {
     /**
@@ -30,6 +32,9 @@ trait MiddlewareSupport
     {
         if (!$this->middlewareStack) {
             $this->middlewareStack = new MiddlewareStack($this->middlewares, $finalHandler);
+            if ($this->logger && ($this->logger instanceof LoggerInterface)) {
+                $this->middlewareStack->setLogger($this->logger);
+            }
         }
 
         return $this->middlewareStack;

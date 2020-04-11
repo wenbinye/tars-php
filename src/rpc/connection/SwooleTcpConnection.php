@@ -70,10 +70,12 @@ class SwooleTcpConnection extends AbstractConnection
         //读取最多32M的数据
         $response = $client->recv();
 
-        if (empty($response)) {
+        if ('' === $response) {
             $this->disconnect();
             // 已经断开连接
             $this->onConnectionError(ErrorCode::fromValue(ErrorCode::TARS_SOCKET_RECEIVE_FAILED));
+        } elseif (false === $response) {
+            $this->onConnectionError(ErrorCode::fromValue(ErrorCode::TARS_SOCKET_RECEIVE_FAILED), socket_strerror($client->errCode));
         }
 
         return $response;

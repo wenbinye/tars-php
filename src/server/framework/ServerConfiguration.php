@@ -38,6 +38,7 @@ use kuiper\swoole\task\Queue;
 use kuiper\swoole\task\QueueInterface;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
+use Monolog\Processor\ProcessIdProcessor;
 use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerAwareInterface;
@@ -45,6 +46,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use wenbinye\tars\config\ConfigServant;
 use wenbinye\tars\log\LogServant;
 use wenbinye\tars\protocol\annotation\TarsServant;
 use wenbinye\tars\protocol\Packer;
@@ -63,6 +65,7 @@ use wenbinye\tars\rpc\message\RequestIdGenerator;
 use wenbinye\tars\rpc\message\RequestIdGeneratorInterface;
 use wenbinye\tars\rpc\message\ResponseFactory;
 use wenbinye\tars\rpc\message\ResponseFactoryInterface;
+use wenbinye\tars\rpc\middleware\RequestLogMiddleware;
 use wenbinye\tars\rpc\route\ChainRouteResolver;
 use wenbinye\tars\rpc\route\InMemoryRouteResolver;
 use wenbinye\tars\rpc\route\RegistryRouteResolver;
@@ -115,6 +118,10 @@ class ServerConfiguration implements DefinitionConfiguration
                 'middleware' => [
                     'client' => [
                         StatMiddleware::class,
+                        RequestLogMiddleware::class,
+                    ],
+                    'servant' => [
+                        RequestLogMiddleware::class,
                     ],
                 ],
                 'listeners' => [
@@ -170,7 +177,7 @@ class ServerConfiguration implements DefinitionConfiguration
 
             ResponseSenderInterface::class => autowire(ResponseSender::class),
         ];
-        foreach ([LogServant::class, StatFServant::class, ServerFServant::class, PropertyFServant::class] as $clientClass) {
+        foreach ([LogServant::class, StatFServant::class, ServerFServant::class, PropertyFServant::class, ConfigServant::class] as $clientClass) {
             $definitions[$clientClass] = factory([TarsClientFactoryInterface::class, 'create'])
                 ->parameter('clientClassName', $clientClass);
         }
@@ -195,8 +202,8 @@ class ServerConfiguration implements DefinitionConfiguration
     {
         $dispatcher = new EventDispatcher();
         $dispatcher->addListener(BeforeStartEvent::class, function () use ($container, $dispatcher, $config, $logger) {
-            $this->addTarsClientMiddleware($container, $config);
-            $this->addTarsServantMiddleware($container, $config);
+            $this->addTarsClientMiddleware($container, $config, $logger);
+            $this->addTarsServantMiddleware($container, $config, $logger);
 
             foreach ($config->get('application.listeners', []) as $event => $listenerId) {
                 $logger->debug("[ServerConfiguration] attach $listenerId");
@@ -214,34 +221,42 @@ class ServerConfiguration implements DefinitionConfiguration
         return $dispatcher;
     }
 
-    private function addTarsClientMiddleware(ContainerInterface $container, Config $config): void
+    private function addTarsClientMiddleware(ContainerInterface $container, Config $config, \Psr\Log\LoggerInterface $logger): void
     {
         $middlewares = $config->get('application.middleware.client', []);
         if (!empty($middlewares)) {
-            $tarsClient = $container->get(TarsClient::class);
+            $logger->info('[ServerConfiguration] enable client middlewares', ['middlewares' => $middlewares]);
+            $tarsClient = $container->get(TarsClientInterface::class);
             foreach ($middlewares as $middlewareId) {
                 $tarsClient->addMiddleware($container->get($middlewareId));
             }
         }
     }
 
-    private function addTarsServantMiddleware(ContainerInterface $container, Config $config): void
+    private function addTarsServantMiddleware(ContainerInterface $container, Config $config, \Psr\Log\LoggerInterface $logger): void
     {
-        $serverRequestFactory = $container->get(ServerRequestFactoryInterface::class);
+        $serverRequestFactory = $container->get(TarsServerRequestFactoryInterface::class);
         if ($serverRequestFactory instanceof ServerRequestFactory) {
+            $servants = [];
             foreach (ComponentCollection::getComponents(TarsServant::class) as $servantInterface) {
                 /** @var TarsServant $annotation */
                 $annotation = ComponentCollection::getAnnotation($servantInterface, TarsServant::class);
-                $serverRequestFactory->register($annotation->name, $servantInterface);
+                $servants[$annotation->name] = $servantInterface;
             }
-            foreach ($config->get('application.servants', []) as $servantName => $servantInterface) {
+            foreach (array_merge($servants, $config->get('application.servants', [])) as $servantName => $servantInterface) {
+                $logger->info('[ServerConfiguration] register servant', [
+                    'servant' => $servantName,
+                    'service' => $servantInterface,
+                ]);
                 $serverRequestFactory->register($servantName, $servantInterface);
             }
         }
 
         $middlewares = $config->get('application.middleware.servant', []);
         if (!empty($middlewares)) {
-            $tarsRequestHandler = $container->get(TarsRequestHandler::class);
+            $logger->info('[ServerConfiguration] enable server middlewares', ['middlewares' => $middlewares]);
+
+            $tarsRequestHandler = $container->get(RequestHandlerInterface::class);
             foreach ($middlewares as $middlewareId) {
                 $tarsRequestHandler->addMiddleware($container->get($middlewareId));
             }
@@ -256,7 +271,7 @@ class ServerConfiguration implements DefinitionConfiguration
     public function serverProperties(PropertyLoader $propertyLoader, Config $config): ServerProperties
     {
         $serverProperties = $propertyLoader->loadServerProperties($config);
-        $configFile = $serverProperties->getBasePath().'/src/config.php';
+        $configFile = $serverProperties->getSourcePath().'/config.php';
         if (file_exists($configFile)) {
             $config->merge(require $configFile);
         }
@@ -312,6 +327,7 @@ class ServerConfiguration implements DefinitionConfiguration
         $handler = new StreamHandler($logPath.'log_'.strtolower($loggerLevelName).'.log', $loggerLevel);
         $handler->getFormatter()->allowInlineLineBreaks();
         $logger->pushHandler($handler);
+        $logger->pushProcessor(new ProcessIdProcessor());
 
         return $logger;
     }
@@ -353,13 +369,16 @@ class ServerConfiguration implements DefinitionConfiguration
     /**
      * @Bean()
      */
-    public function monitor(ContainerInterface $container, Config $config, ServerProperties $serverProperties, PropertyFServant $propertyFClient): MonitorInterface
+    public function monitor(ContainerInterface $container, Config $config, ServerProperties $serverProperties, PropertyFServant $propertyFClient, LoggerInterface $logger): MonitorInterface
     {
         $collectors = [];
         foreach ($config->get('application.monitor.collectors', []) as $collector) {
             $collectors[] = $container->get($collector);
         }
 
-        return new Monitor($serverProperties, $propertyFClient, $collectors);
+        $monitor = new Monitor($serverProperties, $propertyFClient, $collectors);
+        $monitor->setLogger($logger);
+
+        return $monitor;
     }
 }

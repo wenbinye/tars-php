@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\stat;
 
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use wenbinye\tars\protocol\type\StructMap;
 use wenbinye\tars\rpc\message\ResponseInterface;
 use wenbinye\tars\server\ClientProperties;
 use wenbinye\tars\server\ServerProperties;
 
-class Stat implements StatInterface
+class Stat implements StatInterface, LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     /**
      * @var StatStoreAdapter
      */
@@ -67,6 +71,7 @@ class Stat implements StatInterface
             $entries[] = $entry;
         }
         if ($msg->count() > 0) {
+            $this->logger->debug('[Stat] send stat', ['msg' => $msg]);
             $ret = $this->statClient->reportMicMsg($msg, true);
             foreach ($entries as $entry) {
                 $this->store->delete($entry);

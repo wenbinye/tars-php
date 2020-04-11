@@ -8,6 +8,7 @@ use wenbinye\tars\log\LogServant;
 use wenbinye\tars\rpc\message\RequestFactoryInterface;
 use wenbinye\tars\rpc\message\ResponseFactoryInterface;
 use wenbinye\tars\rpc\route\RouteResolverInterface;
+use wenbinye\tars\server\rpc\ServerResponse;
 use wenbinye\tars\stat\StatInterface;
 
 class StatTest extends FunctionalTestCase
@@ -24,8 +25,10 @@ class StatTest extends FunctionalTestCase
         $stat = $container->get(StatInterface::class);
 
         foreach (range(300, 600) as $time) {
-            $response = $responseFactory->create('', $request->withAttribute('route', $routeResolver->resolve($servantName)[0])
-                ->withAttribute('startTime', time() - $time));
+            $serverRequests = $request->withAttribute('route', $routeResolver->resolve($servantName)[0])
+                ->withAttribute('startTime', time() - $time);
+            $response = new ServerResponse($serverRequests, [], 0);
+            $response = $responseFactory->create($response->getBody(), $serverRequests);
 
             $stat->success($response, 30);
             $stat->fail($response, 3);

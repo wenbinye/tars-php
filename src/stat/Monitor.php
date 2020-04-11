@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\stat;
 
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use wenbinye\tars\protocol\type\StructMap;
 use wenbinye\tars\server\ServerProperties;
 use wenbinye\tars\stat\collector\CollectorInterface;
 
-class Monitor implements MonitorInterface
+class Monitor implements MonitorInterface, LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     /**
      * @var PropertyFServant
      */
@@ -38,6 +42,7 @@ class Monitor implements MonitorInterface
                 $msg->put($this->createHead($name), $this->createBody($collector->getPolicy(), $value));
             }
         }
+        $this->logger->debug('[Monitor] send properties', ['msg' => $msg]);
         $this->propertyFClient->reportPropMsg($msg);
     }
 

@@ -68,6 +68,7 @@ class ConnectionFactory implements ConnectionFactoryInterface, LoggerAwareInterf
             $this->logger && $this->logger->debug('[ConnectionFactory] create pool', ['servant' => $servantName]);
             $this->pools[$servantName] = new SimplePool(function () use ($servantName) {
                 $connectionClass = Coroutine::isEnabled() ? SwooleCoroutineTcpConnection::class : SwooleTcpConnection::class;
+                $this->logger && $this->logger->debug('[ConnectionFactory] create connection by '.$connectionClass);
                 $routeHolder = $this->routeHolderFactory->create($servantName);
                 $conn = new $connectionClass($routeHolder);
                 if (isset($this->clientSettings[$servantName])) {

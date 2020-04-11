@@ -23,7 +23,7 @@ class ResponseFactory implements ResponseFactoryInterface
     public function create(string $response, RequestInterface $request): ResponseInterface
     {
         $parsedBody = \TUPAPI::decode($response, $request->getVersion());
-        if ($parsedBody['iRequestId'] !== $request->getRequestId()) {
+        if (isset($parsedBody['iRequestId']) && $parsedBody['iRequestId'] !== $request->getRequestId()) {
             throw new \InvalidArgumentException("request id not match, got {$parsedBody['iRequestId']}, expected ".$request->getRequestId());
         }
         $returnCode = $parsedBody['iRet'] ?? ErrorCode::UNKNOWN;

@@ -28,7 +28,7 @@ class StatMiddleware implements MiddlewareInterface
         try {
             /** @var ResponseInterface $response */
             $response = $next($request);
-            $responseTime = 1000 * (microtime(true) - $time);
+            $responseTime = (int) (1000 * (microtime(true) - $time));
             if ($response->isSuccess()) {
                 $this->stat->success($response, $responseTime);
             } else {
@@ -37,8 +37,8 @@ class StatMiddleware implements MiddlewareInterface
 
             return $response;
         } catch (TimedOutException $e) {
-            $this->stat->timedOut(new Response('', $request->withAttribute('route', $e->getConnection()->getRoute())),
-                1000 * (microtime(true) - $time));
+            $this->stat->timedOut(new Response($request->withAttribute('route', $e->getConnection()->getRoute()), '', 0, []),
+                intval(1000 * (microtime(true) - $time)));
             throw $e;
         }
     }

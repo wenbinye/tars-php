@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\protocol\type;
 
-class StructMapEntry
+class StructMapEntry implements \JsonSerializable
 {
     /**
      * @var object
@@ -41,5 +41,13 @@ class StructMapEntry
     public function getValue()
     {
         return $this->value;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function jsonSerialize()
+    {
+        return get_object_vars($this);
     }
 }
