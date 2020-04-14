@@ -1,0 +1,7 @@
+site_name: PHP Tars Framework
+
+theme: material
+
+markdown_extensions:
+  - codehilite
+  - mdx_include

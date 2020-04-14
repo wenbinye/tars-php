@@ -6,7 +6,7 @@ namespace wenbinye\tars\rpc\route;
 
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
-use wenbinye\tars\support\loadBalance\LoadBalanceInterface;
+use wenbinye\tars\rpc\lb\LoadBalanceInterface;
 
 class LoadBalanceRouteHolder implements RefreshableRouteHolderInterface, LoggerAwareInterface
 {

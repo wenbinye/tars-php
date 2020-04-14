@@ -27,6 +27,13 @@ class Packer implements PackerInterface
         $this->typeConverter = new TypeConverter($tarsTypeFactory);
     }
 
+    public static function check(): void
+    {
+        if (!extension_loaded('phptars')) {
+            throw new \RuntimeException('extension phptars should be enabled');
+        }
+    }
+
     public function pack(Type $type, $name, $data, int $version): string
     {
         if ($type->isPrimitive()) {

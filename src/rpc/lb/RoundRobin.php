@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace wenbinye\tars\support\loadBalance;
+namespace wenbinye\tars\rpc\lb;
 
 class RoundRobin implements LoadBalanceInterface
 {

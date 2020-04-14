@@ -69,9 +69,25 @@ class Route
         return $this->protocol;
     }
 
+    public function withProtocol(string $protocol): self
+    {
+        $new = clone $this;
+        $new->protocol = $protocol;
+
+        return $new;
+    }
+
     public function getHost(): string
     {
         return $this->host;
+    }
+
+    public function withHost(string $host): self
+    {
+        $new = clone $this;
+        $new->host = $host;
+
+        return $new;
     }
 
     public function getPort(): int
@@ -79,9 +95,25 @@ class Route
         return $this->port;
     }
 
+    public function withPort(int $port): self
+    {
+        $new = clone $this;
+        $new->port = $port;
+
+        return $new;
+    }
+
     public function getTimeout(): int
     {
         return $this->timeout;
+    }
+
+    public function withTimeout(int $timeout): self
+    {
+        $new = clone $this;
+        $new->timeout = $timeout;
+
+        return $new;
     }
 
     public function getServantName(): string
@@ -89,9 +121,25 @@ class Route
         return $this->servantName;
     }
 
+    public function withServantName(string $servantName): self
+    {
+        $new = clone $this;
+        $new->servantName = $servantName;
+
+        return $new;
+    }
+
     public function getWeight(): int
     {
         return $this->weight;
+    }
+
+    public function withWeight(int $weight): self
+    {
+        $new = clone $this;
+        $new->weight = $weight;
+
+        return $new;
     }
 
     public function toArray(): array

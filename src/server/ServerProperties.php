@@ -11,6 +11,8 @@ use wenbinye\tars\server\annotation\ConfigItem;
 class ServerProperties
 {
     /**
+     * The App namespace.
+     *
      * @ConfigItem()
      * @Assert\NotBlank()
      *
@@ -19,6 +21,8 @@ class ServerProperties
     private $app;
 
     /**
+     * The server name.
+     *
      * @ConfigItem()
      * @Assert\NotBlank()
      *
@@ -27,11 +31,15 @@ class ServerProperties
     private $server;
 
     /**
+     * The swoole server settings.
+     *
      * @var array
      */
     private $swooleSettings;
 
     /**
+     * The basepath config value, equal to "$TARSPATH/tarsnode/data/$app.$server/bin".
+     *
      * @ConfigItem()
      * @Assert\NotBlank()
      *
@@ -39,6 +47,8 @@ class ServerProperties
      */
     private $basePath;
     /**
+     * The datapath config value, equal to "$TARSPATH/tarsnode/data/$app.$server/data".
+     *
      * @ConfigItem()
      * @Assert\NotBlank()
      *
@@ -46,6 +56,8 @@ class ServerProperties
      */
     private $dataPath;
     /**
+     * The logpath config value, equal to "$TARSPATH/app_log".
+     *
      * @ConfigItem()
      *
      * @var string
@@ -183,7 +195,12 @@ class ServerProperties
 
     public function setLogPath(string $logPath): void
     {
-        $this->logPath = $logPath;
+        $this->logPath = rtrim($logPath, '/');
+    }
+
+    public function getAppLogPath(): string
+    {
+        return sprintf('%s/%s/%s', $this->logPath, $this->app, $this->server);
     }
 
     public function getLogLevel(): string

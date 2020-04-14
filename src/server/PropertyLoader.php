@@ -9,8 +9,8 @@ use kuiper\helper\Text;
 use kuiper\reflection\ReflectionType;
 use kuiper\swoole\SwooleSetting;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use wenbinye\tars\exception\ValidationException;
 use wenbinye\tars\server\annotation\ConfigItem;
-use wenbinye\tars\support\exception\ValidationException;
 
 class PropertyLoader
 {

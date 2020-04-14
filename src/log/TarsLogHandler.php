@@ -8,6 +8,11 @@ use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Logger;
 use wenbinye\tars\server\ServerProperties;
 
+/**
+ * MonoLog Handler with TARS log servant backend.
+ *
+ * Class TarsLogHandler
+ */
 class TarsLogHandler extends AbstractProcessingHandler
 {
     /**
@@ -40,7 +45,7 @@ class TarsLogHandler extends AbstractProcessingHandler
      */
     protected function write(array $record): void
     {
-        $this->logClient->logger($this->serverProperties->getApp(), $this->serverProperties->getServerName(),
+        $this->logClient->logger($this->serverProperties->getApp(), $this->serverProperties->getServer(),
             $record['channel'], $this->dateFormat, [$record['formatted']]);
     }
 }

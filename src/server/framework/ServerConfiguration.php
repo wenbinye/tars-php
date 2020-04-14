@@ -12,17 +12,14 @@ use kuiper\annotations\AnnotationReader;
 use kuiper\annotations\AnnotationReaderInterface;
 use kuiper\di\annotation\Bean;
 use kuiper\di\AwareInjection;
-use kuiper\di\ComponentCollection;
 use kuiper\di\ContainerBuilderAwareTrait;
 use kuiper\di\DefinitionConfiguration;
 use kuiper\di\PropertiesDefinitionSource;
 use kuiper\helper\PropertyResolverInterface;
-use kuiper\swoole\event\BeforeStartEvent;
+use kuiper\swoole\http\DiactorosServerRequestFactory;
 use kuiper\swoole\http\ResponseSender;
 use kuiper\swoole\http\ResponseSenderInterface;
 use kuiper\swoole\http\ServerRequestFactoryInterface;
-use kuiper\swoole\http\ZendDiactorosServerRequestFactory;
-use kuiper\swoole\listener\EventListenerInterface;
 use kuiper\swoole\listener\HttpRequestEventListener;
 use kuiper\swoole\listener\ManagerStartEventListener;
 use kuiper\swoole\listener\StartEventListener;
@@ -47,8 +44,8 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use wenbinye\tars\config\ConfigServant;
+use wenbinye\tars\exception\ValidationException;
 use wenbinye\tars\log\LogServant;
-use wenbinye\tars\protocol\annotation\TarsServant;
 use wenbinye\tars\protocol\Packer;
 use wenbinye\tars\protocol\PackerInterface;
 use wenbinye\tars\protocol\TarsTypeFactory;
@@ -57,6 +54,7 @@ use wenbinye\tars\rpc\connection\ConnectionFactory;
 use wenbinye\tars\rpc\connection\ConnectionFactoryInterface;
 use wenbinye\tars\rpc\DefaultErrorHandler;
 use wenbinye\tars\rpc\ErrorHandlerInterface;
+use wenbinye\tars\rpc\lb\RoundRobin;
 use wenbinye\tars\rpc\message\MethodMetadataFactory;
 use wenbinye\tars\rpc\message\MethodMetadataFactoryInterface;
 use wenbinye\tars\rpc\message\RequestFactory;
@@ -81,6 +79,7 @@ use wenbinye\tars\rpc\TarsClientFactoryInterface;
 use wenbinye\tars\rpc\TarsClientInterface;
 use wenbinye\tars\server\ClientProperties;
 use wenbinye\tars\server\Config;
+use wenbinye\tars\server\listener\BeforeStartEventListener;
 use wenbinye\tars\server\listener\TarsTcpReceiveEventListener;
 use wenbinye\tars\server\listener\WorkerKeepAlive;
 use wenbinye\tars\server\PropertyLoader;
@@ -100,7 +99,6 @@ use wenbinye\tars\stat\StatInterface;
 use wenbinye\tars\stat\StatMiddleware;
 use wenbinye\tars\stat\StatStoreAdapter;
 use wenbinye\tars\stat\SwooleTableStatStore;
-use wenbinye\tars\support\loadBalance\RoundRobin;
 
 class ServerConfiguration implements DefinitionConfiguration
 {
@@ -120,7 +118,7 @@ class ServerConfiguration implements DefinitionConfiguration
                         StatMiddleware::class,
                         RequestLogMiddleware::class,
                     ],
-                    'servant' => [
+                    'server' => [
                         RequestLogMiddleware::class,
                     ],
                 ],
@@ -151,7 +149,7 @@ class ServerConfiguration implements DefinitionConfiguration
             StatInterface::class => autowire(Stat::class),
             StatStoreAdapter::class => autowire(SwooleTableStatStore::class),
 
-            ServerRequestFactoryInterface::class => autowire(ZendDiactorosServerRequestFactory::class),
+            ServerRequestFactoryInterface::class => autowire(DiactorosServerRequestFactory::class),
             RequestFactoryInterface::class => autowire(RequestFactory::class),
             ResponseFactoryInterface::class => autowire(ResponseFactory::class),
             TarsServerRequestFactoryInterface::class => autowire(ServerRequestFactory::class),
@@ -198,75 +196,19 @@ class ServerConfiguration implements DefinitionConfiguration
     /**
      * @Bean()
      */
-    public function eventDispatcher(ContainerInterface $container, Config $config, LoggerInterface $logger): EventDispatcherInterface
+    public function eventDispatcher(BeforeStartEventListener $listener): EventDispatcherInterface
     {
         $dispatcher = new EventDispatcher();
-        $dispatcher->addListener(BeforeStartEvent::class, function () use ($container, $dispatcher, $config, $logger) {
-            $this->addTarsClientMiddleware($container, $config, $logger);
-            $this->addTarsServantMiddleware($container, $config, $logger);
-
-            foreach ($config->get('application.listeners', []) as $event => $listenerId) {
-                $logger->debug("[ServerConfiguration] attach $listenerId");
-                $listener = $container->get($listenerId);
-                if ($listener instanceof EventListenerInterface) {
-                    $dispatcher->addListener($listener->getSubscribedEvent(), $listener);
-                } elseif (is_string($event)) {
-                    $dispatcher->addListener($event, $listener);
-                } else {
-                    throw new \InvalidArgumentException("config application.listeners $listenerId does not bind to any event");
-                }
-            }
-        });
+        $listener->setEventDispatcher($dispatcher);
+        $dispatcher->addListener($listener->getSubscribedEvent(), $listener);
 
         return $dispatcher;
-    }
-
-    private function addTarsClientMiddleware(ContainerInterface $container, Config $config, \Psr\Log\LoggerInterface $logger): void
-    {
-        $middlewares = $config->get('application.middleware.client', []);
-        if (!empty($middlewares)) {
-            $logger->info('[ServerConfiguration] enable client middlewares', ['middlewares' => $middlewares]);
-            $tarsClient = $container->get(TarsClientInterface::class);
-            foreach ($middlewares as $middlewareId) {
-                $tarsClient->addMiddleware($container->get($middlewareId));
-            }
-        }
-    }
-
-    private function addTarsServantMiddleware(ContainerInterface $container, Config $config, \Psr\Log\LoggerInterface $logger): void
-    {
-        $serverRequestFactory = $container->get(TarsServerRequestFactoryInterface::class);
-        if ($serverRequestFactory instanceof ServerRequestFactory) {
-            $servants = [];
-            foreach (ComponentCollection::getComponents(TarsServant::class) as $servantInterface) {
-                /** @var TarsServant $annotation */
-                $annotation = ComponentCollection::getAnnotation($servantInterface, TarsServant::class);
-                $servants[$annotation->name] = $servantInterface;
-            }
-            foreach (array_merge($servants, $config->get('application.servants', [])) as $servantName => $servantInterface) {
-                $logger->info('[ServerConfiguration] register servant', [
-                    'servant' => $servantName,
-                    'service' => $servantInterface,
-                ]);
-                $serverRequestFactory->register($servantName, $servantInterface);
-            }
-        }
-
-        $middlewares = $config->get('application.middleware.servant', []);
-        if (!empty($middlewares)) {
-            $logger->info('[ServerConfiguration] enable server middlewares', ['middlewares' => $middlewares]);
-
-            $tarsRequestHandler = $container->get(RequestHandlerInterface::class);
-            foreach ($middlewares as $middlewareId) {
-                $tarsRequestHandler->addMiddleware($container->get($middlewareId));
-            }
-        }
     }
 
     /**
      * @Bean()
      *
-     * @throws \wenbinye\tars\support\exception\ValidationException
+     * @throws ValidationException
      */
     public function serverProperties(PropertyLoader $propertyLoader, Config $config): ServerProperties
     {
@@ -282,7 +224,7 @@ class ServerConfiguration implements DefinitionConfiguration
     /**
      * @Bean()
      *
-     * @throws \wenbinye\tars\support\exception\ValidationException
+     * @throws ValidationException
      */
     public function clientProperties(PropertyLoader $propertyLoader, Config $config): ClientProperties
     {
@@ -309,8 +251,6 @@ class ServerConfiguration implements DefinitionConfiguration
 
     /**
      * @Bean()
-     *
-     * @throws \Exception
      */
     public function logger(ServerProperties $serverProperties): LoggerInterface
     {
@@ -321,8 +261,8 @@ class ServerConfiguration implements DefinitionConfiguration
         if (!isset($loggerLevel)) {
             throw new \InvalidArgumentException("Unknown logger level '{$loggerLevelName}'");
         }
-        $logPath = sprintf('%s/%s/%s/', rtrim($serverProperties->getLogPath(), '/'),
-            $serverProperties->getApp(), $serverProperties->getServer());
+
+        $logPath = $serverProperties->getAppLogPath().'/';
         $logger->pushHandler(new StreamHandler($logPath.$serverProperties->getServerName().'.log', $loggerLevel));
         $handler = new StreamHandler($logPath.'log_'.strtolower($loggerLevelName).'.log', $loggerLevel);
         $handler->getFormatter()->allowInlineLineBreaks();

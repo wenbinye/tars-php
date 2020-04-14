@@ -1,43 +1,34 @@
 <?php
 
-declare(strict_types=1);
 
 namespace wenbinye\tars\deploy;
 
+
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Filesystem\Filesystem;
 
-class Packager
+class PackageCommand extends Command
 {
-    /**
-     * @var string
-     */
-    private $basePath;
-
-    /**
-     * Packager constructor.
-     */
-    public function __construct(string $basePath)
+    protected function configure()
     {
-        $this->basePath = rtrim($basePath, '/');
+        $this->setName("package");
     }
 
-    public static function package(): void
+    protected function execute(InputInterface $input, OutputInterface $output)
     {
-        (new static(self::detectProjectPath()))->execute();
-    }
-
-    public function execute(): string
-    {
-        $config = $this->readConfig();
+        $basePath = self::detectProjectPath();
+        $config = $this->readConfig($basePath);
         $filesystem = new Filesystem();
 
-        $tempnam = tempnam(sys_get_temp_dir(), 'tars-build');
-        @unlink($tempnam);
-        $dir = $tempnam.'/'.$config->getServerName().'/src';
+        $tempFile = tempnam(sys_get_temp_dir(), 'tars-build');
+        @unlink($tempFile);
+        $dir = $tempFile.'/'.$config->getServerName();
         if (!mkdir($dir, 0777, true) && !is_dir($dir)) {
             throw new \RuntimeException("Cannot create temporary directory $dir");
         }
-        $basePathLen = strlen($this->basePath);
+        $basePathLen = strlen($basePath);
         $n = 0;
         foreach ($config->getFinders() as $finder) {
             foreach ($finder as $file) {
@@ -47,27 +38,26 @@ class Packager
                 // error_log("copy $relPath to ${dir}$relPath");
                 ++$n;
                 if (0 === $n % 100) {
-                    error_log("copy $n files to $dir");
+                    $output->writeln("copy $n files to $dir");
                 }
                 $filesystem->copy($file, $dir.$relPath);
             }
         }
         // 检查 index.php 是否存在
-        if (!file_exists($dir.'/index.php')) {
-            throw new \RuntimeException("the entrance file $this->basePath/index.php does not exist: $dir");
+        if (!file_exists($dir.'/src/index.php')) {
+            throw new \RuntimeException("the entrance file $basePath/src/index.php does not exist: $dir");
         }
 
         //打包
-        $tgzFile = $this->basePath.'/'.sprintf('%s_%s.tar.gz', $config->getServerName(), date('YmdHis'));
+        $tgzFile = $basePath.'/'.sprintf('%s_%s.tar.gz', $config->getServerName(), date('YmdHis'));
         $phar = new \PharData($tgzFile);
         $phar->compress(\Phar::GZ);
-        $phar->buildFromDirectory($tempnam);
-        $filesystem->remove($tempnam);
+        $phar->buildFromDirectory($tempFile);
+        $filesystem->remove($tempFile);
 
-        error_log("create package $tgzFile");
-
-        return $tgzFile;
+        $output->writeln("<info>create package $tgzFile</info>");
     }
+
 
     private static function detectProjectPath(): string
     {
@@ -83,11 +73,11 @@ class Packager
         return $dir;
     }
 
-    private function readConfig(): PackageConfig
+    private function readConfig($basePath): PackageConfig
     {
-        $composerJson = $this->basePath.'/composer.json';
+        $composerJson = $basePath.'/composer.json';
         if (!is_readable($composerJson)) {
-            throw new \InvalidArgumentException("Cannot read composer.json in directory $this->basePath");
+            throw new \InvalidArgumentException("Cannot read composer.json in directory $basePath");
         }
         $json = json_decode(file_get_contents($composerJson), true);
         if (empty($json)) {
@@ -97,6 +87,6 @@ class Packager
             throw new \InvalidArgumentException("extra.tars not defined in $composerJson");
         }
 
-        return new PackageConfig($this->basePath, $json['extra']['tars']);
+        return new PackageConfig($basePath, $json['extra']['tars']);
     }
 }

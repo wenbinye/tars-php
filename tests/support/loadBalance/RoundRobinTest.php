@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace wenbinye\tars\support\loadBalance;
 
 use PHPUnit\Framework\TestCase;
+use wenbinye\tars\rpc\lb\RoundRobin;
 
 class RoundRobinTest extends TestCase
 {

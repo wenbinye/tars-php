@@ -14,7 +14,6 @@ class PackageConfig
      * @var string
      */
     private $serverName;
-
     /**
      * @var Finder[]
      */
@@ -24,12 +23,6 @@ class PackageConfig
      */
     private $basePath;
 
-    /**
-     * PackageConfig constructor.
-     *
-     * @param string   $serverName
-     * @param Finder[] $finders
-     */
     public function __construct(string $basePath, array $options)
     {
         $options = Arrays::mapKeys($options, static function ($key) {

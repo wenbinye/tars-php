@@ -16,7 +16,7 @@ class RegistryTest extends FunctionalTestCase
         $id = 'tars.tarslog.LogObj';
         // $id = 'tars.tarsnode.ServerObj';
         $objectById = $queryFClient->findObjectById($id);
-        // var_export($objectById);
+        var_export($objectById);
         $this->assertIsArray($objectById);
         $this->assertInstanceOf(EndpointF::class, $objectById[0]);
     }
