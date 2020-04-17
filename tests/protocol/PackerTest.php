@@ -15,7 +15,7 @@ use wenbinye\tars\protocol\type\StructMapEntry;
 
 class PackerTest extends TestCase
 {
-    const VERSION = 3;
+    const VERSION = Version::TUP;
     const REQUEST_ID = 1;
     const SERVANT_NAME = 'test.test.test';
     const FUNC_NAME = 'example';
@@ -37,8 +37,7 @@ class PackerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->parser = new TypeParser();
-        $this->packer = new Packer(new TarsTypeFactory(AnnotationReader::getInstance()));
+        $this->packer = new Packer(AnnotationReader::getInstance());
     }
 
     /**
@@ -49,7 +48,7 @@ class PackerTest extends TestCase
     public function testPack($type, $data, $expect): void
     {
         $namespace = __NAMESPACE__.'\\fixtures';
-        $result = $this->packer->pack($this->parser->parse($type, $namespace), self::ARG_NAME, $data, self::VERSION);
+        $result = $this->packer->pack($this->packer->parse($type, $namespace), self::ARG_NAME, $data, self::VERSION);
         $this->assertEquals($expect, $result);
     }
 
@@ -61,8 +60,8 @@ class PackerTest extends TestCase
     public function testUnpack($type, $expect, $payload): void
     {
         $namespace = __NAMESPACE__.'\\fixtures';
-        $buffer = $this->createPayload($payload);
-        $result = $this->packer->unpack($this->parser->parse($type, $namespace), self::ARG_NAME, $buffer, self::VERSION);
+        $buffer = Packer::asPayload(self::ARG_NAME, $payload);
+        $result = $this->packer->unpack($this->packer->parse($type, $namespace), self::ARG_NAME, $buffer, self::VERSION);
         $this->assertEquals($expect, $result);
     }
 
@@ -165,15 +164,5 @@ class PackerTest extends TestCase
         $obj->count = 3;
 
         return $obj;
-    }
-
-    protected function createPayload(string $payload): string
-    {
-        $requestBuf = \TUPAPI::encode(self::VERSION, self::REQUEST_ID, self::SERVANT_NAME,
-            self::FUNC_NAME, self::PACKET_TYPE, self::MESSAGE_TYPE, self::TIMEOUT,
-            [], [], [self::ARG_NAME => $payload]);
-        $decodeRet = \TUPAPI::decode($requestBuf);
-
-        return $decodeRet['sBuffer'];
     }
 }

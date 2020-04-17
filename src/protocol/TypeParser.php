@@ -20,12 +20,20 @@ use wenbinye\tars\protocol\type\VoidType;
  *
  * Class TypeParser
  */
-class TypeParser
+class TypeParser implements TypeParserInterface
 {
+    /**
+     * TypeParser constructor.
+     */
+    public function __construct()
+    {
+        Packer::check();
+    }
+
     /**
      * @throws SyntaxErrorException
      */
-    public function parse(string $type, string $namespace): Type
+    public function parse(string $type, string $namespace = ''): Type
     {
         $tokens = (new TypeTokenizer($type))->tokenize();
 

@@ -10,10 +10,15 @@ class LocalDevRouteResolver implements RouteResolverInterface
      * @var RouteResolverInterface
      */
     private $routeResolver;
+    /**
+     * @var array
+     */
+    private $ipMapping;
 
-    public function __construct(RouteResolverInterface $routeResolver)
+    public function __construct(RouteResolverInterface $routeResolver, array $ipMapping = [])
     {
         $this->routeResolver = $routeResolver;
+        $this->ipMapping = $ipMapping;
     }
 
     /**
@@ -23,7 +28,9 @@ class LocalDevRouteResolver implements RouteResolverInterface
     {
         $routes = $this->routeResolver->resolve($servantName);
         foreach ($routes as $i => $route) {
-            $routes[$i] = $route->withHost('127.0.0.1');
+            if (isset($this->ipMapping[$route->getHost()])) {
+                $routes[$i] = $route->withHost($this->ipMapping[$route->getHost()]);
+            }
         }
 
         return $routes;

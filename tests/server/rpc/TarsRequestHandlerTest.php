@@ -11,7 +11,7 @@ use wenbinye\tars\protocol\annotation\TarsParameter;
 use wenbinye\tars\protocol\annotation\TarsReturnType;
 use wenbinye\tars\protocol\annotation\TarsServant;
 use wenbinye\tars\protocol\Packer;
-use wenbinye\tars\protocol\TarsTypeFactory;
+use wenbinye\tars\protocol\TarsValueFactory;
 use wenbinye\tars\rpc\ErrorCode;
 use wenbinye\tars\rpc\message\MethodMetadataFactory;
 use wenbinye\tars\rpc\message\RequestFactory;
@@ -66,7 +66,7 @@ class TarsRequestHandlerTest extends TestCase
             ->andReturn($this->servant);
 
         $annotationReader = AnnotationReader::getInstance();
-        $packer = new Packer(new TarsTypeFactory($annotationReader));
+        $packer = new Packer(new TarsValueFactory($annotationReader),);
         $methodMetadataFactory = new MethodMetadataFactory($annotationReader);
         $this->proxyGenerator = new ServantProxyGenerator($annotationReader);
         $this->tarsClient = \Mockery::mock(TarsClientInterface::class);

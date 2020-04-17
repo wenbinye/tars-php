@@ -48,7 +48,6 @@ use wenbinye\tars\exception\ValidationException;
 use wenbinye\tars\log\LogServant;
 use wenbinye\tars\protocol\Packer;
 use wenbinye\tars\protocol\PackerInterface;
-use wenbinye\tars\protocol\TarsTypeFactory;
 use wenbinye\tars\registry\QueryFServant;
 use wenbinye\tars\rpc\connection\ConnectionFactory;
 use wenbinye\tars\rpc\connection\ConnectionFactoryInterface;
@@ -277,7 +276,7 @@ class ServerConfiguration implements DefinitionConfiguration
      */
     public function packer(AnnotationReaderInterface $annotationReader): PackerInterface
     {
-        return new Packer(new TarsTypeFactory($annotationReader));
+        return new Packer($annotationReader);
     }
 
     /**

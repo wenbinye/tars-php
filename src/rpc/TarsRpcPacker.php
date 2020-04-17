@@ -40,6 +40,8 @@ class TarsRpcPacker
      * @param MethodMetadata $method
      *
      * @return ParameterInterface[]
+     *
+     * @throws \wenbinye\tars\protocol\exception\SyntaxErrorException
      */
     public function packRequest(MethodMetadataInterface $method, array $parameters, int $version): array
     {
@@ -61,6 +63,8 @@ class TarsRpcPacker
      * @param MethodMetadata $method
      *
      * @return ReturnValueInterface[]
+     *
+     * @throws \wenbinye\tars\protocol\exception\SyntaxErrorException
      */
     public function unpackResponse(MethodMetadataInterface $method, string $data, int $version): array
     {
@@ -89,6 +93,8 @@ class TarsRpcPacker
      * @param MethodMetadata $method
      *
      * @return ParameterInterface[]
+     *
+     * @throws \wenbinye\tars\protocol\exception\SyntaxErrorException
      */
     public function unpackRequest(MethodMetadataInterface $method, string $data, int $version): array
     {
@@ -114,6 +120,8 @@ class TarsRpcPacker
      * @param array          $data   method parameters and return value
      *
      * @return ReturnValueInterface[] return packed output value array
+     *
+     * @throws \wenbinye\tars\protocol\exception\SyntaxErrorException
      */
     public function packResponse(MethodMetadataInterface $method, array $data, int $version): array
     {

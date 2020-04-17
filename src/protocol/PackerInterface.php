@@ -8,7 +8,20 @@ use wenbinye\tars\protocol\type\Type;
 
 interface PackerInterface
 {
-    public function pack(Type $type, $name, $data, int $version): string;
+    /**
+     * Packs php data type to binary data.
+     *
+     * @param string|int $name
+     * @param mixed      $data
+     */
+    public function pack(Type $type, $name, $data, int $version = Version::TUP): string;
 
-    public function unpack(Type $type, $name, string &$payload, int $version);
+    /**
+     * Unpacks binary data to php data type.
+     *
+     * @param string|int $name
+     *
+     * @return mixed
+     */
+    public function unpack(Type $type, $name, string &$payload, int $version = Version::TUP);
 }

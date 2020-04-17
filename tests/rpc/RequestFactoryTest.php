@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 use wenbinye\tars\protocol\annotation\TarsParameter;
 use wenbinye\tars\protocol\annotation\TarsReturnType;
 use wenbinye\tars\protocol\Packer;
-use wenbinye\tars\protocol\TarsTypeFactory;
+use wenbinye\tars\protocol\TarsValueFactory;
 use wenbinye\tars\protocol\TypeParser;
 use wenbinye\tars\rpc\message\MethodMetadataFactory;
 use wenbinye\tars\rpc\message\RequestFactory;
@@ -24,7 +24,7 @@ class RequestFactoryTest extends TestCase
     public function testEncode()
     {
         $reader = AnnotationReader::getInstance();
-        $packer = new Packer(new TarsTypeFactory($reader));
+        $packer = new Packer(new TarsValueFactory($reader),);
         $parser = new TypeParser();
         $client = new HelloServiceClient();
 
