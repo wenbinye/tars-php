@@ -17,6 +17,7 @@ use wenbinye\tars\server\Config;
 use wenbinye\tars\server\rpc\RequestHandlerInterface;
 use wenbinye\tars\server\rpc\ServerRequestFactory as TarsServerRequestFactory;
 use wenbinye\tars\server\rpc\ServerRequestFactoryInterface as TarsServerRequestFactoryInterface;
+use wenbinye\tars\server\ServerProperties;
 
 class BeforeStartEventListener implements EventListenerInterface, LoggerAwareInterface
 {
@@ -43,7 +44,7 @@ class BeforeStartEventListener implements EventListenerInterface, LoggerAwareInt
         $this->addTarsServantMiddleware((array) $config->get('application.middleware.server', []));
 
         foreach ($config->get('application.listeners', []) as $eventName => $listenerId) {
-            $this->logger->debug("[ServerConfiguration] attach $listenerId");
+            $this->logger->debug("[BeforeStartEventListener] attach $listenerId");
             $listener = $this->container->get($listenerId);
             if ($listener instanceof EventListenerInterface) {
                 $this->eventDispatcher->addListener($listener->getSubscribedEvent(), $listener);
@@ -58,7 +59,7 @@ class BeforeStartEventListener implements EventListenerInterface, LoggerAwareInt
     private function addTarsClientMiddleware(array $middlewares): void
     {
         if (!empty($middlewares)) {
-            $this->logger->info('[ServerConfiguration] enable client middlewares', ['middlewares' => $middlewares]);
+            $this->logger->info('[BeforeStartEventListener] enable client middlewares', ['middlewares' => $middlewares]);
             $tarsClient = $this->container->get(TarsClientInterface::class);
             foreach ($middlewares as $middlewareId) {
                 $tarsClient->addMiddleware($this->container->get($middlewareId));
@@ -69,6 +70,7 @@ class BeforeStartEventListener implements EventListenerInterface, LoggerAwareInt
     private function registerServants(array $servants)
     {
         $serverRequestFactory = $this->container->get(TarsServerRequestFactoryInterface::class);
+        $serverProperties = $this->container->get(ServerProperties::class);
         if ($serverRequestFactory instanceof TarsServerRequestFactory) {
             foreach (ComponentCollection::getComponents(TarsServant::class) as $servantInterface) {
                 /** @var TarsServant $annotation */
@@ -76,7 +78,8 @@ class BeforeStartEventListener implements EventListenerInterface, LoggerAwareInt
                 $servants[$annotation->name] = $servantInterface;
             }
             foreach ($servants as $servantName => $servantInterface) {
-                $this->logger->info('[ServerConfiguration] register servant', [
+                $servantName = $this->normalizeServantName($servantName, $serverProperties);
+                $this->logger->info('[BeforeStartEventListener] register servant', [
                     'servant' => $servantName,
                     'service' => $servantInterface,
                 ]);
@@ -88,7 +91,7 @@ class BeforeStartEventListener implements EventListenerInterface, LoggerAwareInt
     private function addTarsServantMiddleware(array $middlewares): void
     {
         if (!empty($middlewares)) {
-            $this->logger->info('[ServerConfiguration] enable server middlewares', ['middlewares' => $middlewares]);
+            $this->logger->info('[BeforeStartEventListener] enable server middlewares', ['middlewares' => $middlewares]);
 
             $tarsRequestHandler = $this->container->get(RequestHandlerInterface::class);
             foreach ($middlewares as $middlewareId) {
@@ -100,5 +103,14 @@ class BeforeStartEventListener implements EventListenerInterface, LoggerAwareInt
     public function getSubscribedEvent(): string
     {
         return BeforeStartEvent::class;
+    }
+
+    private function normalizeServantName(string $servantName, ServerProperties $serverProperties)
+    {
+        if (false === strpos($servantName, '.')) {
+            $servantName = $serverProperties->getServerName().'.'.$servantName;
+        }
+
+        return $servantName;
     }
 }

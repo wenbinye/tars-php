@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace wenbinye\tars\rpc;
 
 use kuiper\annotations\AnnotationReaderInterface;
+use Laminas\Code\Generator\ClassGenerator;
+use Laminas\Code\Generator\MethodGenerator;
+use Laminas\Code\Generator\PropertyGenerator;
 use wenbinye\tars\protocol\annotation\TarsReturnType;
-use Zend\Code\Generator\ClassGenerator;
-use Zend\Code\Generator\MethodGenerator;
-use Zend\Code\Generator\PropertyGenerator;
 
 class ServantProxyGenerator implements ServantProxyGeneratorInterface
 {

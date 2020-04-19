@@ -70,11 +70,12 @@ class ConnectionFactory implements ConnectionFactoryInterface, LoggerAwareInterf
                 $connectionClass = Coroutine::isEnabled() ? SwooleCoroutineTcpConnection::class : SwooleTcpConnection::class;
                 $this->logger && $this->logger->debug('[ConnectionFactory] create connection by '.$connectionClass);
                 $routeHolder = $this->routeHolderFactory->create($servantName);
+                /** @var ConnectionInterface $conn */
                 $conn = new $connectionClass($routeHolder);
                 if (isset($this->clientSettings[$servantName])) {
                     $conn->setOptions($this->clientSettings[$servantName]);
                 }
-                if ($this->logger) {
+                if ($this->logger && $conn instanceof LoggerAwareInterface) {
                     $conn->setLogger($this->logger);
                 }
 

@@ -18,6 +18,11 @@ trait MiddlewareSupport
      */
     private $middlewareStack;
 
+    /**
+     * @var LoggerInterface
+     */
+    protected $logger;
+
     public function addMiddleware(MiddlewareInterface $middleware): self
     {
         if ($this->middlewareStack) {
@@ -32,11 +37,16 @@ trait MiddlewareSupport
     {
         if (!$this->middlewareStack) {
             $this->middlewareStack = new MiddlewareStack($this->middlewares, $finalHandler);
-            if ($this->logger && ($this->logger instanceof LoggerInterface)) {
+            if ($this->logger) {
                 $this->middlewareStack->setLogger($this->logger);
             }
         }
 
         return $this->middlewareStack;
+    }
+
+    public function setLogger(LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
     }
 }
