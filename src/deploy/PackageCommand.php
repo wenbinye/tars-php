@@ -1,25 +1,27 @@
 <?php
 
+declare(strict_types=1);
 
 namespace wenbinye\tars\deploy;
-
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Filesystem\Filesystem;
+use wenbinye\tars\server\framework\Composer;
 
 class PackageCommand extends Command
 {
     protected function configure()
     {
-        $this->setName("package");
+        $this->setName('package');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $basePath = self::detectProjectPath();
-        $config = $this->readConfig($basePath);
+        $composerJson = Composer::detect();
+        $basePath = dirname($composerJson);
+        $config = $this->loadConfig($composerJson);
         $filesystem = new Filesystem();
 
         $tempFile = tempnam(sys_get_temp_dir(), 'tars-build');
@@ -58,35 +60,10 @@ class PackageCommand extends Command
         $output->writeln("<info>create package $tgzFile</info>");
     }
 
-
-    private static function detectProjectPath(): string
+    private function loadConfig($composerJson): PackageConfig
     {
-        $dir = getcwd();
-        while (!file_exists($dir.'/composer.json')) {
-            $parentDir = dirname($dir);
-            if ($parentDir === $dir) {
-                throw new \InvalidArgumentException('Cannot detect project path, is there composer.json in current directory?');
-            }
-            $dir = $parentDir;
-        }
+        $json = Composer::getJson($composerJson);
 
-        return $dir;
-    }
-
-    private function readConfig($basePath): PackageConfig
-    {
-        $composerJson = $basePath.'/composer.json';
-        if (!is_readable($composerJson)) {
-            throw new \InvalidArgumentException("Cannot read composer.json in directory $basePath");
-        }
-        $json = json_decode(file_get_contents($composerJson), true);
-        if (empty($json)) {
-            throw new \InvalidArgumentException("invalid composer.json read from $composerJson");
-        }
-        if (!isset($json['extra']['tars'])) {
-            throw new \InvalidArgumentException("extra.tars not defined in $composerJson");
-        }
-
-        return new PackageConfig($basePath, $json['extra']['tars']);
+        return new PackageConfig(dirname($composerJson), $json['extra']['tars']);
     }
 }

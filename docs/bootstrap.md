@@ -54,12 +54,11 @@ fi
 ```php
 <?php
 
-use wenbinye\tars\server\framework\Slim;
 use wenbinye\tars\server\ServerApplication;
 
-$loader = require __DIR__ . '/vendor/autoload.php';
+require __DIR__ . '/vendor/autoload.php';
 
-ServerApplication::run(new Slim($loader));
+ServerApplication::run();
 ```
 
 在 ServerApplication 中使用 Symfony Console Application 运行 `wenbinye\tars\server\ServerCommand` 命令。

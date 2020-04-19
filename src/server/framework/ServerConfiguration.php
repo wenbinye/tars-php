@@ -20,7 +20,6 @@ use kuiper\swoole\http\DiactorosServerRequestFactory;
 use kuiper\swoole\http\ResponseSender;
 use kuiper\swoole\http\ResponseSenderInterface;
 use kuiper\swoole\http\ServerRequestFactoryInterface;
-use kuiper\swoole\listener\HttpRequestEventListener;
 use kuiper\swoole\listener\ManagerStartEventListener;
 use kuiper\swoole\listener\StartEventListener;
 use kuiper\swoole\listener\TaskEventListener;
@@ -126,7 +125,6 @@ class ServerConfiguration implements DefinitionConfiguration
                     ManagerStartEventListener::class,
                     WorkerStartEventListener::class,
                     TaskEventListener::class,
-                    HttpRequestEventListener::class,
                     TarsTcpReceiveEventListener::class,
                     WorkerKeepAlive::class,
                 ],

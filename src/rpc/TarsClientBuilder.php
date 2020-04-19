@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc;
 
+use InvalidArgumentException;
 use kuiper\annotations\AnnotationReader;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
+use Psr\SimpleCache\CacheInterface;
+use wenbinye\tars\client\QueryFServant;
 use wenbinye\tars\protocol\Packer;
 use wenbinye\tars\protocol\PackerInterface;
 use wenbinye\tars\rpc\connection\ConnectionFactory;
@@ -19,9 +22,13 @@ use wenbinye\tars\rpc\message\RequestIdGenerator;
 use wenbinye\tars\rpc\message\RequestIdGeneratorInterface;
 use wenbinye\tars\rpc\message\ResponseFactory;
 use wenbinye\tars\rpc\message\ResponseFactoryInterface;
+use wenbinye\tars\rpc\route\InMemoryRouteResolver;
+use wenbinye\tars\rpc\route\RegistryRouteResolver;
+use wenbinye\tars\rpc\route\Route;
 use wenbinye\tars\rpc\route\RouteHolderFactory;
 use wenbinye\tars\rpc\route\RouteHolderFactoryInterface;
 use wenbinye\tars\rpc\route\RouteResolverInterface;
+use wenbinye\tars\rpc\route\SwooleTableRegistryCache;
 
 class TarsClientBuilder implements LoggerAwareInterface
 {
@@ -36,6 +43,16 @@ class TarsClientBuilder implements LoggerAwareInterface
      * @var Route
      */
     private $locator;
+
+    /**
+     * @var QueryFServant
+     */
+    private $queryFClient;
+
+    /**
+     * @var CacheInterface
+     */
+    private $cache;
 
     /**
      * @var PackerInterface
@@ -87,8 +104,74 @@ class TarsClientBuilder implements LoggerAwareInterface
      */
     private $servantProxyGenerator;
 
+    public function getLocator(): Route
+    {
+        return $this->locator;
+    }
+
+    public function setLocator(Route $locator): TarsClientBuilder
+    {
+        $this->locator = $locator;
+
+        return $this;
+    }
+
+    public function getQueryFClient(): QueryFServant
+    {
+        if (!$this->queryFClient) {
+            if (!$this->locator) {
+                throw new InvalidArgumentException('locator is required');
+            }
+            $routeResolver = new InMemoryRouteResolver();
+            $routeResolver->addRoute($this->locator);
+            $routeHolderFactory = new RouteHolderFactory($routeResolver);
+            $connectionFactory = new ConnectionFactory($routeHolderFactory);
+            $tarsClient = new TarsClient(
+                $connectionFactory,
+                $this->getRequestFactory(),
+                $this->getResponseFactory(),
+                $this->getErrorHandler(),
+                $this->middlewares
+            );
+            $proxyClass = $this->getServantProxyGenerator()->generate(QueryFServant::class);
+            $this->queryFClient = new $proxyClass($tarsClient);
+        }
+
+        return $this->queryFClient;
+    }
+
+    public function setQueryFClient(QueryFServant $queryFClient): TarsClientBuilder
+    {
+        $this->queryFClient = $queryFClient;
+
+        return $this;
+    }
+
+    public function getCache(): CacheInterface
+    {
+        if (!$this->cache) {
+            $this->cache = new SwooleTableRegistryCache();
+        }
+
+        return $this->cache;
+    }
+
+    public function setCache(CacheInterface $cache): TarsClientBuilder
+    {
+        $this->cache = $cache;
+
+        return $this;
+    }
+
     public function getRouteResolver(): RouteResolverInterface
     {
+        if (!$this->routeResolver) {
+            $this->routeResolver = new RegistryRouteResolver(
+                $this->getQueryFClient(),
+                $this->getCache()
+            );
+        }
+
         return $this->routeResolver;
     }
 
