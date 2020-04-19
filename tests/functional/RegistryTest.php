@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\functional;
 
-use wenbinye\tars\registry\EndpointF;
-use wenbinye\tars\registry\QueryFServant;
+use wenbinye\tars\client\EndpointF;
+use wenbinye\tars\client\QueryFServant;
 
 class RegistryTest extends FunctionalTestCase
 {

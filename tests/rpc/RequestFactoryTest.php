@@ -9,8 +9,6 @@ use PHPUnit\Framework\TestCase;
 use wenbinye\tars\protocol\annotation\TarsParameter;
 use wenbinye\tars\protocol\annotation\TarsReturnType;
 use wenbinye\tars\protocol\Packer;
-use wenbinye\tars\protocol\TarsValueFactory;
-use wenbinye\tars\protocol\TypeParser;
 use wenbinye\tars\rpc\message\MethodMetadataFactory;
 use wenbinye\tars\rpc\message\RequestFactory;
 use wenbinye\tars\rpc\message\RequestIdGenerator;
@@ -24,12 +22,11 @@ class RequestFactoryTest extends TestCase
     public function testEncode()
     {
         $reader = AnnotationReader::getInstance();
-        $packer = new Packer(new TarsValueFactory($reader),);
-        $parser = new TypeParser();
+        $packer = new Packer($reader);
         $client = new HelloServiceClient();
 
         $factory = new RequestFactory(new MethodMetadataFactory($reader), $packer, new RequestIdGenerator());
-        $payload['message'] = $packer->pack($parser->parse('string', ''), 'message', 'hello', 3);
+        $payload['message'] = $packer->pack($packer->parse('string'), 'message', 'hello', 3);
         $request = $factory->createRequest($client, 'hello', $payload);
         $requestBody = $request->getBody();
         $unpackResult = \TUPAPI::decodeReqPacket($requestBody);

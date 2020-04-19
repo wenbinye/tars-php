@@ -8,13 +8,13 @@ use Swoole\Table;
 
 class SwooleTableStatStore implements StatStoreAdapter
 {
-    const KEY_COUNT = 'count';
-    const KEY_TIMEOUT_COUNT = 'timeoutCount';
-    const KEY_EXEC_COUNT = 'execCount';
-    const KEY_TOTAL_RSP_TIME = 'totalRspTime';
-    const KEY_MAX_RSP_TIME = 'maxRspTime';
-    const KEY_MIN_RSP_TIME = 'minRspTime';
-    const KEY_ENTRY = 'entry';
+    public const KEY_COUNT = 'count';
+    public const KEY_TIMEOUT_COUNT = 'timeoutCount';
+    public const KEY_EXEC_COUNT = 'execCount';
+    public const KEY_TOTAL_RSP_TIME = 'totalRspTime';
+    public const KEY_MAX_RSP_TIME = 'maxRspTime';
+    public const KEY_MIN_RSP_TIME = 'minRspTime';
+    public const KEY_ENTRY = 'entry';
     /**
      * @var Table
      */

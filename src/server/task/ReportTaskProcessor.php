@@ -9,11 +9,11 @@ use kuiper\swoole\task\ProcessorInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Swoole\Timer;
+use wenbinye\tars\client\ServerFServant;
+use wenbinye\tars\client\ServerInfo;
 use wenbinye\tars\server\ClientProperties;
 use wenbinye\tars\server\ServerProperties;
 use wenbinye\tars\stat\MonitorInterface;
-use wenbinye\tars\stat\ServerFServant;
-use wenbinye\tars\stat\ServerInfo;
 use wenbinye\tars\stat\StatInterface;
 
 class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface

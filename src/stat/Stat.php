@@ -6,6 +6,7 @@ namespace wenbinye\tars\stat;
 
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
+use wenbinye\tars\client\StatFServant;
 use wenbinye\tars\protocol\type\StructMap;
 use wenbinye\tars\rpc\message\ResponseInterface;
 use wenbinye\tars\server\ClientProperties;

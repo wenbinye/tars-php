@@ -31,7 +31,7 @@ $packer = new Packer(AnnotationReader::getInstance());
 
 $type = $packer->parse('int');
 $serialized = $packer->pack($type, '', 42);
-$payload = Packer::asPayload('a', $serialized);
+$payload = Packer::toPayload('a', $serialized);
 echo $packer->unpack($type, 'a', $binary);  // 42
 ```
 
@@ -45,7 +45,7 @@ echo $packer->unpack($type, 'a', $binary);  // 42
 
 $type = $packer->parse('vector<int>');
 $serialized = $packer->pack($type, '', [42]);
-$payload = Packer::asPayload('a', $serialized);
+$payload = Packer::toPayload('a', $serialized);
 $value = $packer->unpack($type, 'a', $binary);  // [42]
 ```
 
@@ -56,6 +56,8 @@ $value = $packer->unpack($type, 'a', $binary);  // [42]
 ```php
 <?php
 use wenbinye\tars\protocol\annotation\TarsProperty;
+use kuiper\annotations\AnnotationReader;
+use wenbinye\tars\protocol\Packer;
 
 class Foo
 {
@@ -69,9 +71,10 @@ class Foo
 $foo = new Foo();
 $foo->num = 42;
 
+$packer = new Packer(AnnotationReader::getInstance());
 $type = $packer->parse('Foo');
 $data = $packer->pack($type, '', $foo);
-$payload = $binary = Packer::asPayload('a', $data);
+$payload = $binary = Packer::toPayload('a', $data);
 $value = $packer->unpack($type, 'a', $binary);  // Foo::__set_state(['num' => '42'])
 ```
 对于自定义类型必须使用 `@TarsProperty` 注解标记字段。自定义类型 php 代码一般通过代码生成器

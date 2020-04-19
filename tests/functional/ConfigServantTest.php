@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\config;
 
+use wenbinye\tars\client\ConfigServant;
 use wenbinye\tars\functional\FunctionalTestCase;
 use wenbinye\tars\rpc\middleware\RequestLogMiddleware;
 use wenbinye\tars\rpc\TarsClient;

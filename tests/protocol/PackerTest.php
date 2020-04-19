@@ -60,7 +60,7 @@ class PackerTest extends TestCase
     public function testUnpack($type, $expect, $payload): void
     {
         $namespace = __NAMESPACE__.'\\fixtures';
-        $buffer = Packer::asPayload(self::ARG_NAME, $payload);
+        $buffer = Packer::toPayload(self::ARG_NAME, $payload);
         $result = $this->packer->unpack($this->packer->parse($type, $namespace), self::ARG_NAME, $buffer, self::VERSION);
         $this->assertEquals($expect, $result);
     }
@@ -127,9 +127,9 @@ class PackerTest extends TestCase
         $structList = new \TARS_Map(new SimpleStructOld(), new NestedStructOld(), true);
         $structList->pushBack(['key' => $simpleStruct, 'value' => $nestedStruct]);
 
-        $payload = $this->createPayload(\TUPAPI::putMap(self::ARG_NAME, $structList));
+        $payload = Packer::toPayload(self::ARG_NAME, \TUPAPI::putMap(self::ARG_NAME, $structList));
         // var_export($payload);
-        $data = $this->packer->unpack($this->parser->parse('map<SimpleStruct, NestedStruct>', $namespace), self::ARG_NAME, $payload, self::VERSION);
+        $data = $this->packer->unpack($this->packer->parse('map<SimpleStruct, NestedStruct>', $namespace), self::ARG_NAME, $payload, self::VERSION);
         // var_export($data);
         $this->assertInstanceOf(StructMap::class, $data);
         $this->assertEquals(1, $data->count());

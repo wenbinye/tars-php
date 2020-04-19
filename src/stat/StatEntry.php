@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\stat;
 
+use wenbinye\tars\client\StatMicMsgBody;
+use wenbinye\tars\client\StatMicMsgHead;
 use wenbinye\tars\rpc\message\ResponseInterface;
 use wenbinye\tars\rpc\route\Route;
 use wenbinye\tars\server\ServerProperties;

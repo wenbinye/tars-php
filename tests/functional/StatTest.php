@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\functional;
 
-use wenbinye\tars\log\LogServant;
+use wenbinye\tars\client\LogServant;
 use wenbinye\tars\rpc\message\RequestFactoryInterface;
 use wenbinye\tars\rpc\message\ResponseFactoryInterface;
 use wenbinye\tars\rpc\route\RouteResolverInterface;

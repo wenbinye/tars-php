@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace wenbinye\tars\support\loadBalance;
+namespace wenbinye\tars\rpc\lb;
 
 use PHPUnit\Framework\TestCase;
 use wenbinye\tars\rpc\lb\RoundRobin;

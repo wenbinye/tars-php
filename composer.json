@@ -68,56 +68,17 @@
   "extra": {
     "tars": {
       "generator": {
-        "client": [
-          {
-            "namespace": "wenbinye\\tars\\stat",
-            "tars_path": "tars/StatF.tars",
-            "output": "src/stat",
-            "servants": {
-              "StatF": "tars.tarsstat.StatObj"
-            }
-          },
-          {
-            "namespace": "wenbinye\\tars\\stat",
-            "tars_path": "tars/PropertyF.tars",
-            "output": "src/stat",
-            "servants": {
-              "PropertF": "tars.tarsproperty.PropertyObj"
-            }
-          },
-          {
-            "namespace": "wenbinye\\tars\\stat",
-            "tars_path": "tars/NodeF.tars",
-            "output": "src/stat",
-            "servants": {
-              "NodeF": "tars.tarsnode.ServerObj"
-            }
-          },
-          {
-            "namespace": "wenbinye\\tars\\log",
-            "tars_path": "tars/LogF.tars",
-            "output": "src/log",
-            "servants": {
-              "LogF": "tars.tarslog.LogObj"
-            }
-          },
-          {
-            "namespace": "wenbinye\\tars\\registry",
-            "tars_path": "tars/QueryF.tars",
-            "output": "src/registry",
-            "servants": {
-              "QueryF": "tars.tarsregistry.QueryObj"
-            }
-          },
-          {
-            "namespace": "wenbinye\\tars\\config",
-            "tars_path": "tars/ConfigF.tars",
-            "output": "src/config",
-            "servants": {
-              "ConfigF": "tars.tarsconfig.ConfigObj"
-            }
+        "client": {
+          "tars_path": "tars",
+          "servants": {
+            "StatF": "tars.tarsstat.StatObj",
+            "PropertyF": "tars.tarsproperty.PropertyObj",
+            "ServerF": "tars.tarsnode.ServerObj",
+            "Log": "tars.tarslog.LogObj",
+            "QueryF": "tars.tarsregistry.QueryObj",
+            "Config": "tars.tarsconfig.ConfigObj"
           }
-        ]
+        }
       }
     }
   }

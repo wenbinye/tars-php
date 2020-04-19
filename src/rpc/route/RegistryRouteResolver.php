@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace wenbinye\tars\rpc\route;
 
 use Psr\SimpleCache\CacheInterface;
-use wenbinye\tars\registry\EndpointF;
-use wenbinye\tars\registry\QueryFServant;
+use wenbinye\tars\client\EndpointF;
+use wenbinye\tars\client\QueryFServant;
 
 class RegistryRouteResolver implements RouteResolverInterface
 {

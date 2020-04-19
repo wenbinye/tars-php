@@ -6,6 +6,7 @@ namespace wenbinye\tars\log;
 
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Logger;
+use wenbinye\tars\client\LogServant;
 use wenbinye\tars\server\ServerProperties;
 
 /**

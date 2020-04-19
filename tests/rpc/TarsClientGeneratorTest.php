@@ -6,7 +6,7 @@ namespace wenbinye\tars\rpc;
 
 use kuiper\annotations\AnnotationReader;
 use Monolog\Test\TestCase;
-use wenbinye\tars\log\LogServant;
+use wenbinye\tars\client\LogServant;
 
 class TarsClientGeneratorTest extends TestCase
 {

@@ -46,8 +46,6 @@ class RequestLogMiddleware implements MiddlewareInterface, LoggerAwareInterface
 
     /**
      * RequestLogMiddleware constructor.
-     *
-     * @param $template
      */
     public function __construct(string $template = self::DEBUG)
     {

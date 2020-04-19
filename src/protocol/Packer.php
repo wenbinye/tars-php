@@ -65,7 +65,7 @@ class Packer implements PackerInterface, TypeParserInterface
         return $this->parser->parse($type, $namespace);
     }
 
-    public static function asPayload(string $name, string $payload): string
+    public static function toPayload(string $name, string $payload): string
     {
         $requestBuf = \TUPAPI::encode(Version::TUP, 1, '',
             '', 0, 0, 0,
