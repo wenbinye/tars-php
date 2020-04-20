@@ -22,17 +22,19 @@ class Composer
         return $json;
     }
 
-    public static function detect(): string
+    public static function detect(string $basePath = null): string
     {
-        $dir = getcwd();
-        while (!file_exists($dir.'/composer.json')) {
-            $parentDir = dirname($dir);
-            if ($parentDir === $dir) {
+        if (!$basePath) {
+            $basePath = getcwd();
+        }
+        while (!file_exists($basePath.'/composer.json')) {
+            $parentDir = dirname($basePath);
+            if ($parentDir === $basePath) {
                 throw new \InvalidArgumentException('Cannot detect project path, is there composer.json in current directory?');
             }
-            $dir = $parentDir;
+            $basePath = $parentDir;
         }
 
-        return $dir.'/composer.json';
+        return $basePath.'/composer.json';
     }
 }

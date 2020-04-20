@@ -33,11 +33,17 @@ class ServerApplication
         return $app->run();
     }
 
-    private static function createContainerFactory()
+    private static function createContainerFactory(): ContainerFactory
     {
-        $composerJson = Composer::detect();
-        $loader = require dirname($composerJson).'/vendor/autoload.php';
-        $json = Composer::getJson($composerJson);
+        $libraryComposerJson = Composer::detect(__DIR__);
+        $basePath = dirname($libraryComposerJson, 4);
+        if (file_exists($basePath.'/vendor/autoload.php')
+            && file_exists($basePath.'/composer.json')) {
+            $loader = require $basePath.'/vendor/autoload.php';
+            $json = Composer::getJson($basePath.'/composer.json');
+        } else {
+            throw new \InvalidArgumentException("Cannot detect project path, expected composer.json in $basePath");
+        }
         $namespaces = [];
         if (!empty($json['autoload']['psr-4'])) {
             $namespaces[] = array_keys($json['autoload']['psr-4'])[0];
