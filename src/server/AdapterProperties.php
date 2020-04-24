@@ -6,7 +6,7 @@ namespace wenbinye\tars\server;
 
 use kuiper\swoole\ServerType;
 use Symfony\Component\Validator\Constraints as Assert;
-use wenbinye\tars\rpc\route\Route;
+use wenbinye\tars\rpc\route\ServerAddress;
 use wenbinye\tars\server\annotation\ConfigItem;
 
 class AdapterProperties
@@ -23,10 +23,10 @@ class AdapterProperties
     private $name;
 
     /**
-     * @ConfigItem(factory="wenbinye\tars\rpc\route\Route::fromString")
+     * @ConfigItem(factory="wenbinye\tars\rpc\route\ServerAddress::fromString")
      * @Assert\NotNull()
      *
-     * @var Route
+     * @var ServerAddress
      */
     private $endpoint;
     /**
@@ -79,12 +79,12 @@ class AdapterProperties
         $this->name = $name;
     }
 
-    public function getEndpoint(): Route
+    public function getEndpoint(): ServerAddress
     {
         return $this->endpoint;
     }
 
-    public function setEndpoint(Route $endpoint): void
+    public function setEndpoint(ServerAddress $endpoint): void
     {
         $this->endpoint = $endpoint;
     }

@@ -22,15 +22,15 @@ class ChainRouteResolver implements RouteResolverInterface
     /**
      * {@inheritdoc}
      */
-    public function resolve(string $servantName): array
+    public function resolve(string $servantName): ?Route
     {
         foreach ($this->resolvers as $resolver) {
-            $routes = $resolver->resolve($servantName);
-            if (!empty($routes)) {
-                return $routes;
+            $route = $resolver->resolve($servantName);
+            if ($route) {
+                return $route;
             }
         }
 
-        return [];
+        return null;
     }
 }

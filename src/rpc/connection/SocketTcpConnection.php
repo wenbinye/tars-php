@@ -22,8 +22,8 @@ class SocketTcpConnection extends AbstractConnection
         if (false === $socket) {
             $this->onConnectionError(ErrorCode::fromValue(ErrorCode::TARS_SOCKET_CREATE_FAILED));
         }
-        $route = $this->getRoute();
-        if (!\socket_connect($socket, $route->getHost(), $route->getPort())) {
+        $address = $this->getAddress();
+        if (!\socket_connect($socket, $address->getHost(), $address->getPort())) {
             \socket_close($socket);
             $this->onConnectionError(ErrorCode::fromValue(ErrorCode::TARS_SOCKET_CONNECT_FAILED));
         }

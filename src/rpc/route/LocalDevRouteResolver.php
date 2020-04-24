@@ -24,15 +24,22 @@ class LocalDevRouteResolver implements RouteResolverInterface
     /**
      * {@inheritdoc}
      */
-    public function resolve(string $servantName): array
+    public function resolve(string $servantName): ?Route
     {
-        $routes = $this->routeResolver->resolve($servantName);
-        foreach ($routes as $i => $route) {
-            if (isset($this->ipMapping[$route->getHost()])) {
-                $routes[$i] = $route->withHost($this->ipMapping[$route->getHost()]);
+        $servantRoute = $this->routeResolver->resolve($servantName);
+        if ($servantRoute) {
+            $addresses = [];
+            foreach ($servantRoute->getAddressList() as $i => $address) {
+                if (isset($this->ipMapping[$address->getHost()])) {
+                    $addresses[] = $address->withHost($this->ipMapping[$address->getHost()]);
+                } else {
+                    $addresses[] = $address;
+                }
             }
+
+            return new Route($servantName, $addresses);
         }
 
-        return $routes;
+        return $servantRoute;
     }
 }

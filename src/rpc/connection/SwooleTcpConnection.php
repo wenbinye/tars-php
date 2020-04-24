@@ -37,11 +37,11 @@ class SwooleTcpConnection extends AbstractConnection
     {
         $client = $this->createSwooleClient();
         $client->set($this->settings);
-        $route = $this->getRoute();
-        if (!$client->connect($route->getHost(), $route->getPort(), $route->getTimeout() / 1000)) {
+        $address = $this->getAddress();
+        if (!$client->connect($address->getHost(), $address->getPort(), $address->getTimeout() / 1000)) {
             $this->onConnectionError(ErrorCode::fromValue(ErrorCode::TARS_SOCKET_CONNECT_FAILED));
         }
-        $this->logger && $this->logger->debug('[SwooleTcpConnection] connected', ['route' => (string) $route]);
+        $this->logger && $this->logger->debug('[SwooleTcpConnection] connected', ['address' => (string) $address]);
 
         return $client;
     }

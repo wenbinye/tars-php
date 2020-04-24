@@ -69,7 +69,7 @@ class TarsClient implements TarsClientInterface, LoggerAwareInterface
     {
         $connection = $this->connectionFactory->create($request->getServantName());
         try {
-            $rawContent = $connection->send($request = $request->withAttribute('route', $connection->getRoute()));
+            $rawContent = $connection->send($request = $request->withAttribute('address', $connection->getAddress()));
 
             $response = $this->responseFactory->create($rawContent, $request);
             if (isset($this->errorHandler) && !$response->isSuccess()) {

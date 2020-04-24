@@ -6,7 +6,7 @@ namespace wenbinye\tars\rpc\connection;
 
 use wenbinye\tars\rpc\exception\CommunicationException;
 use wenbinye\tars\rpc\message\RequestInterface;
-use wenbinye\tars\rpc\route\Route;
+use wenbinye\tars\rpc\route\ServerAddress;
 
 interface ConnectionInterface
 {
@@ -28,7 +28,7 @@ interface ConnectionInterface
     /**
      * Gets the connect info.
      */
-    public function getRoute(): Route;
+    public function getAddress(): ServerAddress;
 
     /**
      * @throws CommunicationException

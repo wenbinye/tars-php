@@ -10,14 +10,14 @@ use kuiper\swoole\pool\PoolInterface;
 use kuiper\swoole\pool\SimplePool;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
-use wenbinye\tars\rpc\route\RouteHolderFactoryInterface;
+use wenbinye\tars\rpc\route\ServerAddressHolderFactoryInterface;
 
 class ConnectionFactory implements ConnectionFactoryInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
     /**
-     * @var RouteHolderFactoryInterface
+     * @var ServerAddressHolderFactoryInterface
      */
     private $routeHolderFactory;
 
@@ -39,7 +39,7 @@ class ConnectionFactory implements ConnectionFactoryInterface, LoggerAwareInterf
     /**
      * ConnectionFactory constructor.
      */
-    public function __construct(RouteHolderFactoryInterface $routeHolderFactory)
+    public function __construct(ServerAddressHolderFactoryInterface $routeHolderFactory)
     {
         $this->routeHolderFactory = $routeHolderFactory;
     }

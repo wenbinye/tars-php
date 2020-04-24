@@ -9,7 +9,7 @@ interface RouteResolverInterface
     /**
      * Resolve servant route.
      *
-     * @return Route[]
+     * @return Route
      */
-    public function resolve(string $servantName): array;
+    public function resolve(string $servantName): ?Route;
 }

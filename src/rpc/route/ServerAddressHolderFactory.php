@@ -7,7 +7,7 @@ namespace wenbinye\tars\rpc\route;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 
-class RouteHolderFactory implements RouteHolderFactoryInterface, LoggerAwareInterface
+class ServerAddressHolderFactory implements ServerAddressHolderFactoryInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
@@ -32,22 +32,22 @@ class RouteHolderFactory implements RouteHolderFactoryInterface, LoggerAwareInte
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
-    public function create(string $servantName): RouteHolderInterface
+    public function create(string $servantName): ServerAddressHolderInterface
     {
         if ($this->loadBalance) {
-            $routeHolder = new LoadBalanceRouteHolder($this->routeResolver, $this->loadBalance, $servantName);
-            $routeHolder->setLogger($this->logger);
+            $loadBalanceServerAddressHolder = new LoadBalanceServerAddressHolder($this->routeResolver, $this->loadBalance, $servantName);
+            $loadBalanceServerAddressHolder->setLogger($this->logger);
 
-            return $routeHolder;
-        } else {
-            $routes = $this->routeResolver->resolve($servantName);
-            if (empty($routes)) {
-                throw new \InvalidArgumentException("Cannot resolve route for $servantName");
-            }
-
-            return new RouteHolder($routes[0]);
+            return $loadBalanceServerAddressHolder;
         }
+
+        $servantRoute = $this->routeResolver->resolve($servantName);
+        if (!$servantRoute) {
+            throw new \InvalidArgumentException("Cannot resolve route for $servantName");
+        }
+
+        return new ServerAddressHolder($servantRoute);
     }
 }

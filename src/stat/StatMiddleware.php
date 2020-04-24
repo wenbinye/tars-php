@@ -37,7 +37,7 @@ class StatMiddleware implements MiddlewareInterface
 
             return $response;
         } catch (TimedOutException $e) {
-            $this->stat->timedOut(new Response($request->withAttribute('route', $e->getConnection()->getRoute()), '', 0, []),
+            $this->stat->timedOut(new Response($request->withAttribute('route', $e->getConnection()->getAddress()), '', 0, []),
                 intval(1000 * (microtime(true) - $time)));
             throw $e;
         }

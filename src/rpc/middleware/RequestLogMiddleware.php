@@ -10,6 +10,7 @@ use wenbinye\tars\rpc\message\MessageInterface;
 use wenbinye\tars\rpc\message\RequestInterface;
 use wenbinye\tars\rpc\message\ResponseInterface;
 use wenbinye\tars\rpc\MiddlewareInterface;
+use wenbinye\tars\rpc\route\ServerAddress;
 
 /**
  * Formats log messages using variable substitutions for requests, responses,
@@ -80,11 +81,12 @@ class RequestLogMiddleware implements MiddlewareInterface, LoggerAwareInterface
         \Exception $error = null
     ) {
         $cache = [];
-        $route = $response ? $response->getRequest()->getAttribute('route') : null;
+        /** @var ServerAddress $address */
+        $address = $response ? $response->getRequest()->getAttribute('address') : null;
 
         return preg_replace_callback(
             '/{\s*([A-Za-z_\-\.0-9]+)\s*}/',
-            function (array $matches) use ($request, $response, $route, $error, &$cache) {
+            function (array $matches) use ($request, $response, $address, $error, &$cache) {
                 if (isset($cache[$matches[1]])) {
                     return $cache[$matches[1]];
                 }
@@ -123,10 +125,10 @@ class RequestLogMiddleware implements MiddlewareInterface, LoggerAwareInterface
                         $result = $request->getServantName();
                         break;
                     case 'host':
-                        $result = $route ? $route->getHost() : '';
+                        $result = $address ? $address->getHost() : '';
                         break;
                     case 'port':
-                        $result = $route ? $route->getPort() : '';
+                        $result = $address ? $address->getPort() : '';
                         break;
                     case 'code':
                         $result = $response ? $response->getReturnCode() : 'NULL';
@@ -152,7 +154,7 @@ class RequestLogMiddleware implements MiddlewareInterface, LoggerAwareInterface
         );
     }
 
-    private function stringfy(MessageInterface $message)
+    private function stringfy(MessageInterface $message): string
     {
         if ($message instanceof RequestInterface) {
             return sprintf('[%d]%s::%s(%s)', $message->getRequestId(), $message->getServantName(), $message->getFuncName(),
@@ -160,17 +162,19 @@ class RequestLogMiddleware implements MiddlewareInterface, LoggerAwareInterface
         }
 
         if ($message instanceof ResponseInterface) {
-            $route = $message->getRequest()->getAttribute('route');
-            if ($route) {
-                return sprintf('%s:%d->[%d %s](%s)', $route->getHost(), $route->getPort(), $message->getReturnCode(), $message->getMessage(),
+            $address = $message->getRequest()->getAttribute('address');
+            if ($address) {
+                return sprintf('%s:%d->[%d %s](%s)', $address->getHost(), $address->getPort(),
+                    $message->getReturnCode(), $message->getMessage(),
                     json_encode($this->getReturnValues($message)));
-            } else {
-                return sprintf('[%d %s](%s)', $message->getReturnCode(), $message->getMessage(), json_encode($message->getReturnValues()));
             }
+
+            return sprintf('[%d %s](%s)', $message->getReturnCode(), $message->getMessage(),
+                json_encode($message->getReturnValues()));
         }
     }
 
-    private function getParameters(RequestInterface $request)
+    private function getParameters(RequestInterface $request): array
     {
         $params = [];
         foreach ($request->getParameters() as $parameter) {
@@ -182,7 +186,7 @@ class RequestLogMiddleware implements MiddlewareInterface, LoggerAwareInterface
         return $params;
     }
 
-    private function getReturnValues(ResponseInterface $message)
+    private function getReturnValues(ResponseInterface $message): array
     {
         $return = [];
         foreach ($message->getReturnValues() as $returnValue) {

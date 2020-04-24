@@ -10,9 +10,9 @@ use wenbinye\tars\rpc\ErrorCode;
 use wenbinye\tars\rpc\exception\CommunicationException;
 use wenbinye\tars\rpc\exception\ConnectionException;
 use wenbinye\tars\rpc\message\RequestInterface;
-use wenbinye\tars\rpc\route\RefreshableRouteHolderInterface;
-use wenbinye\tars\rpc\route\Route;
-use wenbinye\tars\rpc\route\RouteHolderInterface;
+use wenbinye\tars\rpc\route\RefreshableServerAddressHolderInterface;
+use wenbinye\tars\rpc\route\ServerAddress;
+use wenbinye\tars\rpc\route\ServerAddressHolderInterface;
 
 abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInterface
 {
@@ -24,16 +24,16 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
     private $resource;
 
     /**
-     * @var RouteHolderInterface
+     * @var ServerAddressHolderInterface
      */
-    private $routeResolver;
+    private $serverAddressHolder;
 
     /**
      * AbstractConnection constructor.
      */
-    public function __construct(RouteHolderInterface $routeResolver)
+    public function __construct(ServerAddressHolderInterface $serverAddressHolder)
     {
-        $this->routeResolver = $routeResolver;
+        $this->serverAddressHolder = $serverAddressHolder;
     }
 
     /**
@@ -99,9 +99,9 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
     /**
      * {@inheritdoc}
      */
-    public function getRoute(): Route
+    public function getAddress(): ServerAddress
     {
-        return $this->routeResolver->get();
+        return $this->serverAddressHolder->get();
     }
 
     /**
@@ -139,13 +139,13 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
     protected static function createExceptionMessage(ConnectionInterface $connection, string $message): string
     {
         // TODO: message format with request info
-        return $message.'(route='.$connection->getRoute().')';
+        return $message.'(address='.$connection->getAddress().')';
     }
 
     protected function beforeSend(): void
     {
-        if ($this->routeResolver instanceof RefreshableRouteHolderInterface) {
-            $this->routeResolver->refresh();
+        if ($this->serverAddressHolder instanceof RefreshableServerAddressHolderInterface) {
+            $this->serverAddressHolder->refresh();
         }
     }
 

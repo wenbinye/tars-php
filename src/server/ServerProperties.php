@@ -6,6 +6,7 @@ namespace wenbinye\tars\server;
 
 use Symfony\Component\Validator\Constraints as Assert;
 use wenbinye\tars\rpc\route\Route;
+use wenbinye\tars\rpc\route\ServerAddress;
 use wenbinye\tars\server\annotation\ConfigItem;
 
 class ServerProperties
@@ -85,9 +86,9 @@ class ServerProperties
      */
     private $node;
     /**
-     * @ConfigItem(factory="wenbinye\tars\rpc\route\Route::fromString")
+     * @ConfigItem(factory="wenbinye\tars\rpc\route\ServerAddress::fromString")
      *
-     * @var Route
+     * @var ServerAddress
      */
     private $local;
 
@@ -233,12 +234,12 @@ class ServerProperties
         $this->node = $node;
     }
 
-    public function getLocal(): Route
+    public function getLocal(): ServerAddress
     {
         return $this->local;
     }
 
-    public function setLocal(Route $local): void
+    public function setLocal(ServerAddress $local): void
     {
         $this->local = $local;
     }

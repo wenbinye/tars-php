@@ -6,7 +6,7 @@ namespace wenbinye\tars\rpc\connection;
 
 use kuiper\swoole\pool\PoolInterface;
 use wenbinye\tars\rpc\message\RequestInterface;
-use wenbinye\tars\rpc\route\Route;
+use wenbinye\tars\rpc\route\ServerAddress;
 
 class PoolConnection implements ConnectionInterface
 {
@@ -69,9 +69,9 @@ class PoolConnection implements ConnectionInterface
     /**
      * {@inheritdoc}
      */
-    public function getRoute(): Route
+    public function getAddress(): ServerAddress
     {
-        return $this->getConnection()->getRoute();
+        return $this->getConnection()->getAddress();
     }
 
     /**

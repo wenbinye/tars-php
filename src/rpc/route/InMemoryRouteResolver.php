@@ -7,7 +7,7 @@ namespace wenbinye\tars\rpc\route;
 class InMemoryRouteResolver implements RouteResolverInterface
 {
     /**
-     * @var Route[][]
+     * @var Route[]
      */
     private $routes;
 
@@ -25,11 +25,11 @@ class InMemoryRouteResolver implements RouteResolverInterface
 
     public function addRoute(Route $route): void
     {
-        $this->routes[$route->getServantName()][$route->getHost().':'.$route->getPort()] = $route;
+        $this->routes[$route->getServantName()] = $route;
     }
 
-    public function resolve(string $servantName): array
+    public function resolve(string $servantName): ?Route
     {
-        return array_values($this->routes[$servantName] ?? []);
+        return $this->routes[$servantName] ?? null;
     }
 }

@@ -25,9 +25,9 @@ use wenbinye\tars\rpc\message\ResponseFactoryInterface;
 use wenbinye\tars\rpc\route\InMemoryRouteResolver;
 use wenbinye\tars\rpc\route\RegistryRouteResolver;
 use wenbinye\tars\rpc\route\Route;
-use wenbinye\tars\rpc\route\RouteHolderFactory;
-use wenbinye\tars\rpc\route\RouteHolderFactoryInterface;
 use wenbinye\tars\rpc\route\RouteResolverInterface;
+use wenbinye\tars\rpc\route\ServerAddressHolderFactory;
+use wenbinye\tars\rpc\route\ServerAddressHolderFactoryInterface;
 use wenbinye\tars\rpc\route\SwooleTableRegistryCache;
 
 class TarsClientBuilder implements LoggerAwareInterface
@@ -70,9 +70,9 @@ class TarsClientBuilder implements LoggerAwareInterface
     private $requestIdGenerator;
 
     /**
-     * @var RouteHolderFactoryInterface
+     * @var ServerAddressHolderFactoryInterface
      */
-    private $routeHolderFactory;
+    private $serverAddressHolderFactory;
 
     /**
      * @var ConnectionFactoryInterface
@@ -124,7 +124,7 @@ class TarsClientBuilder implements LoggerAwareInterface
             }
             $routeResolver = new InMemoryRouteResolver();
             $routeResolver->addRoute($this->locator);
-            $routeHolderFactory = new RouteHolderFactory($routeResolver);
+            $routeHolderFactory = new ServerAddressHolderFactory($routeResolver);
             $connectionFactory = new ConnectionFactory($routeHolderFactory);
             $tarsClient = new TarsClient(
                 $connectionFactory,
@@ -177,10 +177,8 @@ class TarsClientBuilder implements LoggerAwareInterface
 
     /**
      * @param mixed $routeResolver
-     *
-     * @return TarsClientBuilder
      */
-    public function setRouteResolver($routeResolver)
+    public function setRouteResolver($routeResolver): TarsClientBuilder
     {
         $this->routeResolver = $routeResolver;
 
@@ -235,21 +233,21 @@ class TarsClientBuilder implements LoggerAwareInterface
         return $this;
     }
 
-    public function getRouteHolderFactory(): RouteHolderFactoryInterface
+    public function getServerAddressHolderFactory(): ServerAddressHolderFactoryInterface
     {
-        if (!$this->routeHolderFactory) {
-            $this->routeHolderFactory = new RouteHolderFactory($this->getRouteResolver());
+        if (!$this->serverAddressHolderFactory) {
+            $this->serverAddressHolderFactory = new ServerAddressHolderFactory($this->getRouteResolver());
             if ($this->logger) {
-                $this->routeHolderFactory->setLogger($this->logger);
+                $this->serverAddressHolderFactory->setLogger($this->logger);
             }
         }
 
-        return $this->routeHolderFactory;
+        return $this->serverAddressHolderFactory;
     }
 
-    public function setRouteHolderFactory(RouteHolderFactoryInterface $routeHolderFactory): TarsClientBuilder
+    public function setServerAddressHolderFactory(ServerAddressHolderFactoryInterface $serverAddressHolderFactory): TarsClientBuilder
     {
-        $this->routeHolderFactory = $routeHolderFactory;
+        $this->serverAddressHolderFactory = $serverAddressHolderFactory;
 
         return $this;
     }
@@ -273,7 +271,7 @@ class TarsClientBuilder implements LoggerAwareInterface
     public function getConnectionFactory(): ConnectionFactoryInterface
     {
         if (!$this->connectionFactory) {
-            $this->connectionFactory = new ConnectionFactory($this->getRouteHolderFactory());
+            $this->connectionFactory = new ConnectionFactory($this->getServerAddressHolderFactory());
             if ($this->logger) {
                 $this->connectionFactory->setLogger($this->logger);
             }

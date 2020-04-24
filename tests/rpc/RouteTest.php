@@ -15,27 +15,44 @@ class RouteTest extends TestCase
     public function testFromString($str, $expect)
     {
         $route = Route::fromString($str);
-        $this->assertEquals($route->toArray(), $expect);
+        $this->assertEquals($expect['servantName'], $route->getServantName());
+        $this->assertEquals($expect['addresses'], array_map(function ($item) {return $item->toArray(); }, $route->getAddressList()));
     }
 
     public function routes()
     {
         return [
             ['tars.tarsnode.ServerObj@tcp -h 172.29.0.3 -p 19386 -t 60000', [
-                'protocol' => 'tcp',
-                'host' => '172.29.0.3',
-                'port' => 19386,
-                'timeout' => 60000,
                 'servantName' => 'tars.tarsnode.ServerObj',
-                'weight' => 100,
-            ]],
-            ['tcp -h 127.0.0.1 -p 18080 -t 3000', [
-                'protocol' => 'tcp',
-                'host' => '127.0.0.1',
-                'port' => 18080,
-                'timeout' => 3000,
-                'weight' => 100,
-            ]],
+                'addresses' => [
+                    [
+                        'protocol' => 'tcp',
+                        'host' => '172.29.0.3',
+                        'port' => 19386,
+                        'timeout' => 60000,
+                        'weight' => 100,
+                    ],
+                ], ],
+            ],
+            ['tars.tarsnode.ServerObj@tcp -h 172.29.0.3 -p 19386 -t 60000:tcp -h 172.29.0.4 -p 19386 -t 60000', [
+                'servantName' => 'tars.tarsnode.ServerObj',
+                'addresses' => [
+                    [
+                        'protocol' => 'tcp',
+                        'host' => '172.29.0.3',
+                        'port' => 19386,
+                        'timeout' => 60000,
+                        'weight' => 100,
+                    ],
+                    [
+                        'protocol' => 'tcp',
+                        'host' => '172.29.0.4',
+                        'port' => 19386,
+                        'timeout' => 60000,
+                        'weight' => 100,
+                    ],
+                ], ],
+            ],
         ];
     }
 }

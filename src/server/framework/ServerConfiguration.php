@@ -68,9 +68,9 @@ use wenbinye\tars\rpc\middleware\RequestLogMiddleware;
 use wenbinye\tars\rpc\route\ChainRouteResolver;
 use wenbinye\tars\rpc\route\InMemoryRouteResolver;
 use wenbinye\tars\rpc\route\RegistryRouteResolver;
-use wenbinye\tars\rpc\route\RouteHolderFactory;
-use wenbinye\tars\rpc\route\RouteHolderFactoryInterface;
 use wenbinye\tars\rpc\route\RouteResolverInterface;
+use wenbinye\tars\rpc\route\ServerAddressHolderFactory;
+use wenbinye\tars\rpc\route\ServerAddressHolderFactoryInterface;
 use wenbinye\tars\rpc\route\SwooleTableRegistryCache;
 use wenbinye\tars\rpc\ServantProxyGenerator;
 use wenbinye\tars\rpc\ServantProxyGeneratorInterface;
@@ -167,7 +167,7 @@ class ServerConfiguration implements DefinitionConfiguration
                 ]),
             RegistryRouteResolver::class => autowire()
                 ->constructorParameter('cache', get('registryCache')),
-            RouteHolderFactoryInterface::class => autowire(RouteHolderFactory::class)
+            ServerAddressHolderFactoryInterface::class => autowire(ServerAddressHolderFactory::class)
                 ->constructorParameter('loadBalanceAlgorithm', RoundRobin::class),
 
             ResponseSenderInterface::class => autowire(ResponseSender::class),
@@ -296,7 +296,7 @@ class ServerConfiguration implements DefinitionConfiguration
                                  ResponseFactoryInterface $responseFactory, ErrorHandlerInterface $errorHandler,
                                  ServantProxyGeneratorInterface $proxyGenerator, LoggerInterface $logger): QueryFServant
     {
-        $connectionFactory = new ConnectionFactory(new RouteHolderFactory($routeResolver));
+        $connectionFactory = new ConnectionFactory(new ServerAddressHolderFactory($routeResolver));
         $connectionFactory->setLogger($logger);
         $client = new TarsClient($connectionFactory, $requestFactory, $responseFactory, $errorHandler);
 

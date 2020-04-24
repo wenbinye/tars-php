@@ -8,7 +8,7 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use wenbinye\tars\rpc\lb\LoadBalanceInterface;
 
-class LoadBalanceRouteHolder implements RefreshableRouteHolderInterface, LoggerAwareInterface
+class LoadBalanceServerAddressHolder implements RefreshableServerAddressHolderInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
@@ -21,14 +21,14 @@ class LoadBalanceRouteHolder implements RefreshableRouteHolderInterface, LoggerA
      */
     private $servantName;
     /**
-     * @var Route
+     * @var ServerAddress
      */
-    private $currentRoute;
+    private $currentAddress;
 
     /**
      * @var LoadBalanceInterface
      */
-    private $routes;
+    private $loadBalance;
     /**
      * @var string
      */
@@ -44,34 +44,34 @@ class LoadBalanceRouteHolder implements RefreshableRouteHolderInterface, LoggerA
         $this->loadBalanceAlgorithm = $loadBalanceAlgorithm;
     }
 
-    public function get(): Route
+    public function get(): ServerAddress
     {
-        if (!$this->currentRoute) {
+        if (!$this->currentAddress) {
             try {
-                $routes = $this->routeResolver->resolve($this->servantName);
+                $route = $this->routeResolver->resolve($this->servantName);
             } catch (\Exception $e) {
                 $this->logger->error("[LoadBalanceRouteHolder] Resolve {$this->servantName} failed: ".get_class($e).': '.$e->getMessage());
                 throw new \InvalidArgumentException('Cannot resolve route for servant '.$this->servantName, 0, $e);
             }
-            if (empty($routes)) {
+            if (!$route) {
                 throw new \InvalidArgumentException('Cannot resolve route for servant '.$this->servantName);
             }
             $lb = $this->loadBalanceAlgorithm;
-            $this->routes = new $lb($routes, array_map(static function (Route $route) {
+            $this->loadBalance = new $lb($route->getAddressList(), array_map(static function (ServerAddress $route) {
                 return $route->getWeight();
-            }, $routes));
-            $this->currentRoute = $this->routes->select();
+            }, $route->getAddressList()));
+            $this->currentAddress = $this->loadBalance->select();
         }
 
-        return $this->currentRoute;
+        return $this->currentAddress;
     }
 
     public function refresh(bool $force = false): void
     {
         if ($force) {
-            $this->currentRoute = null;
-        } elseif (isset($this->routes)) {
-            $this->currentRoute = $this->routes->select();
+            $this->currentAddress = null;
+        } elseif (isset($this->loadBalance)) {
+            $this->currentAddress = $this->loadBalance->select();
         }
     }
 }
