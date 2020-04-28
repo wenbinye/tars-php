@@ -17,12 +17,19 @@ class TarsClient extends TarsServant implements ContainerBuilderAwareInterface
 {
     use ContainerBuilderAwareTrait;
 
+    /**
+     * bean name.
+     *
+     * @var string
+     */
+    public $value;
+
     public function handle(): void
     {
-        $name = $this->class->getName();
+        $name = $this->value ?? $this->class->getName();
         $this->containerBuilder->addDefinitions([
             $name => factory([TarsClientFactoryInterface::class, 'create'])
-                ->parameter('clientClassName', $name),
+                ->parameter('clientClassName', $this->class->getName()),
         ]);
     }
 }

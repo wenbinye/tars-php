@@ -35,20 +35,31 @@ class ServerApplication
 
     private static function createContainerFactory(): ContainerFactory
     {
-        $libraryComposerJson = Composer::detect(__DIR__);
-        $basePath = dirname($libraryComposerJson, 4);
-        if (file_exists($basePath.'/vendor/autoload.php')
-            && file_exists($basePath.'/composer.json')) {
-            $loader = require $basePath.'/vendor/autoload.php';
-            $json = Composer::getJson($basePath.'/composer.json');
-        } else {
-            throw new \InvalidArgumentException("Cannot detect project path, expected composer.json in $basePath");
-        }
+        $basePath = self::detectBasePath();
+        $loader = require $basePath.'/vendor/autoload.php';
+        $json = Composer::getJson($basePath.'/composer.json');
         $namespaces = [];
         if (!empty($json['autoload']['psr-4'])) {
             $namespaces[] = array_keys($json['autoload']['psr-4'])[0];
         }
 
         return new ContainerFactory($loader, $namespaces);
+    }
+
+    private static function detectBasePath(): string
+    {
+        if (defined('APP_PATH')) {
+            $basePath = APP_PATH;
+        } else {
+            $libraryComposerJson = Composer::detect(__DIR__);
+            $basePath = dirname($libraryComposerJson, 4);
+        }
+
+        if (!file_exists($basePath.'/vendor/autoload.php')
+            || !file_exists($basePath.'/composer.json')) {
+            throw new \InvalidArgumentException("Cannot detect project path, expected composer.json in $basePath");
+        }
+
+        return $basePath;
     }
 }

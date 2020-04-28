@@ -14,6 +14,7 @@ use kuiper\di\annotation\ComponentTrait;
 class TarsServant implements ComponentInterface
 {
     use ComponentTrait;
+
     /**
      * @var string
      */
