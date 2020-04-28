@@ -21,7 +21,7 @@ class ServerAddressHolder implements ServerAddressHolderInterface, RefreshableSe
      */
     public function __construct(Route $route)
     {
-        if ($this->servantRoute->isEmpty()) {
+        if ($route->isEmpty()) {
             throw new \InvalidArgumentException('No route for '.$route->getServantName());
         }
         $this->servantRoute = $route;
