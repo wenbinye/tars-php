@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace wenbinye\tars\server;
 
 use kuiper\helper\Enum;
-use kuiper\swoole\ServerType;
+use kuiper\swoole\constants\ServerType;
 
 /**
  * Class Protocol.
@@ -29,4 +29,9 @@ class Protocol extends Enum
             self::GRPC => ServerType::HTTP2,
         ],
     ];
+
+    public function isHttpProtocol(): bool
+    {
+        return $this->serverType && ServerType::fromValue($this->serverType)->isHttpProtocol();
+    }
 }

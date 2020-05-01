@@ -6,6 +6,8 @@ namespace wenbinye\tars\stat;
 
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use wenbinye\tars\client\StatFServant;
 use wenbinye\tars\protocol\type\StructMap;
 use wenbinye\tars\rpc\message\ResponseInterface;
@@ -15,6 +17,8 @@ use wenbinye\tars\server\ServerProperties;
 class Stat implements StatInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
+
+    private const TAG = '['.__CLASS__.'] ';
 
     /**
      * @var StatStoreAdapter
@@ -38,12 +42,15 @@ class Stat implements StatInterface, LoggerAwareInterface
     /**
      * Stat constructor.
      */
-    public function __construct(StatFServant $statClient, StatStoreAdapter $store, ClientProperties $clientProperties, ServerProperties $serverProperties)
+    public function __construct(StatFServant $statClient, StatStoreAdapter $store,
+                                ClientProperties $clientProperties, ServerProperties $serverProperties,
+                                ?LoggerInterface $logger)
     {
         $this->store = $store;
         $this->statClient = $statClient;
         $this->reportInterval = $clientProperties->getReportInterval();
         $this->serverProperties = $serverProperties;
+        $this->setLogger($logger ?? new NullLogger());
     }
 
     public function success(ResponseInterface $response, int $responseTime): void
@@ -72,7 +79,7 @@ class Stat implements StatInterface, LoggerAwareInterface
             $entries[] = $entry;
         }
         if ($msg->count() > 0) {
-            $this->logger->debug('[Stat] send stat', ['msg' => $msg]);
+            $this->logger->debug(self::TAG.'send stat', ['msg' => $msg]);
             $ret = $this->statClient->reportMicMsg($msg, true);
             foreach ($entries as $entry) {
                 $this->store->delete($entry);

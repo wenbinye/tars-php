@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc\route;
 
+/**
+ * Class ServerAddressHolder.
+ */
 class ServerAddressHolder implements ServerAddressHolderInterface, RefreshableServerAddressHolderInterface
 {
     /**

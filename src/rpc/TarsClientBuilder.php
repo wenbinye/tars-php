@@ -125,11 +125,12 @@ class TarsClientBuilder implements LoggerAwareInterface
             $routeResolver = new InMemoryRouteResolver();
             $routeResolver->addRoute($this->locator);
             $routeHolderFactory = new ServerAddressHolderFactory($routeResolver);
-            $connectionFactory = new ConnectionFactory($routeHolderFactory);
+            $connectionFactory = new ConnectionFactory($routeHolderFactory, $this->logger);
             $tarsClient = new TarsClient(
                 $connectionFactory,
                 $this->getRequestFactory(),
                 $this->getResponseFactory(),
+                $this->logger,
                 $this->getErrorHandler(),
                 $this->middlewares
             );
@@ -166,10 +167,7 @@ class TarsClientBuilder implements LoggerAwareInterface
     public function getRouteResolver(): RouteResolverInterface
     {
         if (!$this->routeResolver) {
-            $this->routeResolver = new RegistryRouteResolver(
-                $this->getQueryFClient(),
-                $this->getCache()
-            );
+            $this->routeResolver = new RegistryRouteResolver($this->getQueryFClient(), $this->getCache());
         }
 
         return $this->routeResolver;
@@ -236,10 +234,7 @@ class TarsClientBuilder implements LoggerAwareInterface
     public function getServerAddressHolderFactory(): ServerAddressHolderFactoryInterface
     {
         if (!$this->serverAddressHolderFactory) {
-            $this->serverAddressHolderFactory = new ServerAddressHolderFactory($this->getRouteResolver());
-            if ($this->logger) {
-                $this->serverAddressHolderFactory->setLogger($this->logger);
-            }
+            $this->serverAddressHolderFactory = new ServerAddressHolderFactory($this->getRouteResolver(), null, $this->logger);
         }
 
         return $this->serverAddressHolderFactory;
@@ -271,10 +266,7 @@ class TarsClientBuilder implements LoggerAwareInterface
     public function getConnectionFactory(): ConnectionFactoryInterface
     {
         if (!$this->connectionFactory) {
-            $this->connectionFactory = new ConnectionFactory($this->getServerAddressHolderFactory());
-            if ($this->logger) {
-                $this->connectionFactory->setLogger($this->logger);
-            }
+            $this->connectionFactory = new ConnectionFactory($this->getServerAddressHolderFactory(), $this->logger);
         }
 
         return $this->connectionFactory;
@@ -359,6 +351,7 @@ class TarsClientBuilder implements LoggerAwareInterface
             $this->getConnectionFactory(),
             $this->getRequestFactory(),
             $this->getResponseFactory(),
+            $this->logger,
             $this->getErrorHandler(),
             $this->middlewares
         );

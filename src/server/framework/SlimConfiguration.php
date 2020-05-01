@@ -5,20 +5,20 @@ declare(strict_types=1);
 namespace wenbinye\tars\server\framework;
 
 use kuiper\di\annotation\Bean;
-use kuiper\di\ContainerBuilder;
+use kuiper\di\annotation\ConditionalOnProperty;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Slim\Factory\AppFactory;
 use wenbinye\tars\server\ServerProperties;
 
-class Slim extends ContainerFactory
+/**
+ * Class SlimConfiguration
+ * @package wenbinye\tars\server\framework
+ *
+ * @ConditionalOnProperty("application.web.framework", hasValue="slim")
+ */
+class SlimConfiguration
 {
-    protected function createContainerBuilder(): ContainerBuilder
-    {
-        return parent::createContainerBuilder()
-            ->addConfiguration($this);
-    }
-
     /**
      * @Bean()
      */

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc\connection;
 
-use kuiper\swoole\SwooleSetting;
+use kuiper\swoole\constants\ServerSetting;
 use Swoole\Client;
 use wenbinye\tars\rpc\ErrorCode;
 use wenbinye\tars\rpc\message\RequestInterface;
@@ -12,9 +12,9 @@ use wenbinye\tars\rpc\message\RequestInterface;
 class SwooleTcpConnection extends AbstractConnection
 {
     private $settings = [
-        SwooleSetting::OPEN_LENGTH_CHECK => 1,
-        SwooleSetting::PACKAGE_LENGTH_TYPE => 'N',
-        SwooleSetting::PACKAGE_MAX_LENGTH => 2000000,
+        ServerSetting::OPEN_LENGTH_CHECK => 1,
+        ServerSetting::PACKAGE_LENGTH_TYPE => 'N',
+        ServerSetting::PACKAGE_MAX_LENGTH => 2000000,
     ];
 
     public function setOptions(array $options): void

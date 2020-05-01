@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
 
 namespace wenbinye\tars\rpc\route;
 
-
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 class ServerAddressHolderFactory implements ServerAddressHolderFactoryInterface, LoggerAwareInterface
 {
@@ -25,22 +27,20 @@ class ServerAddressHolderFactory implements ServerAddressHolderFactoryInterface,
      *
      * @param string $loadBalanceAlgorithm the LoadBalanceInterface concrete class
      */
-    public function __construct(RouteResolverInterface $routeResolver, string $loadBalanceAlgorithm = null)
+    public function __construct(RouteResolverInterface $routeResolver, string $loadBalanceAlgorithm = null, LoggerInterface $logger = null)
     {
         $this->routeResolver = $routeResolver;
         $this->loadBalance = $loadBalanceAlgorithm;
+        $this->setLogger($logger ?? new NullLogger());
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function create(string $servantName): ServerAddressHolderInterface
     {
         if ($this->loadBalance) {
-            $loadBalanceServerAddressHolder = new LoadBalanceServerAddressHolder($this->routeResolver, $this->loadBalance, $servantName);
-            $loadBalanceServerAddressHolder->setLogger($this->logger);
-
-            return $loadBalanceServerAddressHolder;
+            return new LoadBalanceServerAddressHolder($this->routeResolver, $this->loadBalance, $servantName, $this->logger);
         }
 
         $servantRoute = $this->routeResolver->resolve($servantName);

@@ -6,6 +6,8 @@ namespace wenbinye\tars\stat;
 
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use wenbinye\tars\client\PropertyFServant;
 use wenbinye\tars\client\StatPropInfo;
 use wenbinye\tars\client\StatPropMsgBody;
@@ -17,6 +19,8 @@ use wenbinye\tars\stat\collector\CollectorInterface;
 class Monitor implements MonitorInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
+
+    private const TAG = '['.__CLASS__.'] ';
 
     /**
      * @var PropertyFServant
@@ -31,11 +35,12 @@ class Monitor implements MonitorInterface, LoggerAwareInterface
      */
     private $serverProperties;
 
-    public function __construct(ServerProperties $serverProperties, PropertyFServant $propertyFClient, array $collectors)
+    public function __construct(ServerProperties $serverProperties, PropertyFServant $propertyFClient, array $collectors, ?LoggerInterface $logger)
     {
         $this->propertyFClient = $propertyFClient;
         $this->collectors = $collectors;
         $this->serverProperties = $serverProperties;
+        $this->setLogger($logger ?? new NullLogger());
     }
 
     public function monitor(): void
@@ -46,7 +51,7 @@ class Monitor implements MonitorInterface, LoggerAwareInterface
                 $msg->put($this->createHead($name), $this->createBody($collector->getPolicy(), $value));
             }
         }
-        $this->logger->debug('[Monitor] send properties', ['msg' => $msg]);
+        $this->logger->debug(self::TAG.'send properties', ['msg' => $msg]);
         $this->propertyFClient->reportPropMsg($msg);
     }
 

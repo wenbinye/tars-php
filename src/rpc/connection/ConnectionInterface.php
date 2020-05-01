@@ -34,4 +34,6 @@ interface ConnectionInterface
      * @throws CommunicationException
      */
     public function send(RequestInterface $request): string;
+
+    public function setOptions(array $options): void;
 }

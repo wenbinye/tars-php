@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace wenbinye\tars\rpc;
 
 use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use wenbinye\tars\rpc\connection\ConnectionFactoryInterface;
+use wenbinye\tars\rpc\exception\CommunicationException;
 use wenbinye\tars\rpc\message\RequestFactoryInterface;
 use wenbinye\tars\rpc\message\RequestInterface;
 use wenbinye\tars\rpc\message\ResponseFactoryInterface;
@@ -42,12 +45,14 @@ class TarsClient implements TarsClientInterface, LoggerAwareInterface
     public function __construct(ConnectionFactoryInterface $connectionFactory,
                                 RequestFactoryInterface $requestFactory,
                                 ResponseFactoryInterface $responseFactory,
+                                ?LoggerInterface $logger,
                                 ?ErrorHandlerInterface $errorHandler = null,
                                 array $middlewares = [])
     {
         $this->requestFactory = $requestFactory;
         $this->connectionFactory = $connectionFactory;
         $this->responseFactory = $responseFactory;
+        $this->setLogger($logger ?? new NullLogger());
         $this->errorHandler = $errorHandler;
         $this->middlewares = $middlewares;
     }
@@ -65,6 +70,9 @@ class TarsClient implements TarsClientInterface, LoggerAwareInterface
         }, $response->getReturnValues());
     }
 
+    /**
+     * @throws CommunicationException
+     */
     public function send(RequestInterface $request): ResponseInterface
     {
         $connection = $this->connectionFactory->create($request->getServantName());

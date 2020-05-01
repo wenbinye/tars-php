@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace wenbinye\tars\server\rpc;
 
 use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use wenbinye\tars\protocol\PackerInterface;
 use wenbinye\tars\rpc\ErrorCode;
 use wenbinye\tars\rpc\message\ParameterInterface;
@@ -27,9 +29,10 @@ class TarsRequestHandler implements RequestHandlerInterface, LoggerAwareInterfac
      *
      * @param MiddlewareInterface[] $middlewares
      */
-    public function __construct(PackerInterface $packer, array $middlewares = [])
+    public function __construct(PackerInterface $packer, ?LoggerInterface $logger, array $middlewares = [])
     {
         $this->packer = new TarsRpcPacker($packer);
+        $this->setLogger($logger ?? new NullLogger());
         $this->middlewares = $middlewares;
     }
 

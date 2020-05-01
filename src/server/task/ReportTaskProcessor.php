@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server\task;
 
-use kuiper\swoole\SwooleServer;
+use kuiper\swoole\ServerManager;
 use kuiper\swoole\task\ProcessorInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Swoole\Timer;
 use wenbinye\tars\client\ServerFServant;
 use wenbinye\tars\client\ServerInfo;
@@ -20,6 +22,8 @@ class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
+    private const TAG = '['.__CLASS__.'] ';
+
     /**
      * @var ServerFServant
      */
@@ -29,9 +33,9 @@ class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
      */
     private $serverProperties;
     /**
-     * @var SwooleServer
+     * @var ServerManager
      */
-    private $server;
+    private $serverManager;
     /**
      * @var ClientProperties
      */
@@ -49,15 +53,16 @@ class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
      * KeepAliveTaskHandler constructor.
      */
     public function __construct(ServerProperties $serverProperties, ClientProperties $clientProperties,
-                                SwooleServer $server, ServerFServant $serverFClient,
-                                StatInterface $statClient, MonitorInterface $monitor)
+                                ServerManager $serverManager, ServerFServant $serverFClient,
+                                StatInterface $statClient, MonitorInterface $monitor, ?LoggerInterface $logger)
     {
         $this->clientProperties = $clientProperties;
-        $this->server = $server;
+        $this->serverManager = $serverManager;
         $this->serverFClient = $serverFClient;
         $this->statClient = $statClient;
         $this->monitor = $monitor;
         $this->serverProperties = $serverProperties;
+        $this->setLogger($logger ?? new NullLogger());
     }
 
     /**
@@ -79,17 +84,13 @@ class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
         });
     }
 
-    public function sendServerInfo($firstTime = false)
+    public function sendServerInfo($firstTime = false): void
     {
-        $swooleServer = $this->server->getSwooleServer();
-        if (!$swooleServer) {
-            return;
-        }
         if (!$firstTime) {
             // 首次不检查 pid，可能所有子进程还不能通过 ps 查到，可能是进程标题未修改
-            $pids = $this->server->getWorkerPidList();
-            if (empty($pids)) {
-                $this->logger->error('[ReportTaskProcessor] '.$this->server->getServerConfig()->getServerName().' all workers are gone, wait for restart');
+            $pidList = $this->serverManager->getWorkerPidList();
+            if (empty($pidList)) {
+                $this->logger->error(self::TAG.$this->serverProperties->getServerName().' all workers are gone, wait for restart');
 
                 return;
             }
@@ -97,31 +98,31 @@ class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
         $serverInfo = new ServerInfo();
         $serverInfo->serverName = $this->serverProperties->getServer();
         $serverInfo->application = $this->serverProperties->getApp();
-        $serverInfo->pid = $swooleServer->master_pid;
+        $serverInfo->pid = $this->serverManager->getMasterPid();
         foreach ($this->serverProperties->getAdapters() as $adapter) {
             $serverInfo->adapter = $adapter->getAdapterName();
-            $this->logger->info('[ReportTaskProcessor] send keep alive message', ['server' => $serverInfo]);
+            $this->logger->info(self::TAG.'send keep alive message', ['server' => $serverInfo]);
             $this->serverFClient->keepAlive($serverInfo);
         }
         $serverInfo->adapter = 'AdminAdapter';
         $this->serverFClient->keepAlive($serverInfo);
     }
 
-    public function sendStat()
+    public function sendStat(): void
     {
         try {
             $this->statClient->send();
         } catch (\Exception $e) {
-            $this->logger && $this->logger->error('[Stat] send stat fail', ['error' => $e->getMessage()]);
+            $this->logger->error(self::TAG.'send stat fail', ['error' => $e->getMessage()]);
         }
     }
 
-    public function sendMonitorInfo()
+    public function sendMonitorInfo(): void
     {
         try {
             $this->monitor->monitor();
         } catch (\Exception $e) {
-            $this->logger && $this->logger->error('[Stat] send monitor fail', ['error' => $e->getMessage()]);
+            $this->logger->error(self::TAG.'send monitor fail', ['error' => $e->getMessage()]);
         }
     }
 }

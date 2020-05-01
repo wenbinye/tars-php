@@ -81,4 +81,8 @@ class PoolConnection implements ConnectionInterface
     {
         return $this->getConnection()->send($request);
     }
+
+    public function setOptions(array $options): void
+    {
+    }
 }

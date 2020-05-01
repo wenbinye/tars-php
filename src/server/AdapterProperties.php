@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server;
 
-use kuiper\swoole\ServerType;
+use kuiper\swoole\constants\ServerType;
 use Symfony\Component\Validator\Constraints as Assert;
 use wenbinye\tars\rpc\route\ServerAddress;
 use wenbinye\tars\server\annotation\ConfigItem;
@@ -41,6 +41,8 @@ class AdapterProperties
      * @Assert\NotBlank()
      *
      * @var string
+     *
+     * @see Protocol
      */
     private $protocol;
     /**
@@ -157,15 +159,21 @@ class AdapterProperties
         $this->threads = $threads;
     }
 
-    public function getSwooleServerType(): string
+    public function getServerType(): string
     {
-        return Protocol::fromValue($this->protocol)->serverType
-            ?: $this->endpoint->getProtocol();
+        $protocol = Protocol::fromValue($this->protocol);
+        if ($protocol->serverType) {
+            return $protocol->serverType;
+        }
+        if (ServerType::hasValue($this->endpoint->getProtocol())) {
+            return $this->endpoint->getProtocol();
+        }
+        throw new \InvalidArgumentException('Cannot determine server type from protocol '.$this->protocol);
     }
 
     public function getSwooleSockType(): int
     {
-        return ServerType::UDP === $this->getSwooleServerType() ? SWOOLE_SOCK_UDP : SWOOLE_SOCK_TCP;
+        return ServerType::UDP === $this->getServerType() ? SWOOLE_SOCK_UDP : SWOOLE_SOCK_TCP;
     }
 
     public function protocols(): array

@@ -6,6 +6,8 @@ namespace wenbinye\tars\rpc\middleware;
 
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use wenbinye\tars\rpc\message\MessageInterface;
 use wenbinye\tars\rpc\message\RequestInterface;
 use wenbinye\tars\rpc\message\ResponseInterface;
@@ -48,9 +50,10 @@ class RequestLogMiddleware implements MiddlewareInterface, LoggerAwareInterface
     /**
      * RequestLogMiddleware constructor.
      */
-    public function __construct(string $template = self::DEBUG)
+    public function __construct(string $template = self::DEBUG, LoggerInterface $logger = null)
     {
         $this->template = $template;
+        $this->setLogger($logger ?? new NullLogger());
     }
 
     public function __invoke(RequestInterface $request, callable $next): ResponseInterface
@@ -94,10 +97,10 @@ class RequestLogMiddleware implements MiddlewareInterface, LoggerAwareInterface
                 $result = '';
                 switch ($matches[1]) {
                     case 'request':
-                        $result = $this->stringfy($request);
+                        $result = $this->stringify($request);
                         break;
                     case 'response':
-                        $result = $response ? $this->stringfy($response) : '';
+                        $result = $response ? $this->stringify($response) : '';
                         break;
                     case 'req_body':
                         $result = $request->getBody();
@@ -154,23 +157,20 @@ class RequestLogMiddleware implements MiddlewareInterface, LoggerAwareInterface
         );
     }
 
-    private function stringfy(MessageInterface $message): string
+    private function stringify(MessageInterface $message): string
     {
         if ($message instanceof RequestInterface) {
-            return sprintf('[%d]%s::%s(%s)', $message->getRequestId(), $message->getServantName(), $message->getFuncName(),
+            return sprintf('[%d]%s#%s(%s)', $message->getRequestId(), $message->getServantName(), $message->getFuncName(),
                 json_encode($this->getParameters($message)));
         }
 
         if ($message instanceof ResponseInterface) {
+            /** @var ServerAddress $address */
             $address = $message->getRequest()->getAttribute('address');
-            if ($address) {
-                return sprintf('%s:%d->[%d %s](%s)', $address->getHost(), $address->getPort(),
-                    $message->getReturnCode(), $message->getMessage(),
-                    json_encode($this->getReturnValues($message)));
-            }
 
-            return sprintf('[%d %s](%s)', $message->getReturnCode(), $message->getMessage(),
-                json_encode($message->getReturnValues()));
+            return sprintf('[%s] code=%d, msg=%s, res=%s', $address ? $address->getAddress() : 'unknown',
+                $message->getReturnCode(), $message->getMessage(),
+                json_encode($this->getReturnValues($message)));
         }
     }
 

@@ -10,16 +10,20 @@ use kuiper\swoole\pool\PoolInterface;
 use kuiper\swoole\pool\SimplePool;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use wenbinye\tars\rpc\route\ServerAddressHolderFactoryInterface;
 
 class ConnectionFactory implements ConnectionFactoryInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
+    private const TAG = '['.__CLASS__.'] ';
+
     /**
      * @var ServerAddressHolderFactoryInterface
      */
-    private $routeHolderFactory;
+    private $serverAddressHolderFactory;
 
     /**
      * @var PoolConfig[]
@@ -39,9 +43,10 @@ class ConnectionFactory implements ConnectionFactoryInterface, LoggerAwareInterf
     /**
      * ConnectionFactory constructor.
      */
-    public function __construct(ServerAddressHolderFactoryInterface $routeHolderFactory)
+    public function __construct(ServerAddressHolderFactoryInterface $serverAddressHolderFactory, ?LoggerInterface $logger)
     {
-        $this->routeHolderFactory = $routeHolderFactory;
+        $this->serverAddressHolderFactory = $serverAddressHolderFactory;
+        $this->setLogger($logger ?? new NullLogger());
     }
 
     public function setPoolConfig(string $servantName, PoolConfig $poolConfig): void
@@ -65,24 +70,27 @@ class ConnectionFactory implements ConnectionFactoryInterface, LoggerAwareInterf
     public function getConnectionPool(string $servantName): PoolInterface
     {
         if (!isset($this->pools[$servantName])) {
-            $this->logger && $this->logger->debug('[ConnectionFactory] create pool', ['servant' => $servantName]);
-            $this->pools[$servantName] = new SimplePool(function () use ($servantName) {
-                $connectionClass = Coroutine::isEnabled() ? SwooleCoroutineTcpConnection::class : SwooleTcpConnection::class;
-                $this->logger && $this->logger->debug('[ConnectionFactory] create connection by '.$connectionClass);
-                $routeHolder = $this->routeHolderFactory->create($servantName);
-                /** @var ConnectionInterface $conn */
-                $conn = new $connectionClass($routeHolder);
-                if (isset($this->clientSettings[$servantName])) {
-                    $conn->setOptions($this->clientSettings[$servantName]);
-                }
-                if ($this->logger && $conn instanceof LoggerAwareInterface) {
-                    $conn->setLogger($this->logger);
-                }
-
-                return $conn;
-            }, $this->poolConfig[$servantName] ?? new PoolConfig());
+            $this->logger->debug(self::TAG.'create pool', ['servant' => $servantName]);
+            $this->pools[$servantName] = new SimplePool($this->getConnectionFactory($servantName),
+                $this->poolConfig[$servantName] ?? new PoolConfig());
         }
 
         return $this->pools[$servantName];
+    }
+
+    private function getConnectionFactory(string $servantName): callable
+    {
+        return function () use ($servantName) {
+            $connectionClass = Coroutine::isEnabled() ? SwooleCoroutineTcpConnection::class : SwooleTcpConnection::class;
+            $this->logger->debug(self::TAG.'create connection instance of '.$connectionClass);
+            $routeHolder = $this->serverAddressHolderFactory->create($servantName);
+            /** @var ConnectionInterface $conn */
+            $conn = new $connectionClass($routeHolder, $this->logger);
+            if (isset($this->clientSettings[$servantName])) {
+                $conn->setOptions($this->clientSettings[$servantName]);
+            }
+
+            return $conn;
+        };
     }
 }

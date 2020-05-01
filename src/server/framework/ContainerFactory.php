@@ -34,7 +34,11 @@ class ContainerFactory implements ContainerFactoryInterface
         if (!empty($this->namespaces)) {
             $containerBuilder->componentScan($this->namespaces);
         }
+        $containerBuilder->addConfiguration(new FoundationConfiguration());
+        $containerBuilder->addConfiguration(new ClientConfiguration());
         $containerBuilder->addConfiguration(new ServerConfiguration());
+        $containerBuilder->addConfiguration(new DiactorosHttpMessageFactoryConfiguration());
+        $containerBuilder->addConfiguration(new SlimConfiguration());
 
         return $containerBuilder;
     }

@@ -7,7 +7,7 @@ namespace wenbinye\tars\server;
 use kuiper\annotations\AnnotationReaderInterface;
 use kuiper\helper\Text;
 use kuiper\reflection\ReflectionType;
-use kuiper\swoole\SwooleSetting;
+use kuiper\swoole\constants\ServerSetting;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use wenbinye\tars\exception\ValidationException;
 use wenbinye\tars\server\annotation\ConfigItem;
@@ -34,10 +34,16 @@ class PropertyLoader
         $this->validator = $validator;
     }
 
+    /**
+     * Creates ClientProperties from config.
+     *
+     * @throws ValidationException
+     * @throws \ReflectionException
+     */
     public function loadClientProperties(Config $config): ClientProperties
     {
         $clientProperties = new ClientProperties();
-        $this->load($clientProperties, $config->tars->application->client);
+        $this->load($clientProperties, $config->get('tars.application.client'));
 
         $errors = $this->validator->validate($clientProperties);
         if ($errors->count() > 0) {
@@ -47,11 +53,16 @@ class PropertyLoader
         return $clientProperties;
     }
 
+    /**
+     * Creates ServerProperties from config.
+     *
+     * @throws ValidationException
+     * @throws \ReflectionException
+     */
     public function loadServerProperties(Config $config): ServerProperties
     {
         $serverProperties = new ServerProperties();
-        /** @var Config $serverConfig */
-        $serverConfig = $config->tars->application->server;
+        $serverConfig = $config->get('tars.application.server');
         $this->load($serverProperties, $serverConfig);
         $adapters = [];
         $swooleServerSettings = [];
@@ -66,16 +77,16 @@ class PropertyLoader
                 if ($errors->count() > 0) {
                     throw new ValidationException($errors);
                 }
-            } elseif (SwooleSetting::hasValue($key)) {
-                $swooleServerSettings[$key] = ReflectionType::forName(SwooleSetting::fromValue($key)->type)->sanitize($value);
+            } elseif (ServerSetting::hasValue($key)) {
+                $swooleServerSettings[$key] = ReflectionType::forName(ServerSetting::fromValue($key)->type)->sanitize($value);
             }
         }
-        if (empty($swooleServerSettings[SwooleSetting::TASK_WORKER_NUM])) {
+        if (empty($swooleServerSettings[ServerSetting::TASK_WORKER_NUM])) {
             // at least one task worker
-            $swooleServerSettings[SwooleSetting::TASK_WORKER_NUM] = 1;
+            $swooleServerSettings[ServerSetting::TASK_WORKER_NUM] = 1;
         }
         $serverProperties->setAdapters($adapters);
-        $serverProperties->setSwooleSettings($swooleServerSettings);
+        $serverProperties->setServerSettings($swooleServerSettings);
         $errors = $this->validator->validate($serverProperties);
         if ($errors->count() > 0) {
             throw new ValidationException($errors);
@@ -89,7 +100,7 @@ class PropertyLoader
      *
      * @throws \ReflectionException
      */
-    public function load($properties, Config $config): void
+    private function load($properties, array $config): void
     {
         $reflectionClass = new \ReflectionClass($properties);
         foreach ($reflectionClass->getProperties() as $property) {
@@ -141,7 +152,7 @@ class PropertyLoader
     /**
      * @return string
      */
-    private function readConfigValue(Config $config, ConfigItem $configItem, \ReflectionProperty $property): ?string
+    private function readConfigValue(array $config, ConfigItem $configItem, \ReflectionProperty $property): ?string
     {
         foreach ([$configItem->name,
                      $property->name,

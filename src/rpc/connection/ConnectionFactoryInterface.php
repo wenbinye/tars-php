@@ -6,5 +6,8 @@ namespace wenbinye\tars\rpc\connection;
 
 interface ConnectionFactoryInterface
 {
+    /**
+     * Creates connection object.
+     */
     public function create(string $servantName): ConnectionInterface;
 }

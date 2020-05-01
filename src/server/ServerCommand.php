@@ -5,17 +5,25 @@ declare(strict_types=1);
 namespace wenbinye\tars\server;
 
 use kuiper\swoole\exception\ServerStateException;
-use kuiper\swoole\ServerInterface;
+use kuiper\swoole\listener\ManagerStartEventListener;
+use kuiper\swoole\listener\StartEventListener;
+use kuiper\swoole\listener\TaskEventListener;
+use kuiper\swoole\listener\WorkerStartEventListener;
+use kuiper\swoole\server\ServerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webmozart\Assert\Assert;
+use wenbinye\tars\rpc\middleware\RequestLogMiddleware;
+use wenbinye\tars\server\listener\WorkerKeepAlive;
+use wenbinye\tars\stat\collector\SystemCpuCollector;
+use wenbinye\tars\stat\StatMiddleware;
 
 class ServerCommand extends Command
 {
-    const COMMAND_NAME = 'server';
+    public const COMMAND_NAME = 'server';
 
     /**
      * @var ContainerFactoryInterface
@@ -41,6 +49,7 @@ class ServerCommand extends Command
             throw new \InvalidArgumentException("config file '$configFile' is not readable");
         }
         Config::parseFile($configFile);
+        $this->addDefaultConfig();
         /** @var ServerInterface $server */
         $server = $this->containerFactory->create()->get(ServerInterface::class);
         try {
@@ -57,5 +66,34 @@ class ServerCommand extends Command
     public function setContainerFactory(ContainerFactoryInterface $containerFactory): void
     {
         $this->containerFactory = $containerFactory;
+    }
+
+    private function addDefaultConfig(): void
+    {
+        Config::getInstance()->merge([
+            'application' => [
+                'monitor' => [
+                    'collectors' => [
+                        SystemCpuCollector::class,
+                    ],
+                ],
+                'middleware' => [
+                    'client' => [
+                        StatMiddleware::class,
+                        RequestLogMiddleware::class,
+                    ],
+                    'servant' => [
+                        RequestLogMiddleware::class,
+                    ],
+                ],
+                'listeners' => [
+                    StartEventListener::class,
+                    ManagerStartEventListener::class,
+                    WorkerStartEventListener::class,
+                    TaskEventListener::class,
+                    WorkerKeepAlive::class,
+                ],
+            ],
+        ]);
     }
 }

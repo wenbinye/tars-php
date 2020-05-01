@@ -28,7 +28,7 @@ class SlimTest extends TestCase
 
     public function testAware()
     {
-        $container = (new Slim($this->loader))->create();
+        $container = (new SlimConfiguration($this->loader))->create();
         $requestEventListener = $container->get(HttpRequestEventListener::class);
         $property = new \ReflectionProperty($requestEventListener, 'logger');
         $property->setAccessible(true);
@@ -38,7 +38,7 @@ class SlimTest extends TestCase
 
     public function testRequestHandle()
     {
-        $container = (new Slim($this->loader))->create();
+        $container = (new SlimConfiguration($this->loader))->create();
         $app = $container->get(RequestHandlerInterface::class);
         $app->get('/', function ($req, $resp) { return $resp; });
         $response = $app->handle(ServerRequestFactory::fromGlobals());

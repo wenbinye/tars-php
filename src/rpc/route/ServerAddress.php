@@ -148,6 +148,11 @@ class ServerAddress
         return array_filter(get_object_vars($this));
     }
 
+    public function getAddress(): string
+    {
+        return $this->host.':'.$this->port;
+    }
+
     public function __toString()
     {
         $str = '';

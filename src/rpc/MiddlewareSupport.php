@@ -36,10 +36,7 @@ trait MiddlewareSupport
     private function buildMiddlewareStack(callable $finalHandler): MiddlewareStack
     {
         if (!$this->middlewareStack) {
-            $this->middlewareStack = new MiddlewareStack($this->middlewares, $finalHandler);
-            if ($this->logger) {
-                $this->middlewareStack->setLogger($this->logger);
-            }
+            $this->middlewareStack = new MiddlewareStack($this->middlewares, $finalHandler, $this->logger);
         }
 
         return $this->middlewareStack;

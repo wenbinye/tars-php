@@ -28,8 +28,9 @@ class TarsClient extends TarsServant implements ContainerBuilderAwareInterface
     {
         $name = $this->value ?? $this->class->getName();
         $this->containerBuilder->addDefinitions([
-            $name => factory([TarsClientFactoryInterface::class, 'create'])
-                ->parameter('clientClassName', $this->class->getName()),
+            $name => factory(function (TarsClientFactoryInterface $factory) {
+                return $factory->create($this->class->getName());
+            }),
         ]);
     }
 }

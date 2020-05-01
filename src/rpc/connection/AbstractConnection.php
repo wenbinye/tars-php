@@ -6,6 +6,8 @@ namespace wenbinye\tars\rpc\connection;
 
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use wenbinye\tars\rpc\ErrorCode;
 use wenbinye\tars\rpc\exception\CommunicationException;
 use wenbinye\tars\rpc\exception\ConnectionException;
@@ -31,9 +33,10 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
     /**
      * AbstractConnection constructor.
      */
-    public function __construct(ServerAddressHolderInterface $serverAddressHolder)
+    public function __construct(ServerAddressHolderInterface $serverAddressHolder, ?LoggerInterface $logger)
     {
         $this->serverAddressHolder = $serverAddressHolder;
+        $this->setLogger($logger ?? new NullLogger());
     }
 
     /**

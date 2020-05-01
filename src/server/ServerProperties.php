@@ -36,7 +36,7 @@ class ServerProperties
      *
      * @var array
      */
-    private $swooleSettings;
+    private $serverSettings;
 
     /**
      * The basepath config value, equal to "$TARSPATH/tarsnode/data/$app.$server/bin".
@@ -149,19 +149,19 @@ class ServerProperties
         return $this->app.'.'.$this->server;
     }
 
-    public function getSwooleSettings(): array
+    public function getServerSettings(): array
     {
-        return $this->swooleSettings;
+        return $this->serverSettings;
     }
 
-    public function getSwooleServerSetting(string $name)
+    public function getServerSetting(string $name)
     {
-        return $this->swooleSettings[$name] ?? null;
+        return $this->serverSettings[$name] ?? null;
     }
 
-    public function setSwooleSettings(array $swooleSettings): void
+    public function setServerSettings(array $serverSettings): void
     {
-        $this->swooleSettings = $swooleSettings;
+        $this->serverSettings = $serverSettings;
     }
 
     public function getBasePath(): string
@@ -308,6 +308,11 @@ class ServerProperties
     public function getAdapter(string $name): ?AdapterProperties
     {
         return $this->adapters[$name] ?? null;
+    }
+
+    public function getPrimaryAdapter(): AdapterProperties
+    {
+        return array_values($this->adapters)[0];
     }
 
     public function getAdapterByPort(int $port): ?AdapterProperties
