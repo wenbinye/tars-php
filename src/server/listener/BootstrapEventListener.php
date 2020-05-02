@@ -27,9 +27,10 @@ use wenbinye\tars\server\ServerProperties;
 
 class BootstrapEventListener implements EventListenerInterface, LoggerAwareInterface
 {
-    use LoggerAwareTrait, EventDispatcherAwareTrait;
+    use LoggerAwareTrait;
+    use EventDispatcherAwareTrait;
 
-    private const TAG = '[' . __CLASS__ . '] ';
+    private const TAG = '['.__CLASS__.'] ';
 
     /**
      * @var ContainerInterface
@@ -62,7 +63,7 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
     private function addTarsClientMiddleware(array $middlewares): void
     {
         if (!empty($middlewares)) {
-            $this->logger->info(self::TAG . 'enable client middlewares', ['middlewares' => $middlewares]);
+            $this->logger->info(self::TAG.'enable client middlewares', ['middlewares' => $middlewares]);
             $tarsClient = $this->container->get(TarsClientInterface::class);
             foreach ($middlewares as $middlewareId) {
                 $tarsClient->addMiddleware($this->container->get($middlewareId));
@@ -82,7 +83,7 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
             }
             foreach ($servants as $servantName => $servantInterface) {
                 $servantName = $this->normalizeServantName($servantName, $serverProperties);
-                $this->logger->info(self::TAG . 'register servant', [
+                $this->logger->info(self::TAG.'register servant', [
                     'servant' => $servantName,
                     'service' => $servantInterface,
                 ]);
@@ -94,7 +95,7 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
     private function addTarsServantMiddleware(array $middlewares): void
     {
         if (!empty($middlewares)) {
-            $this->logger->info(self::TAG . 'enable server middlewares', ['middlewares' => $middlewares]);
+            $this->logger->info(self::TAG.'enable server middlewares', ['middlewares' => $middlewares]);
 
             $tarsRequestHandler = $this->container->get(RequestHandlerInterface::class);
             foreach ($middlewares as $middlewareId) {
@@ -106,15 +107,12 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
     private function normalizeServantName(string $servantName, ServerProperties $serverProperties): string
     {
         if (false === strpos($servantName, '.')) {
-            $servantName = $serverProperties->getServerName() . '.' . $servantName;
+            $servantName = $serverProperties->getServerName().'.'.$servantName;
         }
 
         return $servantName;
     }
 
-    /**
-     * @param Config $config
-     */
     private function addEventListeners(Config $config): void
     {
         $events = [];
@@ -125,7 +123,7 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
         if ($protocol->isHttpProtocol() && !in_array(RequestEvent::class, $events, true)) {
             $this->attach(HttpRequestEventListener::class);
         }
-        if ($protocol->value === Protocol::TARS && !in_array(ReceiveEvent::class, $events, true)) {
+        if (Protocol::TARS === $protocol->value && !in_array(ReceiveEvent::class, $events, true)) {
             $this->attach(TarsTcpReceiveEventListener::class);
         }
     }
@@ -133,11 +131,12 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
     /**
      * @param $listenerId
      * @param array $events
+     *
      * @return array
      */
-    private function attach(string $listenerId, string $eventName = null): string
+    private function attach(string $listenerId, $eventName = null): string
     {
-        $this->logger->debug(self::TAG . "attach $listenerId");
+        $this->logger->debug(self::TAG."attach $listenerId");
         $listener = $this->container->get($listenerId);
 
         if ($listener instanceof EventListenerInterface) {
@@ -145,6 +144,7 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
         }
         if (is_string($eventName)) {
             $this->eventDispatcher->addListener($eventName, $listener);
+
             return $eventName;
         }
 

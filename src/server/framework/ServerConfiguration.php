@@ -86,7 +86,7 @@ class ServerConfiguration implements DefinitionConfiguration
                 ServerType::fromValue($adapter->getServerType()));
         }
 
-        $serverConfig = new ServerConfig($serverProperties->getServerName(), $serverProperties->getServerSettings(), $ports);
+        $serverConfig = new ServerConfig($serverProperties->getServerName(), $serverProperties->getServerSettings(), array_values($ports));
         $serverConfig->setMasterPidFile($serverProperties->getDataPath().'/master.pid');
 
         return $serverConfig;

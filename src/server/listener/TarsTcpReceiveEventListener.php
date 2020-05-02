@@ -34,8 +34,9 @@ class TarsTcpReceiveEventListener implements EventListenerInterface
      */
     public function __invoke($event): void
     {
+        // TODO: 会不会有数据包不完整情况？
         $response = $this->requestHandler->handle($this->serverRequestFactory->create($event->getData()));
-        $event->getSwooleServer()->send($event->getFd(), $response->getBody());
+        $event->getServer()->send($event->getFd(), $response->getBody());
     }
 
     public function getSubscribedEvent(): string

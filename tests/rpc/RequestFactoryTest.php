@@ -6,9 +6,8 @@ namespace wenbinye\tars\rpc;
 
 use kuiper\annotations\AnnotationReader;
 use PHPUnit\Framework\TestCase;
-use wenbinye\tars\protocol\annotation\TarsParameter;
-use wenbinye\tars\protocol\annotation\TarsReturnType;
 use wenbinye\tars\protocol\Packer;
+use wenbinye\tars\rpc\fixtures\HelloServiceClient;
 use wenbinye\tars\rpc\message\MethodMetadataFactory;
 use wenbinye\tars\rpc\message\RequestFactory;
 use wenbinye\tars\rpc\message\RequestIdGenerator;
@@ -41,32 +40,5 @@ class RequestFactoryTest extends TestCase
         // sServantName
         // sFuncName
         // sBuffer
-    }
-}
-
-/**
- * @\wenbinye\tars\protocol\annotation\TarsClient("PHPTest.PHPTcpServer.obj")
- */
-interface HelloServiceServant
-{
-    /**
-     * @TarsParameter(name = "message", type = "string")
-     * @TarsReturnType(type = "string")
-     *
-     * @param string $message
-     *
-     * @return string
-     */
-    public function hello($message);
-}
-
-class HelloServiceClient implements HelloServiceServant
-{
-    /**
-     * {@inheritdoc}
-     */
-    public function hello($message)
-    {
-        // TODO: Implement hello() method.
     }
 }

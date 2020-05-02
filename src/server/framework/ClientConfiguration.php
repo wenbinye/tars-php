@@ -114,7 +114,7 @@ class ClientConfiguration implements DefinitionConfiguration
                                  ServantProxyGeneratorInterface $proxyGenerator,
                                  LoggerInterface $logger): QueryFServant
     {
-        $lb = Config::getInstance()->application->client->getString('load_balance', Algorithm::ROUND_ROBIN);
+        $lb = Config::getInstance()->getString('application.client.load_balance', Algorithm::ROUND_ROBIN);
         $addressHolderFactory = new ServerAddressHolderFactory($inMemoryRouteResolver, $lb, $logger);
         $connectionFactory = new ConnectionFactory($addressHolderFactory, $logger);
         $client = new TarsClient($connectionFactory, $requestFactory, $responseFactory, $logger, $errorHandler);

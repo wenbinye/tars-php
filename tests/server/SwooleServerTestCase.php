@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server;
 
-use function DI\autowire;
-use DI\ContainerBuilder;
 use function DI\factory;
-use function DI\get;
-use Doctrine\Common\Annotations\AnnotationReader;
-use Doctrine\Common\Annotations\AnnotationRegistry;
-use Doctrine\Common\Annotations\Reader;
+use kuiper\annotations\AnnotationReader;
+use kuiper\annotations\AnnotationReaderInterface;
+use kuiper\di\ContainerBuilder;
+use kuiper\swoole\event\ManagerStartEvent;
+use kuiper\swoole\event\StartEvent;
+use kuiper\swoole\listener\ManagerStartEventListener;
+use kuiper\swoole\listener\StartEventListener;
 use Monolog\Handler\ErrorLogHandler;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
@@ -20,12 +21,6 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use wenbinye\tars\server\event\listener\ManagerStartEventListener;
-use wenbinye\tars\server\event\listener\StartEventListener;
-use wenbinye\tars\server\event\ManagerStartEvent;
-use wenbinye\tars\server\event\StartEvent;
-use wenbinye\tars\server\task\Queue;
-use wenbinye\tars\server\task\QueueInterface;
 
 abstract class SwooleServerTestCase extends TestCase
 {
@@ -42,16 +37,12 @@ abstract class SwooleServerTestCase extends TestCase
                 'protocol' => 'http',
             ],
         ]);
-        $containerBuilder = new ContainerBuilder(AutoAwareContainer::class);
-        $containerBuilder->useAutowiring(true)
+        $containerBuilder = new ContainerBuilder();
+        $containerBuilder
             ->addDefinitions([
                 Config::class => $config,
-                Reader::class => function () {
-                    AnnotationRegistry::registerLoader('class_exists');
-
-                    return new AnnotationReader();
-                },
-                ValidatorInterface::class => function (Reader $annotationReader) {
+                AnnotationReaderInterface::class => factory([AnnotationReader::class, 'getInstance']),
+                ValidatorInterface::class => function (AnnotationReaderInterface $annotationReader) {
                     return Validation::createValidatorBuilder()
                         ->enableAnnotationMapping($annotationReader)
                         ->getValidator();
@@ -61,9 +52,6 @@ abstract class SwooleServerTestCase extends TestCase
                 LoggerInterface::class => function () {
                     return new Logger('test', [new ErrorLogHandler()]);
                 },
-                ServerInterface::class => autowire(SwooleServer::class),
-                SwooleServer::class => get(ServerInterface::class),
-                QueueInterface::class => autowire(Queue::class),
                 EventDispatcherInterface::class => function (ContainerInterface $container) {
                     $dispatcher = new EventDispatcher();
                     $dispatcher->addListener(StartEvent::class, $container->get(StartEventListener::class));

@@ -10,6 +10,7 @@ use kuiper\swoole\listener\StartEventListener;
 use kuiper\swoole\listener\TaskEventListener;
 use kuiper\swoole\listener\WorkerStartEventListener;
 use kuiper\swoole\server\ServerInterface;
+use Psr\Container\ContainerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -26,7 +27,7 @@ class ServerCommand extends Command
     public const COMMAND_NAME = 'server';
 
     /**
-     * @var ContainerFactoryInterface
+     * @var ContainerFactoryInterface|callable
      */
     private $containerFactory;
 
@@ -51,7 +52,7 @@ class ServerCommand extends Command
         Config::parseFile($configFile);
         $this->addDefaultConfig();
         /** @var ServerInterface $server */
-        $server = $this->containerFactory->create()->get(ServerInterface::class);
+        $server = $this->createContainer()->get(ServerInterface::class);
         try {
             $server->$action();
 
@@ -63,9 +64,25 @@ class ServerCommand extends Command
         }
     }
 
-    public function setContainerFactory(ContainerFactoryInterface $containerFactory): void
+    /**
+     * @param ContainerFactoryInterface|callable $containerFactory
+     */
+    public function setContainerFactory($containerFactory): void
     {
+        if (!$containerFactory instanceof ContainerFactoryInterface
+            && !is_callable($containerFactory)) {
+            throw new \InvalidArgumentException('Invalid container factory, expected instance of '.ContainerFactoryInterface::class.', got '.gettype($containerFactory));
+        }
         $this->containerFactory = $containerFactory;
+    }
+
+    private function createContainer(): ContainerInterface
+    {
+        if ($this->containerFactory instanceof ContainerFactoryInterface) {
+            return $this->containerFactory->create();
+        } else {
+            return call_user_func($this->containerFactory);
+        }
     }
 
     private function addDefaultConfig(): void

@@ -13,7 +13,7 @@ class ServerApplication
 {
     public const APP_NAME = 'tars-app';
 
-    public static function run(ContainerFactoryInterface $containerFactory = null): int
+    public static function run($containerFactory = null): int
     {
         $app = new Application(self::APP_NAME);
         $command = new ServerCommand();

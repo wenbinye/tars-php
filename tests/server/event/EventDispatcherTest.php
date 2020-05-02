@@ -6,6 +6,7 @@ namespace wenbinye\tars\server\event;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+use wenbinye\tars\server\fixtures\FooEventListener;
 
 class EventDispatcherTest extends TestCase
 {
@@ -16,22 +17,12 @@ class EventDispatcherTest extends TestCase
         $dispatcher->addListener('foo', [function () use (&$args) {
             $args[] = func_get_args();
 
-            return $args[] = new EventListener();
+            return $args[] = new FooEventListener();
         }]);
         $dispatcher->dispatch((object) ['event' => 1], 'foo');
         $dispatcher->dispatch((object) ['event' => 2], 'foo');
         // $this->assertEquals(1, count($args));
         // var_export($args);
         $this->assertEquals(2, count($args[1]->events));
-    }
-}
-
-class EventListener
-{
-    public $events;
-
-    public function __invoke($event)
-    {
-        $this->events[] = $event;
     }
 }
