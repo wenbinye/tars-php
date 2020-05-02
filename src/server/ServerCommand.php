@@ -34,6 +34,7 @@ class ServerCommand extends Command
     protected function configure()
     {
         $this->setName(self::COMMAND_NAME)
+            ->addOption('define', 'D', InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'config definition')
             ->addOption('config', null, InputOption::VALUE_REQUIRED, 'config file')
             ->addArgument('action', InputArgument::OPTIONAL, 'action to perform: start|stop', 'start');
     }
@@ -50,7 +51,7 @@ class ServerCommand extends Command
             throw new \InvalidArgumentException("config file '$configFile' is not readable");
         }
         Config::parseFile($configFile);
-        $this->addDefaultConfig();
+        $this->addDefaultConfig($input);
         /** @var ServerInterface $server */
         $server = $this->createContainer()->get(ServerInterface::class);
         try {
@@ -85,9 +86,10 @@ class ServerCommand extends Command
         return call_user_func($this->containerFactory);
     }
 
-    private function addDefaultConfig(): void
+    private function addDefaultConfig(InputInterface $input): void
     {
-        Config::getInstance()->merge([
+        $config = Config::getInstance();
+        $config->merge([
             'application' => [
                 'monitor' => [
                     'collectors' => [
@@ -112,5 +114,9 @@ class ServerCommand extends Command
                 ],
             ],
         ]);
+        foreach ($input->getOption('define') as $item) {
+            $pair = explode('=', $item, 2);
+            $config->set($pair[0], $pair[1] ?? null);
+        }
     }
 }
