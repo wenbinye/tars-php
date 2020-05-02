@@ -166,6 +166,18 @@ class ServerAddress
         }, array_keys(self::$SHORT_OPTIONS))));
     }
 
+    public static function create(string $host, int $port): ServerAddress
+    {
+        return new ServerAddress('tcp', $host, $port, 0);
+    }
+
+    public static function fromAddress(string $str): ServerAddress
+    {
+        [$host, $port] = explode(':', $str);
+
+        return new ServerAddress('tcp', $host, (int) $port, 0);
+    }
+
     public static function fromString(string $str): ServerAddress
     {
         $address = [

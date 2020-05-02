@@ -80,9 +80,9 @@ class ServerCommand extends Command
     {
         if ($this->containerFactory instanceof ContainerFactoryInterface) {
             return $this->containerFactory->create();
-        } else {
-            return call_user_func($this->containerFactory);
         }
+
+        return call_user_func($this->containerFactory);
     }
 
     private function addDefaultConfig(): void

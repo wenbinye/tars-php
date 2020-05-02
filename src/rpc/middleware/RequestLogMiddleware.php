@@ -42,6 +42,8 @@ class RequestLogMiddleware implements MiddlewareInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
+    private const TAG = '['.__CLASS__.'] ';
+
     public const DEBUG = ">>>>>>>>\n{request}\n<<<<<<<<\n{response}\n--------\n{error}";
     public const SHORT = '[{ts}] "{servant}::{func}" {code}';
 

@@ -91,8 +91,9 @@ class FoundationConfiguration implements DefinitionConfiguration
     /**
      * @Bean()
      */
-    public function serverProperties(PropertyLoader $propertyLoader, Config $config): ServerProperties
+    public function serverProperties(PropertyLoader $propertyLoader): ServerProperties
     {
+        $config = Config::getInstance();
         /** @noinspection PhpUnhandledExceptionInspection */
         $serverProperties = $propertyLoader->loadServerProperties($config);
         $protocol = $serverProperties->getPrimaryAdapter()->getProtocol();
@@ -104,6 +105,7 @@ class FoundationConfiguration implements DefinitionConfiguration
         ]);
         $configFile = $serverProperties->getSourcePath().'/config.php';
         if (file_exists($configFile)) {
+            /* @noinspection PhpIncludeInspection */
             $config->merge(require $configFile);
         }
 
@@ -113,10 +115,10 @@ class FoundationConfiguration implements DefinitionConfiguration
     /**
      * @Bean()
      */
-    public function clientProperties(PropertyLoader $propertyLoader, Config $config): ClientProperties
+    public function clientProperties(PropertyLoader $propertyLoader): ClientProperties
     {
         /* @noinspection PhpUnhandledExceptionInspection */
-        return $propertyLoader->loadClientProperties($config);
+        return $propertyLoader->loadClientProperties(Config::getInstance());
     }
 
     /**

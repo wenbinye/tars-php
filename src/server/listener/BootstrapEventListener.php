@@ -52,7 +52,7 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
         $this->addTarsClientMiddleware($config->get('application.middleware.client', []));
         $this->registerServants($config->get('application.servants', []));
         $this->addTarsServantMiddleware($config->get('application.middleware.servant', []));
-        $this->addEventListeners($config);
+        $this->addEventListeners();
     }
 
     public function getSubscribedEvent(): string
@@ -113,8 +113,9 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
         return $servantName;
     }
 
-    private function addEventListeners(Config $config): void
+    private function addEventListeners(): void
     {
+        $config = Config::getInstance();
         $events = [];
         foreach ($config->get('application.listeners', []) as $eventName => $listenerId) {
             $events[] = $this->attach($listenerId, $eventName);

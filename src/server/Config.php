@@ -7,17 +7,17 @@ namespace wenbinye\tars\server;
 use kuiper\helper\Properties;
 use wenbinye\tars\server\exception\ConfigException;
 
-class Config extends Properties
+class Config
 {
     /**
-     * @var Config
+     * @var Properties
      */
     private static $INSTANCE;
 
     /**
      * @return mixed
      */
-    public static function getInstance(): Config
+    public static function getInstance(): Properties
     {
         return self::$INSTANCE;
     }
@@ -25,25 +25,25 @@ class Config extends Properties
     /**
      * @param mixed $INSTANCE
      */
-    private static function setInstance(Config $instance): void
+    private static function setInstance(Properties $instance): void
     {
         self::$INSTANCE = $instance;
     }
 
-    public static function parseFile(string $fileName): Config
+    public static function parseFile(string $fileName): void
     {
         $content = file_get_contents($fileName);
         if (false === $content) {
             throw new ConfigException("cannot read config file '{$fileName}'");
         }
 
-        return static::parse($content);
+        static::parse($content);
     }
 
-    public static function parse(string $content): Config
+    public static function parse(string $content): void
     {
         $stack = [];
-        $current = $config = new static();
+        $current = $config = Properties::create();
         foreach (explode("\n", $content) as $lineNum => $line) {
             $line = trim($line);
             if (empty($line) || 0 === strpos($line, '#')) {
@@ -57,7 +57,7 @@ class Config extends Properties
                     $current = array_pop($stack);
                 } else {
                     $stack[] = $current;
-                    $current = $current[$matches[2]] = new static();
+                    $current = $current[$matches[2]] = Properties::create();
                 }
             } else {
                 $parts = array_map('trim', explode('=', $line, 2));
@@ -69,7 +69,5 @@ class Config extends Properties
             }
         }
         static::setInstance($config);
-
-        return $config;
     }
 }

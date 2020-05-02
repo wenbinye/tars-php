@@ -6,6 +6,7 @@ namespace wenbinye\tars\server\listener;
 
 use kuiper\swoole\event\ReceiveEvent;
 use kuiper\swoole\listener\EventListenerInterface;
+use wenbinye\tars\rpc\route\ServerAddress;
 use wenbinye\tars\server\rpc\RequestHandlerInterface;
 use wenbinye\tars\server\rpc\ServerRequestFactoryInterface;
 
@@ -35,8 +36,15 @@ class TarsTcpReceiveEventListener implements EventListenerInterface
     public function __invoke($event): void
     {
         // TODO: 会不会有数据包不完整情况？
-        $response = $this->requestHandler->handle($this->serverRequestFactory->create($event->getData()));
-        $event->getServer()->send($event->getFd(), $response->getBody());
+        $server = $event->getServer();
+        $request = $this->serverRequestFactory->create($event->getData());
+        $connectionInfo = $server->getConnectionInfo($event->getClientId());
+        if ($connectionInfo) {
+            $request = $request->withAttribute('address',
+                ServerAddress::create($connectionInfo->getRemoteIp(), $connectionInfo->getRemotePort()));
+        }
+        $response = $this->requestHandler->handle($request);
+        $server->send($event->getClientId(), $response->getBody());
     }
 
     public function getSubscribedEvent(): string

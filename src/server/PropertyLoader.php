@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace wenbinye\tars\server;
 
 use kuiper\annotations\AnnotationReaderInterface;
+use kuiper\helper\Properties;
 use kuiper\helper\Text;
 use kuiper\reflection\ReflectionType;
 use kuiper\swoole\constants\ServerSetting;
@@ -40,7 +41,7 @@ class PropertyLoader
      * @throws ValidationException
      * @throws \ReflectionException
      */
-    public function loadClientProperties(Config $config): ClientProperties
+    public function loadClientProperties(Properties $config): ClientProperties
     {
         $clientProperties = new ClientProperties();
         $this->load($clientProperties, $config->get('tars.application.client'));
@@ -59,7 +60,7 @@ class PropertyLoader
      * @throws ValidationException
      * @throws \ReflectionException
      */
-    public function loadServerProperties(Config $config): ServerProperties
+    public function loadServerProperties(Properties $config): ServerProperties
     {
         $serverProperties = new ServerProperties();
         $serverConfig = $config->get('tars.application.server');

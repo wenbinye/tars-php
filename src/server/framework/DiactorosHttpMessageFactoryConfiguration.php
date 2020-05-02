@@ -19,7 +19,7 @@ use Psr\Http\Message\UploadedFileFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
 
 /**
- * Class DiacotosHttpMessageFactoryConfiguration.
+ * Class DiactorosHttpMessageFactoryConfiguration.
  *
  * @ConditionalOnClass(ServerRequestFactory::class)
  */
