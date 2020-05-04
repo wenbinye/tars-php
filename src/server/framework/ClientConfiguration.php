@@ -63,10 +63,10 @@ class ClientConfiguration implements DefinitionConfiguration
         $definitions = [
             'registryCache' => autowire(SwooleTableRegistryCache::class),
             RouteResolverInterface::class => autowire(ChainRouteResolver::class)
-                ->constructor([[
+                ->constructor([
                     get(InMemoryRouteResolver::class),
                     get(RegistryRouteResolver::class),
-                ]]),
+                ]),
             RegistryRouteResolver::class => autowire()
                 ->constructorParameter(1, get('registryCache')),
             ServerAddressHolderFactoryInterface::class => autowire(ServerAddressHolderFactory::class)

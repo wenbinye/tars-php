@@ -33,9 +33,9 @@ class PackageCommand extends Command
         $basePathLen = strlen($basePath);
         $n = 0;
         foreach ($config->getFinders() as $finder) {
-            foreach ($finder as $file) {
-                /** @var \SplFileInfo $file */
-                $file = (string) $file;
+            foreach ($finder as $fileInfo) {
+                /** @var \SplFileInfo $fileInfo */
+                $file = (string) $fileInfo;
                 $relPath = substr($file, $basePathLen);
                 // error_log("copy $relPath to ${dir}$relPath");
                 ++$n;

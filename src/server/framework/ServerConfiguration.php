@@ -10,8 +10,8 @@ use kuiper\di\annotation\Bean;
 use kuiper\di\ContainerBuilderAwareTrait;
 use kuiper\di\DefinitionConfiguration;
 use kuiper\swoole\constants\ServerType;
-use kuiper\swoole\http\SimpleSwooleResponseBridge;
 use kuiper\swoole\http\SwooleRequestBridgeInterface;
+use kuiper\swoole\http\SwooleResponseBridge;
 use kuiper\swoole\http\SwooleResponseBridgeInterface;
 use kuiper\swoole\server\HttpMessageFactoryHolder;
 use kuiper\swoole\server\ServerInterface;
@@ -47,7 +47,7 @@ class ServerConfiguration implements DefinitionConfiguration
             StatStoreAdapter::class => autowire(SwooleTableStatStore::class),
             TarsServerRequestFactoryInterface::class => autowire(ServerRequestFactory::class),
             RequestHandlerInterface::class => autowire(TarsRequestHandler::class),
-            SwooleResponseBridgeInterface::class => autowire(SimpleSwooleResponseBridge::class),
+            SwooleResponseBridgeInterface::class => autowire(SwooleResponseBridge::class),
         ];
     }
 
@@ -65,7 +65,7 @@ class ServerConfiguration implements DefinitionConfiguration
         if ($config->get('application.http_protocol')) {
             $serverFactory->setHttpMessageFactoryHolder($container->get(HttpMessageFactoryHolder::class));
             $serverFactory->setSwooleRequestBridge($container->get(SwooleRequestBridgeInterface::class));
-            $serverFactory->setSwooleResponseBridge($config->get(SwooleResponseBridgeInterface::class));
+            $serverFactory->setSwooleResponseBridge($container->get(SwooleResponseBridgeInterface::class));
         }
 
         return $serverFactory;
@@ -95,10 +95,10 @@ class ServerConfiguration implements DefinitionConfiguration
     /**
      * @Bean()
      */
-    public function monitor(ContainerInterface $container, Config $config, ServerProperties $serverProperties, PropertyFServant $propertyFClient, LoggerInterface $logger): MonitorInterface
+    public function monitor(ContainerInterface $container, ServerProperties $serverProperties, PropertyFServant $propertyFClient, LoggerInterface $logger): MonitorInterface
     {
         $collectors = [];
-        foreach ($config->get('application.monitor.collectors', []) as $collector) {
+        foreach (Config::getInstance()->get('application.monitor.collectors', []) as $collector) {
             $collectors[] = $container->get($collector);
         }
 

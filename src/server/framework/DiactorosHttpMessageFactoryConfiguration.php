@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server\framework;
 
+use kuiper\di\annotation\Bean;
 use kuiper\di\annotation\ConditionalOnClass;
 use kuiper\swoole\http\DiactorosSwooleRequestBridge;
 use kuiper\swoole\http\SwooleRequestBridgeInterface;
@@ -25,31 +26,49 @@ use Psr\Http\Message\UriFactoryInterface;
  */
 class DiactorosHttpMessageFactoryConfiguration
 {
+    /**
+     * @Bean()
+     */
     public function serverRequestFactory(): ServerRequestFactoryInterface
     {
         return new ServerRequestFactory();
     }
 
+    /**
+     * @Bean()
+     */
     public function responseFactory(): ResponseFactoryInterface
     {
         return new ResponseFactory();
     }
 
+    /**
+     * @Bean()
+     */
     public function streamFactory(): StreamFactoryInterface
     {
         return new StreamFactory();
     }
 
+    /**
+     * @Bean()
+     */
     public function uriFactory(): UriFactoryInterface
     {
         return new UriFactory();
     }
 
+    /**
+     * @Bean()
+     */
     public function uploadFileFactory(): UploadedFileFactoryInterface
     {
         return new UploadedFileFactory();
     }
 
+    /**
+     * @Bean()
+     */
     public function swooleRequestBridge(): SwooleRequestBridgeInterface
     {
         return new DiactorosSwooleRequestBridge();
