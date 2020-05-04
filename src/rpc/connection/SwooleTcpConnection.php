@@ -11,6 +11,8 @@ use wenbinye\tars\rpc\message\RequestInterface;
 
 class SwooleTcpConnection extends AbstractConnection
 {
+    protected const TAG = '['.__CLASS__.'] ';
+
     private $settings = [
         ServerSetting::OPEN_LENGTH_CHECK => 1,
         ServerSetting::PACKAGE_LENGTH_TYPE => 'N',
@@ -41,7 +43,7 @@ class SwooleTcpConnection extends AbstractConnection
         if (!$client->connect($address->getHost(), $address->getPort(), $address->getTimeout() / 1000)) {
             $this->onConnectionError(ErrorCode::fromValue(ErrorCode::TARS_SOCKET_CONNECT_FAILED));
         }
-        $this->logger && $this->logger->debug('[SwooleTcpConnection] connected', ['address' => (string) $address]);
+        $this->logger->debug(static::TAG.'connected', ['address' => (string) $address]);
 
         return $client;
     }

@@ -18,7 +18,7 @@ class ConnectionFactory implements ConnectionFactoryInterface, LoggerAwareInterf
 {
     use LoggerAwareTrait;
 
-    private const TAG = '['.__CLASS__.'] ';
+    protected const TAG = '['.__CLASS__.'] ';
 
     /**
      * @var ServerAddressHolderFactoryInterface
@@ -70,7 +70,7 @@ class ConnectionFactory implements ConnectionFactoryInterface, LoggerAwareInterf
     public function getConnectionPool(string $servantName): PoolInterface
     {
         if (!isset($this->pools[$servantName])) {
-            $this->logger->debug(self::TAG.'create pool', ['servant' => $servantName]);
+            $this->logger->debug(static::TAG.'create pool', ['servant' => $servantName]);
             $this->pools[$servantName] = new SimplePool($this->getConnectionFactory($servantName),
                 $this->poolConfig[$servantName] ?? new PoolConfig());
         }
@@ -82,7 +82,7 @@ class ConnectionFactory implements ConnectionFactoryInterface, LoggerAwareInterf
     {
         return function () use ($servantName) {
             $connectionClass = Coroutine::isEnabled() ? SwooleCoroutineTcpConnection::class : SwooleTcpConnection::class;
-            $this->logger->debug(self::TAG.'create connection instance of '.$connectionClass);
+            $this->logger->debug(static::TAG.'create connection instance of '.$connectionClass);
             $routeHolder = $this->serverAddressHolderFactory->create($servantName);
             /** @var ConnectionInterface $conn */
             $conn = new $connectionClass($routeHolder, $this->logger);

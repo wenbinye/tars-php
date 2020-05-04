@@ -15,7 +15,7 @@ class MiddlewareStack implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
-    private const TAG = '['.__CLASS__.'] ';
+    protected const TAG = '['.__CLASS__.'] ';
 
     /**
      * @var MiddlewareInterface[]
@@ -32,7 +32,7 @@ class MiddlewareStack implements LoggerAwareInterface
         $this->final = $final;
         $this->setLogger($logger ?? new NullLogger());
 
-        $this->logger->debug(self::TAG.'create middleware stack', [
+        $this->logger->debug(static::TAG.'create middleware stack', [
             'middlewares' => array_map(function ($middleware) {
                 return is_object($middleware) ? get_class($middleware) : gettype($middleware);
             }, $middlewares),
@@ -50,7 +50,7 @@ class MiddlewareStack implements LoggerAwareInterface
             return call_user_func($this->final, $request);
         }
         if (is_object($this->middlewares[$index])) {
-            $this->logger->debug(self::TAG.'invoke middleware '.get_class($this->middlewares[$index]));
+            $this->logger->debug(static::TAG.'invoke middleware '.get_class($this->middlewares[$index]));
         }
 
         return call_user_func($this->middlewares[$index], $request, function (RequestInterface $request) use ($index) {

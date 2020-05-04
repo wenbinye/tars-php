@@ -19,7 +19,7 @@ class LoadBalanceServerAddressHolder implements RefreshableServerAddressHolderIn
 {
     use LoggerAwareTrait;
 
-    private const TAG = '['.__CLASS__.'] ';
+    protected const TAG = '['.__CLASS__.'] ';
 
     /**
      * @var RouteResolverInterface
@@ -61,7 +61,7 @@ class LoadBalanceServerAddressHolder implements RefreshableServerAddressHolderIn
             try {
                 $route = $this->routeResolver->resolve($this->servantName);
             } catch (\Exception $e) {
-                $this->logger->error(self::TAG."Resolve {$this->servantName} failed: ".get_class($e).': '.$e->getMessage());
+                $this->logger->error(static::TAG."Resolve {$this->servantName} failed: ".get_class($e).': '.$e->getMessage());
                 throw new InvalidArgumentException('Cannot resolve route for servant '.$this->servantName, 0, $e);
             }
             if (!$route) {

@@ -20,7 +20,7 @@ class Monitor implements MonitorInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
-    private const TAG = '['.__CLASS__.'] ';
+    protected const TAG = '['.__CLASS__.'] ';
 
     /**
      * @var PropertyFServant
@@ -51,7 +51,7 @@ class Monitor implements MonitorInterface, LoggerAwareInterface
                 $msg->put($this->createHead($name), $this->createBody($collector->getPolicy(), $value));
             }
         }
-        $this->logger->debug(self::TAG.'send properties', ['msg' => $msg]);
+        $this->logger->debug(static::TAG.'send properties', ['msg' => $msg]);
         $this->propertyFClient->reportPropMsg($msg);
     }
 

@@ -8,6 +8,8 @@ use Swoole\Coroutine\Client;
 
 class SwooleCoroutineTcpConnection extends SwooleTcpConnection
 {
+    protected const TAG = '['.__CLASS__.'] ';
+
     protected function createSwooleClient()
     {
         return new Client(SWOOLE_TCP);

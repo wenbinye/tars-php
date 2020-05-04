@@ -30,7 +30,7 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
     use LoggerAwareTrait;
     use EventDispatcherAwareTrait;
 
-    private const TAG = '['.__CLASS__.'] ';
+    protected const TAG = '['.__CLASS__.'] ';
 
     /**
      * @var ContainerInterface
@@ -63,7 +63,7 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
     private function addTarsClientMiddleware(array $middlewares): void
     {
         if (!empty($middlewares)) {
-            $this->logger->info(self::TAG.'enable client middlewares', ['middlewares' => $middlewares]);
+            $this->logger->info(static::TAG.'enable client middlewares', ['middlewares' => $middlewares]);
             $tarsClient = $this->container->get(TarsClientInterface::class);
             foreach ($middlewares as $middlewareId) {
                 $tarsClient->addMiddleware($this->container->get($middlewareId));
@@ -83,7 +83,7 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
             }
             foreach ($servants as $servantName => $servantInterface) {
                 $servantName = $this->normalizeServantName($servantName, $serverProperties);
-                $this->logger->info(self::TAG.'register servant', [
+                $this->logger->info(static::TAG.'register servant', [
                     'servant' => $servantName,
                     'service' => $servantInterface,
                 ]);
@@ -95,7 +95,7 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
     private function addTarsServantMiddleware(array $middlewares): void
     {
         if (!empty($middlewares)) {
-            $this->logger->info(self::TAG.'enable server middlewares', ['middlewares' => $middlewares]);
+            $this->logger->info(static::TAG.'enable server middlewares', ['middlewares' => $middlewares]);
 
             $tarsRequestHandler = $this->container->get(RequestHandlerInterface::class);
             foreach ($middlewares as $middlewareId) {
@@ -137,7 +137,7 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
      */
     private function attach(string $listenerId, $eventName = null): string
     {
-        $this->logger->debug(self::TAG."attach $listenerId");
+        $this->logger->debug(static::TAG."attach $listenerId");
         $listener = $this->container->get($listenerId);
 
         if ($listener instanceof EventListenerInterface) {

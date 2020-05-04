@@ -17,7 +17,7 @@ class WorkerKeepAlive implements EventListenerInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
-    private const TAG = '['.__CLASS__.'] ';
+    protected const TAG = '['.__CLASS__.'] ';
 
     /**
      * @var QueueInterface
@@ -39,7 +39,7 @@ class WorkerKeepAlive implements EventListenerInterface, LoggerAwareInterface
     public function __invoke($event): void
     {
         if (0 === $event->getWorkerId()) {
-            $this->logger->debug(self::TAG.'send report task');
+            $this->logger->debug(static::TAG.'send report task');
             $this->taskQueue->put(new ReportTask());
         }
     }

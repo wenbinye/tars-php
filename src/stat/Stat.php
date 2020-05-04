@@ -18,7 +18,7 @@ class Stat implements StatInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
-    private const TAG = '['.__CLASS__.'] ';
+    protected const TAG = '['.__CLASS__.'] ';
 
     /**
      * @var StatStoreAdapter
@@ -79,7 +79,7 @@ class Stat implements StatInterface, LoggerAwareInterface
             $entries[] = $entry;
         }
         if ($msg->count() > 0) {
-            $this->logger->debug(self::TAG.'send stat', ['msg' => $msg]);
+            $this->logger->debug(static::TAG.'send stat', ['msg' => $msg]);
             $ret = $this->statClient->reportMicMsg($msg, true);
             foreach ($entries as $entry) {
                 $this->store->delete($entry);

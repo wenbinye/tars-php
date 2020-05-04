@@ -84,4 +84,8 @@ class SocketTcpConnection extends AbstractConnection
 
         return $response;
     }
+
+    public function setOptions(array $options): void
+    {
+    }
 }

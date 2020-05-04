@@ -22,7 +22,7 @@ class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
-    private const TAG = '['.__CLASS__.'] ';
+    protected const TAG = '['.__CLASS__.'] ';
 
     /**
      * @var ServerFServant
@@ -90,7 +90,7 @@ class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
             // 首次不检查 pid，可能所有子进程还不能通过 ps 查到，可能是进程标题未修改
             $pidList = $this->serverManager->getWorkerPidList();
             if (empty($pidList)) {
-                $this->logger->error(self::TAG.$this->serverProperties->getServerName().' all workers are gone, wait for restart');
+                $this->logger->error(static::TAG.$this->serverProperties->getServerName().' all workers are gone, wait for restart');
 
                 return;
             }
@@ -101,7 +101,7 @@ class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
         $serverInfo->pid = $this->serverManager->getMasterPid();
         foreach ($this->serverProperties->getAdapters() as $adapter) {
             $serverInfo->adapter = $adapter->getAdapterName();
-            $this->logger->info(self::TAG.'send keep alive message', ['server' => $serverInfo]);
+            $this->logger->info(static::TAG.'send keep alive message', ['server' => $serverInfo]);
             $this->serverFClient->keepAlive($serverInfo);
         }
         $serverInfo->adapter = 'AdminAdapter';
@@ -113,7 +113,7 @@ class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
         try {
             $this->statClient->send();
         } catch (\Exception $e) {
-            $this->logger->error(self::TAG.'send stat fail', ['error' => $e->getMessage()]);
+            $this->logger->error(static::TAG.'send stat fail', ['error' => $e->getMessage()]);
         }
     }
 
@@ -122,7 +122,7 @@ class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
         try {
             $this->monitor->monitor();
         } catch (\Exception $e) {
-            $this->logger->error(self::TAG.'send monitor fail', ['error' => $e->getMessage()]);
+            $this->logger->error(static::TAG.'send monitor fail', ['error' => $e->getMessage()]);
         }
     }
 }
