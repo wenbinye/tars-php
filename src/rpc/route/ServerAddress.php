@@ -6,7 +6,7 @@ namespace wenbinye\tars\rpc\route;
 
 use Symfony\Component\Validator\Constraints as Assert;
 
-class ServerAddress
+final class ServerAddress
 {
     /**
      * @Assert\Choice(choices={"tcp", "udp"})
@@ -166,19 +166,19 @@ class ServerAddress
         }, array_keys(self::$SHORT_OPTIONS))));
     }
 
-    public static function create(string $host, int $port): ServerAddress
+    public static function create(string $host, int $port): self
     {
-        return new ServerAddress('tcp', $host, $port, 0);
+        return new self('tcp', $host, $port, 0);
     }
 
-    public static function fromAddress(string $str): ServerAddress
+    public static function fromAddress(string $str): self
     {
         [$host, $port] = explode(':', $str);
 
-        return new ServerAddress('tcp', $host, (int) $port, 0);
+        return new self('tcp', $host, (int) $port, 0);
     }
 
-    public static function fromString(string $str): ServerAddress
+    public static function fromString(string $str): self
     {
         $address = [
             'protocol' => '',

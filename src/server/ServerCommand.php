@@ -10,6 +10,7 @@ use kuiper\swoole\listener\StartEventListener;
 use kuiper\swoole\listener\TaskEventListener;
 use kuiper\swoole\listener\WorkerStartEventListener;
 use kuiper\swoole\server\ServerInterface;
+use kuiper\swoole\ServerManager;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -52,10 +53,12 @@ class ServerCommand extends Command
         }
         Config::parseFile($configFile);
         $this->addDefaultConfig($input);
-        /** @var ServerInterface $server */
-        $server = $this->createContainer()->get(ServerInterface::class);
         try {
-            $server->$action();
+            if ('start' === $action) {
+                $this->createContainer()->get(ServerInterface::class)->start();
+            } elseif ('stop' === $action) {
+                $this->createContainer()->get(ServerManager::class)->stop();
+            }
 
             return 0;
         } catch (ServerStateException $e) {

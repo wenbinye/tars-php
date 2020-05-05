@@ -53,6 +53,7 @@ class ServerApplication
         } else {
             $libraryComposerJson = Composer::detect(__DIR__);
             $basePath = dirname($libraryComposerJson, 4);
+            define('APP_PATH', $basePath);
         }
 
         if (!file_exists($basePath.'/vendor/autoload.php')

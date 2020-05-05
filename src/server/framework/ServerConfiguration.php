@@ -9,7 +9,6 @@ use function DI\factory;
 use kuiper\di\annotation\Bean;
 use kuiper\di\ContainerBuilderAwareTrait;
 use kuiper\di\DefinitionConfiguration;
-use kuiper\swoole\constants\ServerType;
 use kuiper\swoole\http\SwooleRequestBridgeInterface;
 use kuiper\swoole\http\SwooleResponseBridge;
 use kuiper\swoole\http\SwooleResponseBridgeInterface;
@@ -82,8 +81,7 @@ class ServerConfiguration implements DefinitionConfiguration
             if (isset($ports[$port])) {
                 continue;
             }
-            $ports[$port] = new ServerPort($adapter->getEndpoint()->getHost(), $port,
-                ServerType::fromValue($adapter->getServerType()));
+            $ports[$port] = new ServerPort($adapter->getEndpoint()->getHost(), $port, $adapter->getServerType());
         }
 
         $serverConfig = new ServerConfig($serverProperties->getServerName(), $serverProperties->getServerSettings(), array_values($ports));

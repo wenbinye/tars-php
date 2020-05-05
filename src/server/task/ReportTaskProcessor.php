@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server\task;
 
-use kuiper\swoole\ServerManager;
+use kuiper\swoole\server\ServerInterface;
 use kuiper\swoole\task\ProcessorInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
@@ -33,9 +33,9 @@ class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
      */
     private $serverProperties;
     /**
-     * @var ServerManager
+     * @var ServerInterface
      */
-    private $serverManager;
+    private $server;
     /**
      * @var ClientProperties
      */
@@ -53,11 +53,11 @@ class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
      * KeepAliveTaskHandler constructor.
      */
     public function __construct(ServerProperties $serverProperties, ClientProperties $clientProperties,
-                                ServerManager $serverManager, ServerFServant $serverFClient,
+                                ServerInterface $server, ServerFServant $serverFClient,
                                 StatInterface $statClient, MonitorInterface $monitor, ?LoggerInterface $logger)
     {
         $this->clientProperties = $clientProperties;
-        $this->serverManager = $serverManager;
+        $this->server = $server;
         $this->serverFClient = $serverFClient;
         $this->statClient = $statClient;
         $this->monitor = $monitor;
@@ -70,7 +70,7 @@ class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
      */
     public function process($task): void
     {
-        $this->sendServerInfo(true);
+        $this->sendServerInfo();
         Timer::tick($this->clientProperties->getKeepAliveInterval(), function () {
             $this->sendServerInfo();
         });
@@ -84,21 +84,12 @@ class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
         });
     }
 
-    public function sendServerInfo($firstTime = false): void
+    public function sendServerInfo(): void
     {
-        if (!$firstTime) {
-            // 首次不检查 pid，可能所有子进程还不能通过 ps 查到，可能是进程标题未修改
-            $pidList = $this->serverManager->getWorkerPidList();
-            if (empty($pidList)) {
-                $this->logger->error(static::TAG.$this->serverProperties->getServerName().' all workers are gone, wait for restart');
-
-                return;
-            }
-        }
         $serverInfo = new ServerInfo();
         $serverInfo->serverName = $this->serverProperties->getServer();
         $serverInfo->application = $this->serverProperties->getApp();
-        $serverInfo->pid = $this->serverManager->getMasterPid();
+        $serverInfo->pid = $this->server->getMasterPid();
         foreach ($this->serverProperties->getAdapters() as $adapter) {
             $serverInfo->adapter = $adapter->getAdapterName();
             $this->logger->info(static::TAG.'send keep alive message', ['server' => $serverInfo]);
