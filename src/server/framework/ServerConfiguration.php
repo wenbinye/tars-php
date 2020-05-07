@@ -7,11 +7,15 @@ namespace wenbinye\tars\server\framework;
 use function DI\autowire;
 use function DI\factory;
 use kuiper\di\annotation\Bean;
+use kuiper\di\annotation\ConditionalOnProperty;
 use kuiper\di\ContainerBuilderAwareTrait;
 use kuiper\di\DefinitionConfiguration;
 use kuiper\swoole\http\SwooleRequestBridgeInterface;
 use kuiper\swoole\http\SwooleResponseBridge;
 use kuiper\swoole\http\SwooleResponseBridgeInterface;
+use kuiper\swoole\livereload\FileWatcherInterface;
+use kuiper\swoole\livereload\FswatchWatcher;
+use kuiper\swoole\livereload\Reloader;
 use kuiper\swoole\server\HttpMessageFactoryHolder;
 use kuiper\swoole\server\ServerInterface;
 use kuiper\swoole\ServerConfig;
@@ -101,5 +105,22 @@ class ServerConfiguration implements DefinitionConfiguration
         }
 
         return new Monitor($serverProperties, $propertyFClient, $collectors, $logger);
+    }
+
+    /**
+     * @Bean()
+     * @ConditionalOnProperty("application.livereload.enabled")
+     */
+    public function liveReloader(FileWatcherInterface $fileWatcher, LoggerInterface $logger): Reloader
+    {
+        return new Reloader($fileWatcher, Config::getInstance()->getInt('application.livereload.interval', 1), $logger);
+    }
+
+    /**
+     * @Bean()
+     */
+    public function fileWatcher(ServerProperties $serverProperties): FileWatcherInterface
+    {
+        return new FswatchWatcher([$serverProperties->getSourcePath()]);
     }
 }

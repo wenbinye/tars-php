@@ -8,6 +8,7 @@ use function DI\autowire;
 use function DI\factory;
 use function DI\get;
 use function DI\value;
+use Dotenv\Dotenv;
 use kuiper\annotations\AnnotationReader;
 use kuiper\annotations\AnnotationReaderInterface;
 use kuiper\di\annotation\Bean;
@@ -103,6 +104,9 @@ class FoundationConfiguration implements DefinitionConfiguration
                 'http_protocol' => Protocol::fromValue($protocol)->isHttpProtocol() ? $protocol : null,
             ],
         ]);
+        if (class_exists(Dotenv::class)) {
+            Dotenv::createImmutable(APP_PATH)->safeLoad();
+        }
         $configFile = $serverProperties->getSourcePath().'/config.php';
         if (file_exists($configFile)) {
             /* @noinspection PhpIncludeInspection */
