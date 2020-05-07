@@ -26,7 +26,7 @@ use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Monolog\Processor\ProcessIdProcessor;
-use Psr\EventDispatcher\EventDispatcherInterface;
+use Psr\EventDispatcher\EventDispatcherInterface as PsrEventDispatcher;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
@@ -35,6 +35,7 @@ use Psr\Http\Message\UriFactoryInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use wenbinye\tars\protocol\Packer;
@@ -64,6 +65,7 @@ class FoundationConfiguration implements DefinitionConfiguration
             QueueInterface::class => autowire(Queue::class),
             DispatcherInterface::class => get(QueueInterface::class),
             MethodMetadataFactoryInterface::class => autowire(MethodMetadataFactory::class),
+            PsrEventDispatcher::class => get(EventDispatcherInterface::class),
         ];
     }
 
@@ -105,7 +107,7 @@ class FoundationConfiguration implements DefinitionConfiguration
             ],
         ]);
         if (class_exists(Dotenv::class)) {
-            Dotenv::createImmutable(APP_PATH)->safeLoad();
+            Dotenv::createImmutable($serverProperties->getBasePath())->safeLoad();
         }
         $configFile = $serverProperties->getSourcePath().'/config.php';
         if (file_exists($configFile)) {

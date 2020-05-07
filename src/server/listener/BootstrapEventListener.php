@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server\listener;
 
+use kuiper\di\annotation\EventListener;
 use kuiper\di\ComponentCollection;
-use kuiper\event\EventDispatcherAwareTrait;
 use kuiper\swoole\event\BootstrapEvent;
 use kuiper\swoole\event\ReceiveEvent;
 use kuiper\swoole\event\RequestEvent;
@@ -17,6 +17,7 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use wenbinye\tars\protocol\annotation\TarsServant;
 use wenbinye\tars\rpc\TarsClientInterface;
 use wenbinye\tars\server\Config;
@@ -29,7 +30,6 @@ use wenbinye\tars\server\ServerProperties;
 class BootstrapEventListener implements EventListenerInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
-    use EventDispatcherAwareTrait;
 
     protected const TAG = '['.__CLASS__.'] ';
 
@@ -37,6 +37,11 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
      * @var ContainerInterface
      */
     private $container;
+
+    /**
+     * @var EventDispatcherInterface
+     */
+    private $eventDispatcher;
 
     public function __construct(ContainerInterface $container, ?LoggerInterface $logger)
     {
@@ -54,6 +59,11 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
         $this->registerServants($config->get('application.servants', []));
         $this->addTarsServantMiddleware($config->get('application.middleware.servant', []));
         $this->addEventListeners();
+    }
+
+    public function setEventDispatcher(EventDispatcherInterface $eventDispatcher): void
+    {
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     public function getSubscribedEvent(): string
@@ -121,6 +131,15 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
         foreach ($config->get('application.listeners', []) as $eventName => $listenerId) {
             $events[] = $this->attach($listenerId, $eventName);
         }
+        /** @var EventListener $annotation */
+        foreach (ComponentCollection::getComponents(EventListener::class) as $annotation) {
+            $listener = $annotation->getTarget()->getName();
+            try {
+                $this->attach($listener, $annotation->value);
+            } catch (\InvalidArgumentException $e) {
+                throw new \InvalidArgumentException("EventListener $listener should implements ".EventListenerInterface::class);
+            }
+        }
         $protocol = Protocol::fromValue($config->get('application.protocol'));
         if ($protocol->isHttpProtocol() && !in_array(RequestEvent::class, $events, true)) {
             $this->attach(HttpRequestEventListener::class);
@@ -135,10 +154,7 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
     }
 
     /**
-     * @param $listenerId
-     * @param array $events
-     *
-     * @return array
+     * @param string $eventName
      */
     private function attach(string $listenerId, $eventName = null): string
     {
