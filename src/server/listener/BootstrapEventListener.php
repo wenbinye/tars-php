@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server\listener;
 
+use Dotenv\Dotenv;
 use kuiper\di\annotation\EventListener;
 use kuiper\di\ComponentCollection;
+use kuiper\helper\Properties;
 use kuiper\swoole\event\BootstrapEvent;
 use kuiper\swoole\event\ReceiveEvent;
 use kuiper\swoole\event\RequestEvent;
@@ -18,6 +20,7 @@ use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use wenbinye\tars\client\ConfigServant;
 use wenbinye\tars\protocol\annotation\TarsServant;
 use wenbinye\tars\rpc\TarsClientInterface;
 use wenbinye\tars\server\Config;
@@ -55,6 +58,7 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
     public function __invoke($event): void
     {
         $config = Config::getInstance();
+        $this->loadConfig($config);
         $this->addTarsClientMiddleware($config->get('application.middleware.client', []));
         $this->registerServants($config->get('application.servants', []));
         $this->addTarsServantMiddleware($config->get('application.middleware.servant', []));
@@ -171,5 +175,26 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
         }
 
         throw new \InvalidArgumentException("config application.listeners $listenerId does not bind to any event");
+    }
+
+    private function loadConfig(Properties $config): void
+    {
+        $serverProperties = $this->container->get(ServerProperties::class);
+        $env = $config->getString('tars.application.server.env_config_file');
+        if ($env) {
+            $configServant = $this->container->get(ConfigServant::class);
+            $ret = $configServant->loadConfig($serverProperties->getApp(), $serverProperties->getServerName(), $env, $content);
+            if (0 === $ret) {
+                file_put_contents($serverProperties->getBasePath().'/'.$env, $content);
+            }
+            if (class_exists(Dotenv::class)) {
+                Dotenv::createImmutable($serverProperties->getBasePath(), [$env, '.env'], false)->safeLoad();
+            }
+        }
+        $configFile = $serverProperties->getSourcePath().'/config.php';
+        if (file_exists($configFile)) {
+            /* @noinspection PhpIncludeInspection */
+            $config->merge(require $configFile);
+        }
     }
 }

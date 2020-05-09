@@ -6,6 +6,7 @@ namespace wenbinye\tars\server\framework;
 
 use kuiper\di\annotation\Bean;
 use kuiper\di\annotation\ConditionalOnClass;
+use kuiper\di\annotation\Configuration;
 use kuiper\swoole\http\DiactorosSwooleRequestBridge;
 use kuiper\swoole\http\SwooleRequestBridgeInterface;
 use Laminas\Diactoros\ResponseFactory;
@@ -20,8 +21,7 @@ use Psr\Http\Message\UploadedFileFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
 
 /**
- * Class DiactorosHttpMessageFactoryConfiguration.
- *
+ * @Configuration()
  * @ConditionalOnClass(ServerRequestFactory::class)
  */
 class DiactorosHttpMessageFactoryConfiguration

@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server;
 
+use DI\ContainerBuilder;
 use Symfony\Component\Console\Application;
 use wenbinye\tars\deploy\PackageCommand;
-use wenbinye\tars\server\framework\Composer;
-use wenbinye\tars\server\framework\ContainerFactory;
 
 class ServerApplication
 {
@@ -33,17 +32,11 @@ class ServerApplication
         return $app->run();
     }
 
-    private static function createContainerFactory(): ContainerFactory
+    private static function createContainerFactory(): callable
     {
-        $basePath = self::detectBasePath();
-        $loader = require $basePath.'/vendor/autoload.php';
-        $json = Composer::getJson($basePath.'/composer.json');
-        $namespaces = [];
-        if (!empty($json['autoload']['psr-4'])) {
-            $namespaces[] = array_keys($json['autoload']['psr-4'])[0];
-        }
-
-        return new ContainerFactory($loader, $namespaces);
+        return static function () {
+            return ContainerBuilder::create(self::detectBasePath())->build();
+        };
     }
 
     private static function detectBasePath(): string

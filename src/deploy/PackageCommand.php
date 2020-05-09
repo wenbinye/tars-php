@@ -8,7 +8,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Filesystem\Filesystem;
-use wenbinye\tars\server\framework\Composer;
+use wenbinye\tars\server\Composer;
 
 class PackageCommand extends Command
 {

@@ -58,6 +58,9 @@
     "gen": "./vendor/bin/tars-gen"
   },
   "extra": {
+    "kuiper": {
+      "component-scan": ["wenbinye\\tars\\server\\framework"]
+    },
     "tars": {
       "generator": {
         "client": {

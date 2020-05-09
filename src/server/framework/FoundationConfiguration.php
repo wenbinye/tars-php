@@ -8,11 +8,11 @@ use function DI\autowire;
 use function DI\factory;
 use function DI\get;
 use function DI\value;
-use Dotenv\Dotenv;
 use kuiper\annotations\AnnotationReader;
 use kuiper\annotations\AnnotationReaderInterface;
 use kuiper\di\annotation\Bean;
 use kuiper\di\annotation\ConditionalOnProperty;
+use kuiper\di\annotation\Configuration;
 use kuiper\di\AwareInjection;
 use kuiper\di\ContainerBuilderAwareTrait;
 use kuiper\di\DefinitionConfiguration;
@@ -49,6 +49,9 @@ use wenbinye\tars\server\PropertyLoader;
 use wenbinye\tars\server\Protocol;
 use wenbinye\tars\server\ServerProperties;
 
+/**
+ * @Configuration()
+ */
 class FoundationConfiguration implements DefinitionConfiguration
 {
     use ContainerBuilderAwareTrait;
@@ -106,14 +109,6 @@ class FoundationConfiguration implements DefinitionConfiguration
                 'http_protocol' => Protocol::fromValue($protocol)->isHttpProtocol() ? $protocol : null,
             ],
         ]);
-        if (class_exists(Dotenv::class)) {
-            Dotenv::createImmutable($serverProperties->getBasePath())->safeLoad();
-        }
-        $configFile = $serverProperties->getSourcePath().'/config.php';
-        if (file_exists($configFile)) {
-            /* @noinspection PhpIncludeInspection */
-            $config->merge(require $configFile);
-        }
 
         return $serverProperties;
     }

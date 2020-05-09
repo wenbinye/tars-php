@@ -8,6 +8,7 @@ use function DI\autowire;
 use function DI\factory;
 use kuiper\di\annotation\Bean;
 use kuiper\di\annotation\ConditionalOnProperty;
+use kuiper\di\annotation\Configuration;
 use kuiper\di\ContainerBuilderAwareTrait;
 use kuiper\di\DefinitionConfiguration;
 use kuiper\swoole\http\SwooleRequestBridgeInterface;
@@ -38,6 +39,9 @@ use wenbinye\tars\stat\StatInterface;
 use wenbinye\tars\stat\StatStoreAdapter;
 use wenbinye\tars\stat\SwooleTableStatStore;
 
+/**
+ * @Configuration()
+ */
 class ServerConfiguration implements DefinitionConfiguration
 {
     use ContainerBuilderAwareTrait;

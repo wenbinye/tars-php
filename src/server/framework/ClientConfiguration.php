@@ -8,6 +8,7 @@ use function DI\autowire;
 use function DI\factory;
 use function DI\get;
 use kuiper\di\annotation\Bean;
+use kuiper\di\annotation\Configuration;
 use kuiper\di\ContainerBuilderAwareTrait;
 use kuiper\di\DefinitionConfiguration;
 use Psr\Log\LoggerInterface;
@@ -46,6 +47,9 @@ use wenbinye\tars\server\ClientProperties;
 use wenbinye\tars\server\Config;
 use wenbinye\tars\server\ServerProperties;
 
+/**
+ * @Configuration()
+ */
 class ClientConfiguration implements DefinitionConfiguration
 {
     use ContainerBuilderAwareTrait;
