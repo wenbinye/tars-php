@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace wenbinye\tars\server\listener;
 
 use Dotenv\Dotenv;
-use kuiper\di\annotation\EventListener;
 use kuiper\di\ComponentCollection;
+use kuiper\event\annotation\EventListener;
 use kuiper\event\EventListenerInterface;
 use kuiper\helper\Properties;
 use kuiper\swoole\event\BootstrapEvent;
