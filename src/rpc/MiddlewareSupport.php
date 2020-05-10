@@ -25,10 +25,8 @@ trait MiddlewareSupport
 
     public function addMiddleware(MiddlewareInterface $middleware): self
     {
-        if ($this->middlewareStack) {
-            throw new \InvalidArgumentException('Cannot add middleware');
-        }
         $this->middlewares[] = $middleware;
+        unset($this->middlewareStack);
 
         return $this;
     }
