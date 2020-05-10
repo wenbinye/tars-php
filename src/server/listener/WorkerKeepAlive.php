@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server\listener;
 
+use kuiper\event\EventListenerInterface;
 use kuiper\swoole\event\WorkerStartEvent;
-use kuiper\swoole\listener\EventListenerInterface;
 use kuiper\swoole\task\QueueInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;

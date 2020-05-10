@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server\listener;
 
+use kuiper\event\EventListenerInterface;
 use kuiper\swoole\event\ReceiveEvent;
-use kuiper\swoole\listener\EventListenerInterface;
 use wenbinye\tars\rpc\route\ServerAddress;
 use wenbinye\tars\server\rpc\RequestHandlerInterface;
 use wenbinye\tars\server\rpc\ServerRequestFactoryInterface;
