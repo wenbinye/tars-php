@@ -26,14 +26,14 @@ trait MiddlewareSupport
     public function addMiddleware(MiddlewareInterface $middleware): self
     {
         $this->middlewares[] = $middleware;
-        unset($this->middlewareStack);
+        $this->middlewareStack = null;
 
         return $this;
     }
 
     private function buildMiddlewareStack(callable $finalHandler): MiddlewareStack
     {
-        if (!$this->middlewareStack) {
+        if (!isset($this->middlewareStack)) {
             $this->middlewareStack = new MiddlewareStack($this->middlewares, $finalHandler, $this->logger);
         }
 
