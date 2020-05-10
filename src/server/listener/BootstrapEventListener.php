@@ -183,7 +183,7 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
         $env = $config->getString('tars.application.server.env_config_file');
         if ($env) {
             $configServant = $this->container->get(ConfigServant::class);
-            $ret = $configServant->loadConfig($serverProperties->getApp(), $serverProperties->getServerName(), $env, $content);
+            $ret = $configServant->loadConfig($serverProperties->getApp(), $serverProperties->getServer(), $env, $content);
             if (0 === $ret) {
                 file_put_contents($serverProperties->getBasePath().'/'.$env, $content);
             }
