@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server;
 
-use DI\ContainerBuilder;
+use kuiper\di\ContainerBuilder;
 use Symfony\Component\Console\Application;
 use wenbinye\tars\deploy\PackageCommand;
 
