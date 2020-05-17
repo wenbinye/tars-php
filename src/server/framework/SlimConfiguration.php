@@ -7,9 +7,9 @@ namespace wenbinye\tars\server\framework;
 use kuiper\di\annotation\Bean;
 use kuiper\di\annotation\ConditionalOnProperty;
 use kuiper\di\annotation\Configuration;
+use kuiper\web\SlimAppFactory;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Slim\Factory\AppFactory;
 use wenbinye\tars\server\ServerProperties;
 
 /**
@@ -23,7 +23,7 @@ class SlimConfiguration
      */
     public function requestHandler(ContainerInterface $container, ServerProperties $serverProperties): RequestHandlerInterface
     {
-        $app = AppFactory::createFromContainer($container);
+        $app = SlimAppFactory::create($container);
         $routeFile = $serverProperties->getBasePath().'/src/routes.php';
         if (file_exists($routeFile)) {
             require $routeFile;

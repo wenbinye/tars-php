@@ -11,14 +11,12 @@ use function DI\value;
 use kuiper\annotations\AnnotationReader;
 use kuiper\annotations\AnnotationReaderInterface;
 use kuiper\di\annotation\Bean;
-use kuiper\di\annotation\ConditionalOnProperty;
 use kuiper\di\annotation\Configuration;
 use kuiper\di\AwareInjection;
 use kuiper\di\ContainerBuilderAwareTrait;
 use kuiper\di\DefinitionConfiguration;
 use kuiper\di\PropertiesDefinitionSource;
 use kuiper\helper\PropertyResolverInterface;
-use kuiper\swoole\server\HttpMessageFactoryHolder;
 use kuiper\swoole\task\DispatcherInterface;
 use kuiper\swoole\task\Queue;
 use kuiper\swoole\task\QueueInterface;
@@ -27,11 +25,6 @@ use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Monolog\Processor\ProcessIdProcessor;
 use Psr\EventDispatcher\EventDispatcherInterface as PsrEventDispatcher;
-use Psr\Http\Message\ResponseFactoryInterface;
-use Psr\Http\Message\ServerRequestFactoryInterface;
-use Psr\Http\Message\StreamFactoryInterface;
-use Psr\Http\Message\UploadedFileFactoryInterface;
-use Psr\Http\Message\UriFactoryInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
@@ -153,26 +146,5 @@ class FoundationConfiguration implements DefinitionConfiguration
     public function packer(AnnotationReaderInterface $annotationReader): PackerInterface
     {
         return new Packer($annotationReader);
-    }
-
-    /**
-     * @Bean()
-     * @ConditionalOnProperty("application.http_protocol")
-     */
-    public function httpMessageFactoryHolder(
-        ServerRequestFactoryInterface $serverRequestFactory,
-        ResponseFactoryInterface $responseFactory,
-        StreamFactoryInterface $streamFactory,
-        UriFactoryInterface $uriFactory,
-        UploadedFileFactoryInterface $uploadedFileFactory
-    ): HttpMessageFactoryHolder {
-        $httpMessageFactoryHolder = new HttpMessageFactoryHolder();
-        $httpMessageFactoryHolder->setServerRequestFactory($serverRequestFactory);
-        $httpMessageFactoryHolder->setResponseFactory($responseFactory);
-        $httpMessageFactoryHolder->setStreamFactory($streamFactory);
-        $httpMessageFactoryHolder->setUriFactory($uriFactory);
-        $httpMessageFactoryHolder->setUploadFileFactory($uploadedFileFactory);
-
-        return $httpMessageFactoryHolder;
     }
 }

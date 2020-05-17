@@ -13,7 +13,6 @@ use kuiper\swoole\event\BootstrapEvent;
 use kuiper\swoole\event\ReceiveEvent;
 use kuiper\swoole\event\RequestEvent;
 use kuiper\swoole\listener\HttpRequestEventListener;
-use kuiper\swoole\livereload\Reloader;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
@@ -150,10 +149,6 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
         }
         if (Protocol::TARS === $protocol->value && !in_array(ReceiveEvent::class, $events, true)) {
             $this->attach(TarsTcpReceiveEventListener::class);
-        }
-        if ($config->getBool('application.livereload.enabled')) {
-            $this->logger->warning(static::TAG.'livereload is enable which should disable in production');
-            $this->attach(Reloader::class);
         }
     }
 
