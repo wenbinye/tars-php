@@ -135,6 +135,9 @@ class FoundationConfiguration implements DefinitionConfiguration
         $lineFormatter->allowInlineLineBreaks();
         $handler->setFormatter($lineFormatter);
         $logger->pushHandler($handler);
+        $handler = new StreamHandler('php://stderr', $loggerLevel);
+        $handler->setFormatter($lineFormatter);
+        $logger->pushHandler($handler);
         $logger->pushProcessor(new ProcessIdProcessor());
 
         return $logger;
