@@ -84,6 +84,10 @@ class Packer implements PackerInterface, TypeParserInterface
             return $type->asPrimitiveType()->pack($name, $data, $version);
         }
 
+        if ($type->isEnum()) {
+            return $type->asEnumType()->pack($name, $data, $version);
+        }
+
         if ($type->isVector()) {
             return TUPAPI::putVector($name, $this->toTarsType($data, $type), $version);
         }
@@ -105,6 +109,10 @@ class Packer implements PackerInterface, TypeParserInterface
     {
         if ($type->isPrimitive()) {
             return $type->asPrimitiveType()->unpack($name, $payload, $version);
+        }
+
+        if ($type->isEnum()) {
+            return $type->asEnumType()->unpack($name, $payload, $version);
         }
 
         if ($type->isVector()) {

@@ -14,6 +14,8 @@ interface Type
 
     public function isMap(): bool;
 
+    public function isEnum(): bool;
+
     public function isVoid(): bool;
 
     public function asPrimitiveType(): PrimitiveType;
@@ -21,6 +23,8 @@ interface Type
     public function asVectorType(): VectorType;
 
     public function asMapType(): MapType;
+
+    public function asEnumType(): EnumType;
 
     public function asStructType(): StructType;
 

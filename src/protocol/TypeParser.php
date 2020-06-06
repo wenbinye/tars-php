@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\protocol;
 
+use kuiper\helper\Enum;
 use wenbinye\tars\protocol\exception\SyntaxErrorException;
+use wenbinye\tars\protocol\type\EnumType;
 use wenbinye\tars\protocol\type\MapType;
 use wenbinye\tars\protocol\type\PrimitiveType;
 use wenbinye\tars\protocol\type\StructType;
@@ -54,7 +56,12 @@ class TypeParser implements TypeParserInterface
         }
 
         if (TypeTokenizer::T_STRUCT === $token[0]) {
-            return new StructType($namespace.'\\'.$token[1]);
+            $className = $namespace.'\\'.$token[1];
+            if (is_a($className, Enum::class, true)) {
+                return new EnumType($className);
+            }
+
+            return new StructType($className);
         }
 
         if (TypeTokenizer::T_VOID === $token[0]) {

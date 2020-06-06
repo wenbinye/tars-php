@@ -6,6 +6,7 @@ namespace wenbinye\tars\protocol;
 
 use kuiper\annotations\AnnotationReader;
 use PHPUnit\Framework\TestCase;
+use wenbinye\tars\protocol\fixtures\GoodType;
 use wenbinye\tars\protocol\fixtures\NestedStruct;
 use wenbinye\tars\protocol\fixtures\NestedStructOld;
 use wenbinye\tars\protocol\fixtures\SimpleStruct;
@@ -69,6 +70,7 @@ class PackerTest extends TestCase
     {
         return [
             ['SimpleStruct', $this->createSimpleStruct(), \TUPAPI::putStruct(self::ARG_NAME, $this->createSimpleStructOld())],
+            ['GoodType', GoodType::CITY(), \TUPAPI::putUInt8(self::ARG_NAME, GoodType::CITY)],
             ['bool', true, \TUPAPI::putBool(self::ARG_NAME, true)],
             ['vector<int>', [1, 2], $this->value(function () {
                 $vector = new \TARS_Vector(\TARS::INT32);

@@ -26,6 +26,11 @@ abstract class AbstractType implements Type
         return false;
     }
 
+    public function isEnum(): bool
+    {
+        return false;
+    }
+
     public function isVoid(): bool
     {
         return false;
@@ -42,6 +47,11 @@ abstract class AbstractType implements Type
     }
 
     public function asMapType(): MapType
+    {
+        return null;
+    }
+
+    public function asEnumType(): EnumType
     {
         return null;
     }
