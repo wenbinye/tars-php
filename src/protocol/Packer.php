@@ -143,6 +143,9 @@ class Packer implements PackerInterface, TypeParserInterface
         if ($type->isPrimitive()) {
             return $data;
         }
+        if ($type->isEnum()) {
+            return $type->asEnumType()->getEnumValue($data);
+        }
         if (!isset($data)) {
             $data = [];
         }
@@ -197,6 +200,9 @@ class Packer implements PackerInterface, TypeParserInterface
         if ($type->isPrimitive()) {
             return $data;
         }
+        if ($type->isEnum()) {
+            return $type->asEnumType()->createEnum($data);
+        }
         if ($type->isVector()) {
             $result = [];
             foreach ($data as $item) {
@@ -241,6 +247,9 @@ class Packer implements PackerInterface, TypeParserInterface
     {
         if ($type->isPrimitive()) {
             return $type->asPrimitiveType()->asTarsType();
+        }
+        if ($type->isEnum()) {
+            return $type->asEnumType()->asTarsType();
         }
 
         if ($type->isVector()) {
@@ -295,7 +304,7 @@ class Packer implements PackerInterface, TypeParserInterface
         foreach ($struct->getFields() as $field) {
             /** @var Type $fieldType */
             $fieldType = $field['typeObj'];
-            if (!$fieldType->isPrimitive()) {
+            if (!$fieldType->isPrimitive() && !$fieldType->isEnum()) {
                 $struct->{$field['name']} = $this->createTarsVar($fieldType);
             }
         }

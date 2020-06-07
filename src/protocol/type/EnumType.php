@@ -34,6 +34,16 @@ class EnumType extends AbstractType
         return true;
     }
 
+    public function getEnumValue($enumObj): ?int
+    {
+        return $enumObj ? $enumObj->value : null;
+    }
+
+    public function createEnum($value)
+    {
+        return call_user_func([$this->className, 'fromValue'], $value);
+    }
+
     public function asTarsType(): int
     {
         return \TARS::UINT8;
@@ -46,7 +56,6 @@ class EnumType extends AbstractType
 
     public function unpack($name, string &$payload, int $version)
     {
-        return call_user_func([$this->className, 'fromValue'],
-            \TUPAPI::getUInt8($name, $payload, false, $version));
+        return $this->createEnum(\TUPAPI::getUInt8($name, $payload, false, $version));
     }
 }

@@ -6,6 +6,8 @@ namespace wenbinye\tars\protocol;
 
 use kuiper\annotations\AnnotationReader;
 use PHPUnit\Framework\TestCase;
+use wenbinye\tars\protocol\fixtures\EnumStruct;
+use wenbinye\tars\protocol\fixtures\EnumStructOld;
 use wenbinye\tars\protocol\fixtures\GoodType;
 use wenbinye\tars\protocol\fixtures\NestedStruct;
 use wenbinye\tars\protocol\fixtures\NestedStructOld;
@@ -69,6 +71,17 @@ class PackerTest extends TestCase
     public function packData(): array
     {
         return [
+            ['EnumStruct', $this->value(function () {
+                $struct = new EnumStruct();
+                $struct->type = GoodType::CITY();
+
+                return $struct;
+            }), $this->value(function () {
+                $struct = new EnumStructOld();
+                $struct->type = GoodType::CITY;
+
+                return \TUPAPI::putStruct(self::ARG_NAME, $struct);
+            })],
             ['SimpleStruct', $this->createSimpleStruct(), \TUPAPI::putStruct(self::ARG_NAME, $this->createSimpleStructOld())],
             ['GoodType', GoodType::CITY(), \TUPAPI::putUInt8(self::ARG_NAME, GoodType::CITY)],
             ['bool', true, \TUPAPI::putBool(self::ARG_NAME, true)],
