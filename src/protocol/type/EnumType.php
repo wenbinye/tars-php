@@ -36,7 +36,7 @@ class EnumType extends AbstractType
 
     public function getEnumValue($enumObj): ?int
     {
-        return $enumObj ? $enumObj->value : null;
+        return is_object($enumObj) ? $enumObj->value : $enumObj;
     }
 
     public function createEnum($value)
