@@ -8,7 +8,7 @@ use kuiper\annotations\AnnotationReaderInterface;
 use wenbinye\tars\protocol\annotation\TarsParameter;
 use wenbinye\tars\protocol\annotation\TarsReturnType;
 use wenbinye\tars\protocol\annotation\TarsServant;
-use wenbinye\tars\rpc\exception\InvalidClientException;
+use wenbinye\tars\rpc\exception\InvalidMethodException;
 
 /**
  * 读取调用方法 rpc ServantName, 参数，返回值等信息.
@@ -44,7 +44,7 @@ class MethodMetadataFactory implements MethodMetadataFactoryInterface
         try {
             return $this->cache[$key] = $this->getMetadataFromAnnotation($servant, $method);
         } catch (\ReflectionException $e) {
-            throw new InvalidClientException('read method metadata failed', $e);
+            throw new InvalidMethodException('read method metadata failed', $e);
         }
     }
 
@@ -79,6 +79,6 @@ class MethodMetadataFactory implements MethodMetadataFactoryInterface
             return new MethodMetadata($interface->getName(), $interface->getNamespaceName(), $method,
                 $servantAnnotation->name, $parameters, $returnType);
         }
-        throw new InvalidClientException(sprintf("%s does not contain valid method definition, check it's interfaces should annotated with @TarsServant", get_class($servant)));
+        throw new InvalidMethodException(sprintf("%s does not contain valid method definition, check it's interfaces should annotated with @TarsServant", get_class($servant)));
     }
 }
