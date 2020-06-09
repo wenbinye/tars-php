@@ -70,6 +70,9 @@ class PrimitiveType extends AbstractType
 
     public function pack($name, $data, int $version)
     {
+        if (!is_scalar($data)) {
+            throw new \InvalidArgumentException(sprintf('Cannot pack %s to %s', gettype($data), (string) $this));
+        }
         $method = 'put'.self::$PACK_METHODS[$this->tarsType];
 
         return \TUPAPI::{$method}($name, $data, $version);

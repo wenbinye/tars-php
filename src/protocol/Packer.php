@@ -167,6 +167,7 @@ class Packer implements PackerInterface, TypeParserInterface, TypeConverterInter
             return $map;
         }
         if ($type->isStruct()) {
+            Assert::isInstanceOf($data, $type->asStructType()->getClassName());
             $struct = $this->getTarsType($type);
             foreach ($struct->getFields() as $field) {
                 $struct->{$field['name']} = $this->toTarsType($data->{$field['name']} ?? null, $field['typeObj']);

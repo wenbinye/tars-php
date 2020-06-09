@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace wenbinye\tars\protocol;
 
 use kuiper\annotations\AnnotationReaderInterface;
+use Webmozart\Assert\Assert;
 use wenbinye\tars\protocol\annotation\TarsProperty;
 use wenbinye\tars\protocol\exception\SyntaxErrorException;
 use wenbinye\tars\protocol\type\GenericTarsStruct;
@@ -43,12 +44,15 @@ class TypeConverter implements TypeConverterInterface
     public function convert($data, Type $type)
     {
         if ($type->isPrimitive()) {
+            Assert::true(is_scalar($data), 'Expected scalar, got '.gettype($data));
+
             return $data;
         }
         if ($type->isEnum()) {
             return $type->asEnumType()->createEnum($data);
         }
         if ($type->isVector()) {
+            Assert::isArray($data);
             $result = [];
             foreach ($data as $item) {
                 $result[] = $this->convert($item, $type->asVectorType()->getSubType());
@@ -57,6 +61,7 @@ class TypeConverter implements TypeConverterInterface
             return $result;
         }
         if ($type->isMap()) {
+            Assert::isArray($data);
             $mapType = $type->asMapType();
             if ($mapType->getKeyType()->isStruct()) {
                 $result = new StructMap();
@@ -74,6 +79,7 @@ class TypeConverter implements TypeConverterInterface
             return $result;
         }
         if ($type->isStruct()) {
+            Assert::isArray($data);
             $className = $type->asStructType()->getClassName();
             $obj = new $className();
             $struct = $this->getTarsType($type);
