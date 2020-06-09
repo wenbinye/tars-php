@@ -14,7 +14,7 @@ use wenbinye\tars\protocol\type\StructMap;
 use wenbinye\tars\protocol\type\StructMapEntry;
 use wenbinye\tars\protocol\type\Type;
 
-class Packer implements PackerInterface, TypeParserInterface
+class Packer implements PackerInterface, TypeParserInterface, TypeConverterInterface
 {
     /**
      * @var TypeParserInterface
@@ -99,24 +99,24 @@ class Packer implements PackerInterface, TypeParserInterface
         }
 
         if ($type->isVector()) {
-            $tarsType = $this->createTarsVar($type);
+            $tarsType = $this->getTarsVar($type);
             $data = TUPAPI::getVector($name, $tarsType, $payload, false, $version);
 
-            return $this->toPhpType($data, $type);
+            return $this->convert($data, $type);
         }
 
         if ($type->isMap()) {
-            $tarsType = $this->createTarsVar($type);
+            $tarsType = $this->getTarsVar($type);
             $data = TUPAPI::getMap($name, $tarsType, $payload, false, $version);
 
-            return $this->toPhpType($data, $type);
+            return $this->convert($data, $type);
         }
 
         if ($type->isStruct()) {
-            $tarsType = $this->createTarsVar($type);
+            $tarsType = $this->getTarsVar($type);
             $data = TUPAPI::getStruct($name, $tarsType, $payload, false, $version);
 
-            return $this->toPhpType($data, $type);
+            return $this->convert($data, $type);
         }
         throw new InvalidArgumentException('unknown type to unpack: '.get_class($type));
     }
@@ -134,7 +134,7 @@ class Packer implements PackerInterface, TypeParserInterface
         }
         if ($type->isVector()) {
             Assert::isArray($data);
-            $vector = $this->createTarsVar($type);
+            $vector = $this->getTarsVar($type);
 
             foreach ($data as $item) {
                 $vector->pushBack($this->toTarsType($item, $type->asVectorType()->getSubType()));
@@ -144,7 +144,7 @@ class Packer implements PackerInterface, TypeParserInterface
         }
         if ($type->isMap()) {
             /** @var MapType $type */
-            $map = $this->createTarsVar($type);
+            $map = $this->getTarsVar($type);
             $mapType = $type->asMapType();
             if ($type->getKeyType()->isPrimitive()) {
                 Assert::isArray($data);
@@ -168,7 +168,7 @@ class Packer implements PackerInterface, TypeParserInterface
             return $map;
         }
         if ($type->isStruct()) {
-            $struct = $this->createTarsVar($type);
+            $struct = $this->getTarsVar($type);
             foreach ($struct->getFields() as $field) {
                 $struct->{$field['name']} = $this->toTarsType($data->{$field['name']} ?? null, $field['typeObj']);
             }
@@ -178,12 +178,18 @@ class Packer implements PackerInterface, TypeParserInterface
         throw new InvalidArgumentException('unknown type to convert: '.get_class($type));
     }
 
-    private function toPhpType($data, Type $type)
+    /**
+     * {@inheritdoc}
+     */
+    public function convert($data, Type $type)
     {
         return $this->converter->convert($data, $type);
     }
 
-    private function createTarsVar(Type $type)
+    /**
+     * {@inheritdoc}
+     */
+    public function getTarsVar(Type $type)
     {
         return $this->converter->getTarsType($type);
     }
