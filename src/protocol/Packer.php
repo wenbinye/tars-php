@@ -99,21 +99,21 @@ class Packer implements PackerInterface, TypeParserInterface, TypeConverterInter
         }
 
         if ($type->isVector()) {
-            $tarsType = $this->getTarsVar($type);
+            $tarsType = $this->getTarsType($type);
             $data = TUPAPI::getVector($name, $tarsType, $payload, false, $version);
 
             return $this->convert($data, $type);
         }
 
         if ($type->isMap()) {
-            $tarsType = $this->getTarsVar($type);
+            $tarsType = $this->getTarsType($type);
             $data = TUPAPI::getMap($name, $tarsType, $payload, false, $version);
 
             return $this->convert($data, $type);
         }
 
         if ($type->isStruct()) {
-            $tarsType = $this->getTarsVar($type);
+            $tarsType = $this->getTarsType($type);
             $data = TUPAPI::getStruct($name, $tarsType, $payload, false, $version);
 
             return $this->convert($data, $type);
@@ -134,7 +134,7 @@ class Packer implements PackerInterface, TypeParserInterface, TypeConverterInter
         }
         if ($type->isVector()) {
             Assert::isArray($data);
-            $vector = $this->getTarsVar($type);
+            $vector = $this->getTarsType($type);
 
             foreach ($data as $item) {
                 $vector->pushBack($this->toTarsType($item, $type->asVectorType()->getSubType()));
@@ -144,12 +144,11 @@ class Packer implements PackerInterface, TypeParserInterface, TypeConverterInter
         }
         if ($type->isMap()) {
             /** @var MapType $type */
-            $map = $this->getTarsVar($type);
+            $map = $this->getTarsType($type);
             $mapType = $type->asMapType();
             if ($type->getKeyType()->isPrimitive()) {
                 Assert::isArray($data);
                 foreach ($data as $key => $value) {
-                    /* @noinspection PhpIllegalArrayKeyTypeInspection */
                     $map->pushBack([
                         $this->toTarsType($key, $mapType->getKeyType()) => $this->toTarsType($value, $mapType->getValueType()),
                     ]);
@@ -168,7 +167,7 @@ class Packer implements PackerInterface, TypeParserInterface, TypeConverterInter
             return $map;
         }
         if ($type->isStruct()) {
-            $struct = $this->getTarsVar($type);
+            $struct = $this->getTarsType($type);
             foreach ($struct->getFields() as $field) {
                 $struct->{$field['name']} = $this->toTarsType($data->{$field['name']} ?? null, $field['typeObj']);
             }
@@ -189,7 +188,7 @@ class Packer implements PackerInterface, TypeParserInterface, TypeConverterInter
     /**
      * {@inheritdoc}
      */
-    public function getTarsVar(Type $type)
+    public function getTarsType(Type $type)
     {
         return $this->converter->getTarsType($type);
     }
