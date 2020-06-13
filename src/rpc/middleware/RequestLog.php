@@ -58,7 +58,7 @@ class RequestLog implements MiddlewareInterface, LoggerAwareInterface
         $this->maxBodySize = $maxBodySize;
     }
 
-    public function process(RequestInterface $request, callable $next): ResponseInterface
+    public function __invoke(RequestInterface $request, callable $next): ResponseInterface
     {
         $start = microtime(true);
         $response = null;
@@ -80,7 +80,7 @@ class RequestLog implements MiddlewareInterface, LoggerAwareInterface
         $message = strtr($this->format, [
             '$remote_addr' => RequestAttribute::getRemoteAddress($request) ?? '-',
             '$time_local' => strftime('%d/%b/%Y:%H:%M:%S %z'),
-            '$request' => $this->formatRequest($request),
+            '$request' => $this->formatRequest(isset($response) ? $response->getRequest() : $request),
             '$request_id' => $request->getRequestId(),
             '$servant' => $request->getServantName(),
             '$method' => $request->getFuncName(),
@@ -120,7 +120,7 @@ class RequestLog implements MiddlewareInterface, LoggerAwareInterface
 
     private function formatRequest(RequestInterface $request)
     {
-        return sprintf('%s/%s.%s',
+        return sprintf('%s/%s#%s',
             RequestAttribute::getServerAddress($request),
             $request->getServantName(),
             $request->getFuncName());

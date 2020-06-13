@@ -10,6 +10,7 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use wenbinye\tars\rpc\message\RequestInterface;
 use wenbinye\tars\rpc\message\ResponseInterface;
+use wenbinye\tars\rpc\middleware\MiddlewareInterface;
 
 class MiddlewareStack implements LoggerAwareInterface
 {

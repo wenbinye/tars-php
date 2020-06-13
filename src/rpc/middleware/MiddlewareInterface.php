@@ -9,5 +9,5 @@ use wenbinye\tars\rpc\message\ResponseInterface;
 
 interface MiddlewareInterface
 {
-    public function process(RequestInterface $request, callable $next): ResponseInterface;
+    public function __invoke(RequestInterface $request, callable $next): ResponseInterface;
 }

@@ -10,6 +10,7 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use wenbinye\tars\client\StatFServant;
 use wenbinye\tars\protocol\type\StructMap;
+use wenbinye\tars\rpc\message\RequestAttribute;
 use wenbinye\tars\rpc\message\ResponseInterface;
 use wenbinye\tars\server\ClientProperties;
 use wenbinye\tars\server\ServerProperties;
@@ -94,8 +95,6 @@ class Stat implements StatInterface, LoggerAwareInterface
 
     private function getRequestTimeSlice(ResponseInterface $response): int
     {
-        $time = $response->getRequest()->getAttribute('startTime') ?? time();
-
-        return $this->getTimeSlice($time);
+        return $this->getTimeSlice(RequestAttribute::getRequestTime($response->getRequest()));
     }
 }

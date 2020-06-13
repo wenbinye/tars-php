@@ -6,6 +6,7 @@ namespace wenbinye\tars\stat;
 
 use wenbinye\tars\client\StatMicMsgBody;
 use wenbinye\tars\client\StatMicMsgHead;
+use wenbinye\tars\rpc\message\RequestAttribute;
 use wenbinye\tars\rpc\message\ResponseInterface;
 use wenbinye\tars\rpc\route\ServerAddress;
 use wenbinye\tars\server\ServerProperties;
@@ -133,9 +134,12 @@ class StatEntry
         $head->slaveName = self::removeObj($request->getServantName());
         $head->interfaceName = $request->getFuncName();
         /** @var ServerAddress $address */
-        $address = $request->getAttribute('address');
-        $head->slaveIp = $address->getHost();
-        $head->slavePort = $address->getPort();
+        $address = RequestAttribute::getServerAddress($request);
+        if (is_string($address)) {
+            $address = ServerAddress::fromAddress($address);
+            $head->slaveIp = $address->getHost();
+            $head->slavePort = $address->getPort();
+        }
         $head->returnValue = $response->getReturnCode();
         $head->slaveSetName = '';
         $head->slaveSetArea = '';

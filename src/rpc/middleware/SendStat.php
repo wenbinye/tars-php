@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace wenbinye\tars\rpc\middleware;
 
 use wenbinye\tars\rpc\exception\TimedOutException;
+use wenbinye\tars\rpc\message\RequestAttribute;
 use wenbinye\tars\rpc\message\RequestInterface;
 use wenbinye\tars\rpc\message\Response;
 use wenbinye\tars\rpc\message\ResponseInterface;
@@ -22,7 +23,7 @@ class SendStat implements MiddlewareInterface
         $this->stat = $stat;
     }
 
-    public function process(RequestInterface $request, callable $next): ResponseInterface
+    public function __invoke(RequestInterface $request, callable $next): ResponseInterface
     {
         $time = microtime(true);
         try {
@@ -37,7 +38,9 @@ class SendStat implements MiddlewareInterface
 
             return $response;
         } catch (TimedOutException $e) {
-            $this->stat->timedOut(new Response($request->withAttribute('route', $e->getConnection()->getAddress()), '', 0, []),
+            $request = $request->withAttribute(RequestAttribute::SERVER_ADDR,
+                $e->getConnection()->getAddress()->getAddress());
+            $this->stat->timedOut(new Response($request, '', 0, []),
                 intval(1000 * (microtime(true) - $time)));
             throw $e;
         }
