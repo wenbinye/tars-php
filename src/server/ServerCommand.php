@@ -13,6 +13,7 @@ use kuiper\swoole\listener\TaskEventListener;
 use kuiper\swoole\listener\WorkerStartEventListener;
 use kuiper\swoole\server\ServerInterface;
 use kuiper\swoole\ServerManager;
+use kuiper\web\middleware\AccessLog;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -102,6 +103,9 @@ class ServerCommand extends Command
                     'client' => [
                         SendStat::class,
                         RequestLog::class,
+                    ],
+                    'web' => [
+                        AccessLog::class,
                     ],
                     'servant' => [
                         ServerRequestLog::class,

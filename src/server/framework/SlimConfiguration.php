@@ -10,6 +10,7 @@ use kuiper\di\annotation\Configuration;
 use kuiper\web\SlimAppFactory;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use wenbinye\tars\server\Config;
 use wenbinye\tars\server\ServerProperties;
 
 /**
@@ -26,6 +27,10 @@ class SlimConfiguration
         ServerProperties $serverProperties): RequestHandlerInterface
     {
         $app = SlimAppFactory::create($container);
+        $middlewares = Config::getInstance()->get('application.middleware.web', []);
+        foreach ($middlewares as $middleware) {
+            $app->addMiddleware($container->get($middleware));
+        }
         $routeFile = $serverProperties->getBasePath().'/src/routes.php';
         if (file_exists($routeFile)) {
             require $routeFile;

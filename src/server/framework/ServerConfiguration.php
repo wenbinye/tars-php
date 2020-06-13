@@ -132,7 +132,7 @@ class ServerConfiguration implements DefinitionConfiguration
         $logFile = $serverProperties->getAppLogPath().'/access.log';
         $handler = new StreamHandler($logFile, Logger::INFO);
         $logger->pushHandler($handler);
-        $handler->setFormatter(new LineFormatter("%message% %extra%\n"));
+        $handler->setFormatter(new LineFormatter("%message% %context% %extra%\n"));
         $logger->pushProcessor(new CoroutineIdProcessor());
 
         return $logger;
