@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server\framework;
 
+use DI\Annotation\Inject;
 use function DI\autowire;
+use DI\Definition\FactoryDefinition;
+use DI\Definition\ObjectDefinition;
 use function DI\factory;
 use function DI\get;
 use function DI\value;
@@ -17,6 +20,8 @@ use kuiper\di\ContainerBuilderAwareTrait;
 use kuiper\di\DefinitionConfiguration;
 use kuiper\di\PropertiesDefinitionSource;
 use kuiper\helper\PropertyResolverInterface;
+use kuiper\logger\LoggerFactory;
+use kuiper\logger\LoggerFactoryInterface;
 use kuiper\swoole\task\DispatcherInterface;
 use kuiper\swoole\task\Queue;
 use kuiper\swoole\task\QueueInterface;
@@ -51,7 +56,19 @@ class FoundationConfiguration implements DefinitionConfiguration
 
     public function getDefinitions(): array
     {
-        $this->containerBuilder->addAwareInjection(AwareInjection::create(LoggerAwareInterface::class));
+        $this->containerBuilder->addAwareInjection(new AwareInjection(
+            LoggerAwareInterface::class,
+            'setLogger',
+            static function (ObjectDefinition $definition) {
+                $name = $definition->getName().'.logger';
+                $class = $definition->getClassName();
+                $loggerDefinition = new FactoryDefinition(
+                $name, static function (LoggerFactoryInterface $loggerFactory) use ($class) {
+                    return $loggerFactory->create($class);
+                });
+
+                return [$loggerDefinition];
+            }));
         $this->containerBuilder->addDefinitions(new PropertiesDefinitionSource(Config::getInstance()));
 
         return [
@@ -141,6 +158,15 @@ class FoundationConfiguration implements DefinitionConfiguration
         $logger->pushProcessor(new ProcessIdProcessor());
 
         return $logger;
+    }
+
+    /**
+     * @Bean()
+     * @Inject({"logLevels" = "application.logging.level"})
+     */
+    public function loggerFactory(LoggerInterface $logger, ServerProperties $serverProperties, ?array $logLevels): LoggerFactoryInterface
+    {
+        return new LoggerFactory($logger, $logLevels ?? [], strtolower($serverProperties->getLogLevel()));
     }
 
     /**

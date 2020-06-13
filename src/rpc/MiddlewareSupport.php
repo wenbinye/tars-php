@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace wenbinye\tars\rpc;
 
 use Psr\Log\LoggerInterface;
+use wenbinye\tars\rpc\middleware\MiddlewareInterface;
 
 trait MiddlewareSupport
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace wenbinye\tars\server\rpc;
+namespace wenbinye\tars\rpc\server;
 
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
@@ -11,7 +11,9 @@ use wenbinye\tars\protocol\PackerInterface;
 use wenbinye\tars\rpc\ErrorCode;
 use wenbinye\tars\rpc\message\ParameterInterface;
 use wenbinye\tars\rpc\message\ResponseInterface;
-use wenbinye\tars\rpc\MiddlewareInterface;
+use wenbinye\tars\rpc\message\ServerRequestInterface;
+use wenbinye\tars\rpc\message\ServerResponse;
+use wenbinye\tars\rpc\middleware\MiddlewareInterface;
 use wenbinye\tars\rpc\MiddlewareSupport;
 use wenbinye\tars\rpc\TarsRpcPacker;
 

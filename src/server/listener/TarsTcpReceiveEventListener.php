@@ -6,9 +6,9 @@ namespace wenbinye\tars\server\listener;
 
 use kuiper\event\EventListenerInterface;
 use kuiper\swoole\event\ReceiveEvent;
-use wenbinye\tars\rpc\route\ServerAddress;
-use wenbinye\tars\server\rpc\RequestHandlerInterface;
-use wenbinye\tars\server\rpc\ServerRequestFactoryInterface;
+use wenbinye\tars\rpc\message\RequestAttribute;
+use wenbinye\tars\rpc\message\ServerRequestFactoryInterface;
+use wenbinye\tars\rpc\server\RequestHandlerInterface;
 
 class TarsTcpReceiveEventListener implements EventListenerInterface
 {
@@ -40,8 +40,7 @@ class TarsTcpReceiveEventListener implements EventListenerInterface
         $request = $this->serverRequestFactory->create($event->getData());
         $connectionInfo = $server->getConnectionInfo($event->getClientId());
         if ($connectionInfo) {
-            $request = $request->withAttribute('address',
-                ServerAddress::create($connectionInfo->getRemoteIp(), $connectionInfo->getRemotePort()));
+            $request = $request->withAttribute(RequestAttribute::CLIENT_IP, $connectionInfo->getRemoteIp());
         }
         $response = $this->requestHandler->handle($request);
         $server->send($event->getClientId(), $response->getBody());

@@ -22,6 +22,7 @@ use wenbinye\tars\rpc\message\RequestIdGenerator;
 use wenbinye\tars\rpc\message\RequestIdGeneratorInterface;
 use wenbinye\tars\rpc\message\ResponseFactory;
 use wenbinye\tars\rpc\message\ResponseFactoryInterface;
+use wenbinye\tars\rpc\middleware\MiddlewareInterface;
 use wenbinye\tars\rpc\route\InMemoryRouteResolver;
 use wenbinye\tars\rpc\route\RegistryRouteResolver;
 use wenbinye\tars\rpc\route\Route;

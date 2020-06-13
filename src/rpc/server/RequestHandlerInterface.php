@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace wenbinye\tars\server\rpc;
+namespace wenbinye\tars\rpc\server;
 
 use wenbinye\tars\rpc\message\ResponseInterface;
+use wenbinye\tars\rpc\message\ServerRequestInterface;
 
 interface RequestHandlerInterface
 {

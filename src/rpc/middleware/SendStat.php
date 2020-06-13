@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace wenbinye\tars\stat;
+namespace wenbinye\tars\rpc\middleware;
 
 use wenbinye\tars\rpc\exception\TimedOutException;
 use wenbinye\tars\rpc\message\RequestInterface;
 use wenbinye\tars\rpc\message\Response;
 use wenbinye\tars\rpc\message\ResponseInterface;
-use wenbinye\tars\rpc\MiddlewareInterface;
+use wenbinye\tars\stat\StatInterface;
 
-class StatMiddleware implements MiddlewareInterface
+class SendStat implements MiddlewareInterface
 {
     /**
      * @var StatInterface
@@ -22,7 +22,7 @@ class StatMiddleware implements MiddlewareInterface
         $this->stat = $stat;
     }
 
-    public function __invoke(RequestInterface $request, callable $next): ResponseInterface
+    public function process(RequestInterface $request, callable $next): ResponseInterface
     {
         $time = microtime(true);
         try {

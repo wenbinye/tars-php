@@ -7,8 +7,8 @@ namespace wenbinye\tars\functional;
 use wenbinye\tars\client\LogServant;
 use wenbinye\tars\rpc\message\RequestFactoryInterface;
 use wenbinye\tars\rpc\message\ResponseFactoryInterface;
+use wenbinye\tars\rpc\message\ServerResponse;
 use wenbinye\tars\rpc\route\RouteResolverInterface;
-use wenbinye\tars\server\rpc\ServerResponse;
 use wenbinye\tars\stat\StatInterface;
 
 class StatTest extends FunctionalTestCase

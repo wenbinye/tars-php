@@ -51,9 +51,14 @@ class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
     /**
      * KeepAliveTaskHandler constructor.
      */
-    public function __construct(ServerProperties $serverProperties, ClientProperties $clientProperties,
-                                ServerInterface $server, ServerFServant $serverFClient,
-                                StatInterface $statClient, MonitorInterface $monitor, ?LoggerInterface $logger)
+    public function __construct(
+        ServerProperties $serverProperties,
+        ClientProperties $clientProperties,
+        ServerInterface $server,
+        ServerFServant $serverFClient,
+        StatInterface $statClient,
+        MonitorInterface $monitor,
+        ?LoggerInterface $logger)
     {
         $this->clientProperties = $clientProperties;
         $this->server = $server;
@@ -73,11 +78,9 @@ class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
         $this->server->tick($this->clientProperties->getKeepAliveInterval(), function () {
             $this->sendServerInfo();
         });
-        $this->sendStat();
         $this->server->tick($this->clientProperties->getReportInterval(), function () {
             $this->sendStat();
         });
-        $this->sendMonitorInfo();
         $this->server->tick($this->clientProperties->getReportInterval(), function () {
             $this->sendMonitorInfo();
         });
@@ -91,7 +94,7 @@ class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
         $serverInfo->pid = $this->server->getMasterPid();
         foreach ($this->serverProperties->getAdapters() as $adapter) {
             $serverInfo->adapter = $adapter->getAdapterName();
-            $this->logger->info(static::TAG.'send keep alive message', ['server' => $serverInfo]);
+            $this->logger->debug(static::TAG.'send keep alive message', ['server' => $serverInfo]);
             $this->serverFClient->keepAlive($serverInfo);
         }
         $serverInfo->adapter = 'AdminAdapter';

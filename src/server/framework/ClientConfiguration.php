@@ -11,7 +11,7 @@ use kuiper\di\annotation\Bean;
 use kuiper\di\annotation\Configuration;
 use kuiper\di\ContainerBuilderAwareTrait;
 use kuiper\di\DefinitionConfiguration;
-use Psr\Log\LoggerInterface;
+use kuiper\logger\LoggerFactoryInterface;
 use wenbinye\tars\client\ConfigServant;
 use wenbinye\tars\client\LogServant;
 use wenbinye\tars\client\PropertyFServant;
@@ -99,7 +99,9 @@ class ClientConfiguration implements DefinitionConfiguration
     /**
      * @Bean
      */
-    public function inMemoryRouteResolver(ClientProperties $clientProperties, ServerProperties $serverProperties): InMemoryRouteResolver
+    public function inMemoryRouteResolver(
+        ClientProperties $clientProperties,
+        ServerProperties $serverProperties): InMemoryRouteResolver
     {
         $factory = new InMemoryRouteResolver();
         $factory->addRoute($clientProperties->getLocator());
@@ -111,14 +113,16 @@ class ClientConfiguration implements DefinitionConfiguration
     /**
      * @Bean()
      */
-    public function queryFClient(InMemoryRouteResolver $inMemoryRouteResolver,
-                                 RequestFactoryInterface $requestFactory,
-                                 ResponseFactoryInterface $responseFactory,
-                                 ErrorHandlerInterface $errorHandler,
-                                 ServantProxyGeneratorInterface $proxyGenerator,
-                                 LoggerInterface $logger): QueryFServant
+    public function queryFClient(
+        InMemoryRouteResolver $inMemoryRouteResolver,
+        RequestFactoryInterface $requestFactory,
+        ResponseFactoryInterface $responseFactory,
+        ErrorHandlerInterface $errorHandler,
+        ServantProxyGeneratorInterface $proxyGenerator,
+        LoggerFactoryInterface $loggerFactory): QueryFServant
     {
         $lb = Config::getInstance()->getString('tars.application.client.load_balance', Algorithm::ROUND_ROBIN);
+        $logger = $loggerFactory->create(QueryFServant::class);
         $addressHolderFactory = new ServerAddressHolderFactory($inMemoryRouteResolver, $lb, $logger);
         $connectionFactory = new ConnectionFactory($addressHolderFactory, $logger);
         $client = new TarsClient($connectionFactory, $requestFactory, $responseFactory, $logger, $errorHandler);

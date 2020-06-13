@@ -10,6 +10,7 @@ use kuiper\di\annotation\Bean;
 use kuiper\di\annotation\Configuration;
 use kuiper\di\ContainerBuilderAwareTrait;
 use kuiper\di\DefinitionConfiguration;
+use kuiper\logger\LoggerFactoryInterface;
 use kuiper\swoole\http\HttpMessageFactoryHolder;
 use kuiper\swoole\http\SwooleRequestBridgeInterface;
 use kuiper\swoole\http\SwooleResponseBridge;
@@ -20,13 +21,12 @@ use kuiper\swoole\ServerFactory;
 use kuiper\swoole\ServerPort;
 use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
-use Psr\Log\LoggerInterface;
 use wenbinye\tars\client\PropertyFServant;
+use wenbinye\tars\rpc\message\ServerRequestFactory;
+use wenbinye\tars\rpc\message\ServerRequestFactoryInterface as TarsServerRequestFactoryInterface;
+use wenbinye\tars\rpc\server\RequestHandlerInterface;
+use wenbinye\tars\rpc\server\TarsRequestHandler;
 use wenbinye\tars\server\Config;
-use wenbinye\tars\server\rpc\RequestHandlerInterface;
-use wenbinye\tars\server\rpc\ServerRequestFactory;
-use wenbinye\tars\server\rpc\ServerRequestFactoryInterface as TarsServerRequestFactoryInterface;
-use wenbinye\tars\server\rpc\TarsRequestHandler;
 use wenbinye\tars\server\ServerProperties;
 use wenbinye\tars\stat\Monitor;
 use wenbinye\tars\stat\MonitorInterface;
@@ -57,12 +57,13 @@ class ServerConfiguration implements DefinitionConfiguration
     /**
      * @Bean()
      */
-    public function serverFactory(ContainerInterface $container,
-                                  EventDispatcherInterface $eventDispatcher,
-                                  LoggerInterface $logger): ServerFactory
+    public function serverFactory(
+        ContainerInterface $container,
+        EventDispatcherInterface $eventDispatcher,
+        LoggerFactoryInterface $loggerFactory): ServerFactory
     {
         $config = Config::getInstance();
-        $serverFactory = new ServerFactory($logger);
+        $serverFactory = new ServerFactory($loggerFactory->create(ServerFactory::class));
         $serverFactory->setEventDispatcher($eventDispatcher);
         $serverFactory->enablePhpServer($config->getBool('tars.application.server.enable_php_server'));
         if ($config->get('application.http_protocol')) {
@@ -97,13 +98,17 @@ class ServerConfiguration implements DefinitionConfiguration
     /**
      * @Bean()
      */
-    public function monitor(ContainerInterface $container, ServerProperties $serverProperties, PropertyFServant $propertyFClient, LoggerInterface $logger): MonitorInterface
+    public function monitor(
+        ContainerInterface $container,
+        ServerProperties $serverProperties,
+        PropertyFServant $propertyFClient,
+        LoggerFactoryInterface $loggerFactory): MonitorInterface
     {
         $collectors = [];
         foreach (Config::getInstance()->get('application.monitor.collectors', []) as $collector) {
             $collectors[] = $container->get($collector);
         }
 
-        return new Monitor($serverProperties, $propertyFClient, $collectors, $logger);
+        return new Monitor($serverProperties, $propertyFClient, $collectors, $loggerFactory->create(Monitor::class));
     }
 }

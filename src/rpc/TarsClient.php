@@ -9,11 +9,13 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use wenbinye\tars\rpc\connection\ConnectionFactoryInterface;
 use wenbinye\tars\rpc\exception\CommunicationException;
+use wenbinye\tars\rpc\message\RequestAttribute;
 use wenbinye\tars\rpc\message\RequestFactoryInterface;
 use wenbinye\tars\rpc\message\RequestInterface;
 use wenbinye\tars\rpc\message\ResponseFactoryInterface;
 use wenbinye\tars\rpc\message\ResponseInterface;
 use wenbinye\tars\rpc\message\ReturnValueInterface;
+use wenbinye\tars\rpc\middleware\MiddlewareInterface;
 
 class TarsClient implements TarsClientInterface, LoggerAwareInterface
 {
@@ -77,7 +79,8 @@ class TarsClient implements TarsClientInterface, LoggerAwareInterface
     {
         $connection = $this->connectionFactory->create($request->getServantName());
         try {
-            $rawContent = $connection->send($request = $request->withAttribute('address', $connection->getAddress()));
+            $request = $request->withAttribute(RequestAttribute::SERVER_ADDR, (string) $connection->getAddress());
+            $rawContent = $connection->send($request);
 
             $response = $this->responseFactory->create($rawContent, $request);
             if (isset($this->errorHandler) && !$response->isSuccess()) {

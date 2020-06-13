@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server;
 
+use Dotenv\Dotenv;
+use kuiper\annotations\AnnotationReader;
 use kuiper\swoole\exception\ServerStateException;
 use kuiper\swoole\listener\ManagerStartEventListener;
 use kuiper\swoole\listener\StartEventListener;
@@ -17,11 +19,15 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Validator\Validation;
 use Webmozart\Assert\Assert;
-use wenbinye\tars\rpc\middleware\RequestLogMiddleware;
+use wenbinye\tars\client\ConfigServant;
+use wenbinye\tars\rpc\middleware\RequestLog;
+use wenbinye\tars\rpc\middleware\SendStat;
+use wenbinye\tars\rpc\route\Route;
+use wenbinye\tars\rpc\TarsClient;
 use wenbinye\tars\server\listener\WorkerKeepAlive;
 use wenbinye\tars\stat\collector\SystemCpuCollector;
-use wenbinye\tars\stat\StatMiddleware;
 
 class ServerCommand extends Command
 {
@@ -44,15 +50,7 @@ class ServerCommand extends Command
     {
         $action = $input->getArgument('action');
         Assert::oneOf($action, ['start', 'stop'], 'Unknown action \'%s\', expected one of: %s');
-        $configFile = $input->getOption('config');
-        if (!$configFile) {
-            throw new \InvalidArgumentException('config file is required');
-        }
-        if (!is_readable($configFile)) {
-            throw new \InvalidArgumentException("config file '$configFile' is not readable");
-        }
-        Config::parseFile($configFile);
-        $this->addDefaultConfig($input);
+        $this->loadConfig($input);
         try {
             if ('start' === $action) {
                 $this->createContainer()->get(ServerInterface::class)->start();
@@ -101,11 +99,11 @@ class ServerCommand extends Command
                 ],
                 'middleware' => [
                     'client' => [
-                        StatMiddleware::class,
-                        RequestLogMiddleware::class,
+                        SendStat::class,
+                        RequestLog::class,
                     ],
                     'servant' => [
-                        RequestLogMiddleware::class,
+                        RequestLog::class,
                     ],
                 ],
                 'listeners' => [
@@ -120,6 +118,41 @@ class ServerCommand extends Command
         foreach ($input->getOption('define') as $item) {
             $pair = explode('=', $item, 2);
             $config->set($pair[0], $pair[1] ?? null);
+        }
+    }
+
+    protected function loadConfig(InputInterface $input): void
+    {
+        $configFile = $input->getOption('config');
+        if (!$configFile) {
+            throw new \InvalidArgumentException('config file is required');
+        }
+        if (!is_readable($configFile)) {
+            throw new \InvalidArgumentException("config file '$configFile' is not readable");
+        }
+        Config::parseFile($configFile);
+        $this->addDefaultConfig($input);
+        $config = Config::getInstance();
+        $propertyLoader = new PropertyLoader(AnnotationReader::getInstance(), Validation::createValidatorBuilder()->getValidator());
+        $serverProperties = $propertyLoader->loadServerProperties($config);
+        $env = $config->getString('tars.application.server.env_config_file');
+        if ($env) {
+            /** @var ConfigServant $configServant */
+            $configServant = TarsClient::builder()
+                ->setLocator(Route::fromString($config->getString('tars.application.client.locator')))
+                ->createProxy(ConfigServant::class);
+            $ret = $configServant->loadConfig($serverProperties->getApp(), $serverProperties->getServer(), $env, $content);
+            if (0 === $ret) {
+                file_put_contents($serverProperties->getBasePath().'/'.$env, $content);
+            }
+            if (class_exists(Dotenv::class)) {
+                Dotenv::createImmutable($serverProperties->getBasePath(), [$env, '.env'], false)->safeLoad();
+            }
+        }
+        $configFile = $serverProperties->getSourcePath().'/config.php';
+        if (file_exists($configFile)) {
+            /* @noinspection PhpIncludeInspection */
+            $config->merge(require $configFile);
         }
     }
 }

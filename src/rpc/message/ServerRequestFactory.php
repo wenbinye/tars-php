@@ -2,12 +2,15 @@
 
 declare(strict_types=1);
 
-namespace wenbinye\tars\server\rpc;
+namespace wenbinye\tars\rpc\message;
 
 use Psr\Container\ContainerInterface;
 use wenbinye\tars\protocol\PackerInterface;
 use wenbinye\tars\rpc\message\MethodMetadata;
 use wenbinye\tars\rpc\message\MethodMetadataFactoryInterface;
+use wenbinye\tars\rpc\message\ServerRequest;
+use wenbinye\tars\rpc\message\ServerRequestFactoryInterface;
+use wenbinye\tars\rpc\message\ServerRequestInterface;
 use wenbinye\tars\rpc\TarsRpcPacker;
 
 class ServerRequestFactory implements ServerRequestFactoryInterface

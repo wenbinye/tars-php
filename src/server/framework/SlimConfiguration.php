@@ -21,7 +21,9 @@ class SlimConfiguration
     /**
      * @Bean()
      */
-    public function requestHandler(ContainerInterface $container, ServerProperties $serverProperties): RequestHandlerInterface
+    public function requestHandler(
+        ContainerInterface $container,
+        ServerProperties $serverProperties): RequestHandlerInterface
     {
         $app = SlimAppFactory::create($container);
         $routeFile = $serverProperties->getBasePath().'/src/routes.php';
