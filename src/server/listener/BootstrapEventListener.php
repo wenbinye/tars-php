@@ -73,7 +73,7 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
     private function addTarsClientMiddleware(array $middlewares): void
     {
         if (!empty($middlewares)) {
-            $this->logger->info(static::TAG.'enable client middlewares', ['middlewares' => $middlewares]);
+            $this->logger->info(static::TAG.'enable client middlewares '.implode(',', $middlewares));
             $tarsClient = $this->container->get(TarsClientInterface::class);
             foreach ($middlewares as $middlewareId) {
                 $tarsClient->addMiddleware($this->container->get($middlewareId));
@@ -105,7 +105,7 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
     private function addTarsServantMiddleware(array $middlewares): void
     {
         if (!empty($middlewares)) {
-            $this->logger->info(static::TAG.'enable server middlewares', ['middlewares' => $middlewares]);
+            $this->logger->info(static::TAG.'enable server middlewares '.implode(',', $middlewares));
 
             $tarsRequestHandler = $this->container->get(RequestHandlerInterface::class);
             foreach ($middlewares as $middlewareId) {

@@ -86,7 +86,6 @@ class RequestLog implements MiddlewareInterface, LoggerAwareInterface
             '$method' => $request->getFuncName(),
             '$status' => $statusCode,
             '$body_bytes_sent' => $responseBodySize,
-            '$http_x_forwarded_for' => isset($ipList) ? implode(',', $ipList) : '',
             '$request_time' => $time,
         ]);
         $extra = [];

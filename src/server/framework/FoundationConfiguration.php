@@ -22,13 +22,13 @@ use kuiper\di\PropertiesDefinitionSource;
 use kuiper\helper\PropertyResolverInterface;
 use kuiper\logger\LoggerFactory;
 use kuiper\logger\LoggerFactoryInterface;
+use kuiper\swoole\monolog\CoroutineIdProcessor;
 use kuiper\swoole\task\DispatcherInterface;
 use kuiper\swoole\task\Queue;
 use kuiper\swoole\task\QueueInterface;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
-use Monolog\Processor\ProcessIdProcessor;
 use Psr\EventDispatcher\EventDispatcherInterface as PsrEventDispatcher;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
@@ -155,7 +155,7 @@ class FoundationConfiguration implements DefinitionConfiguration
         $handler = new StreamHandler('php://stderr', $loggerLevel);
         $handler->setFormatter($lineFormatter);
         $logger->pushHandler($handler);
-        $logger->pushProcessor(new ProcessIdProcessor());
+        $logger->pushProcessor(new CoroutineIdProcessor());
 
         return $logger;
     }

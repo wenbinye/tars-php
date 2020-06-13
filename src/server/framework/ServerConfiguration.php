@@ -6,6 +6,7 @@ namespace wenbinye\tars\server\framework;
 
 use function DI\autowire;
 use function DI\factory;
+use function DI\get;
 use kuiper\di\annotation\Bean;
 use kuiper\di\annotation\Configuration;
 use kuiper\di\ContainerBuilderAwareTrait;
@@ -15,15 +16,21 @@ use kuiper\swoole\http\HttpMessageFactoryHolder;
 use kuiper\swoole\http\SwooleRequestBridgeInterface;
 use kuiper\swoole\http\SwooleResponseBridge;
 use kuiper\swoole\http\SwooleResponseBridgeInterface;
+use kuiper\swoole\monolog\CoroutineIdProcessor;
 use kuiper\swoole\server\ServerInterface;
 use kuiper\swoole\ServerConfig;
 use kuiper\swoole\ServerFactory;
 use kuiper\swoole\ServerPort;
+use kuiper\web\middleware\AccessLog;
+use Monolog\Formatter\LineFormatter;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use wenbinye\tars\client\PropertyFServant;
 use wenbinye\tars\rpc\message\ServerRequestFactory;
 use wenbinye\tars\rpc\message\ServerRequestFactoryInterface as TarsServerRequestFactoryInterface;
+use wenbinye\tars\rpc\middleware\ServerRequestLog;
 use wenbinye\tars\rpc\server\RequestHandlerInterface;
 use wenbinye\tars\rpc\server\TarsRequestHandler;
 use wenbinye\tars\server\Config;
@@ -51,6 +58,10 @@ class ServerConfiguration implements DefinitionConfiguration
             TarsServerRequestFactoryInterface::class => autowire(ServerRequestFactory::class),
             RequestHandlerInterface::class => autowire(TarsRequestHandler::class),
             SwooleResponseBridgeInterface::class => autowire(SwooleResponseBridge::class),
+            ServerRequestLog::class => autowire()
+                ->method('setLogger', get('accessLogger')),
+            AccessLog::class => autowire()
+                ->method('setLogger', get('accessLogger')),
         ];
     }
 
@@ -110,5 +121,20 @@ class ServerConfiguration implements DefinitionConfiguration
         }
 
         return new Monitor($serverProperties, $propertyFClient, $collectors, $loggerFactory->create(Monitor::class));
+    }
+
+    /**
+     * @Bean()
+     */
+    public function accessLogger(ServerProperties $serverProperties)
+    {
+        $logger = new Logger($serverProperties->getServerName());
+        $logFile = $serverProperties->getAppLogPath().'/access.log';
+        $handler = new StreamHandler($logFile, Logger::INFO);
+        $logger->pushHandler($handler);
+        $handler->setFormatter(new LineFormatter("%message% %extra%\n"));
+        $logger->pushProcessor(new CoroutineIdProcessor());
+
+        return $logger;
     }
 }

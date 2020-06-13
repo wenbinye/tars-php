@@ -40,6 +40,14 @@ class MiddlewareStack implements LoggerAwareInterface
         ]);
     }
 
+    public function withFinalHandler(callable $final): self
+    {
+        $copy = clone $this;
+        $copy->final = $final;
+
+        return $copy;
+    }
+
     public function __invoke(RequestInterface $request): ResponseInterface
     {
         return $this->callNext($request, 0);

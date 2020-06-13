@@ -24,6 +24,7 @@ use Webmozart\Assert\Assert;
 use wenbinye\tars\client\ConfigServant;
 use wenbinye\tars\rpc\middleware\RequestLog;
 use wenbinye\tars\rpc\middleware\SendStat;
+use wenbinye\tars\rpc\middleware\ServerRequestLog;
 use wenbinye\tars\rpc\route\Route;
 use wenbinye\tars\rpc\TarsClient;
 use wenbinye\tars\server\listener\WorkerKeepAlive;
@@ -103,7 +104,7 @@ class ServerCommand extends Command
                         RequestLog::class,
                     ],
                     'servant' => [
-                        RequestLog::class,
+                        ServerRequestLog::class,
                     ],
                 ],
                 'listeners' => [

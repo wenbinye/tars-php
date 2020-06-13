@@ -38,7 +38,7 @@ trait MiddlewareSupport
             $this->middlewareStack = new MiddlewareStack($this->middlewares, $finalHandler, $this->logger);
         }
 
-        return $this->middlewareStack;
+        return $this->middlewareStack->withFinalHandler($finalHandler);
     }
 
     public function setLogger(LoggerInterface $logger): void
