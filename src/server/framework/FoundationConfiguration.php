@@ -42,7 +42,6 @@ use wenbinye\tars\server\ClientProperties;
 use wenbinye\tars\server\Config;
 use wenbinye\tars\server\listener\BootstrapEventListener;
 use wenbinye\tars\server\PropertyLoader;
-use wenbinye\tars\server\Protocol;
 use wenbinye\tars\server\ServerProperties;
 
 /**
@@ -107,18 +106,8 @@ class FoundationConfiguration implements DefinitionConfiguration
      */
     public function serverProperties(PropertyLoader $propertyLoader): ServerProperties
     {
-        $config = Config::getInstance();
-        /** @noinspection PhpUnhandledExceptionInspection */
-        $serverProperties = $propertyLoader->loadServerProperties($config);
-        $protocol = $serverProperties->getPrimaryAdapter()->getProtocol();
-        $config->merge([
-            'application' => [
-                'protocol' => $protocol,
-                'http_protocol' => Protocol::fromValue($protocol)->isHttpProtocol() ? $protocol : null,
-            ],
-        ]);
-
-        return $serverProperties;
+        /* @noinspection PhpUnhandledExceptionInspection */
+        return $propertyLoader->loadServerProperties(Config::getInstance());
     }
 
     /**

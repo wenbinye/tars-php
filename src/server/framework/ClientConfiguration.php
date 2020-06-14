@@ -65,14 +65,14 @@ class ClientConfiguration implements DefinitionConfiguration
     public function getDefinitions(): array
     {
         $definitions = [
-            'registryCache' => autowire(SwooleTableRegistryCache::class),
+            'tarsRegistryCache' => autowire(SwooleTableRegistryCache::class),
             RouteResolverInterface::class => autowire(ChainRouteResolver::class)
                 ->constructor([
                     get(InMemoryRouteResolver::class),
                     get(RegistryRouteResolver::class),
                 ]),
             RegistryRouteResolver::class => autowire()
-                ->constructorParameter(1, get('registryCache')),
+                ->constructorParameter(1, get('tarsRegistryCache')),
             ServerAddressHolderFactoryInterface::class => autowire(ServerAddressHolderFactory::class)
                 ->constructorParameter(1, RoundRobin::class),
             ConnectionFactoryInterface::class => autowire(ConnectionFactory::class),

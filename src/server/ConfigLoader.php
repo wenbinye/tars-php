@@ -79,9 +79,12 @@ class ConfigLoader implements ConfigLoaderInterface
 
     private function addDefaultConfig(Properties $config, InputInterface $input, ServerProperties $serverProperties): void
     {
+        $protocol = $serverProperties->getPrimaryAdapter()->getProtocol();
         $config->merge([
             'application' => [
                 'name' => $serverProperties->getServerName(),
+                'protocol' => $protocol,
+                'http_protocol' => Protocol::fromValue($protocol)->isHttpProtocol() ? $protocol : null,
                 'monitor' => [
                     'collectors' => [
                         SystemCpuCollector::class,
