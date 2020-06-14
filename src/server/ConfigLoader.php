@@ -112,6 +112,10 @@ class ConfigLoader implements ConfigLoaderInterface
                         ServerRequestLog::class => 'AccessLogger',
                         AccessLog::class => 'AccessLogger',
                     ],
+                    'level' => [
+                        'wenbinye\\tars' => 'info',
+                        'kuiper' => 'info',
+                    ],
                 ],
             ],
         ]);
