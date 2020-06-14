@@ -22,8 +22,6 @@ class PoolConnection implements ConnectionInterface
 
     /**
      * AutoReleaseConnection constructor.
-     *
-     * @param ConnectionInterface $connection
      */
     public function __construct(PoolInterface $pool)
     {

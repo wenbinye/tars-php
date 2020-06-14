@@ -98,7 +98,7 @@ class StatEntry
             $head->tarsVersion
             ) = explode('|', $key);
 
-        return new static((int) $index, $head, new StatMicMsgBody());
+        return new self((int) $index, $head, new StatMicMsgBody());
     }
 
     public static function success(int $index, ServerProperties $serverProperties, ResponseInterface $response, int $responseTime): StatEntry
@@ -150,6 +150,6 @@ class StatEntry
         $body->minRspTime = $responseTime;
         $body->maxRspTime = $responseTime;
 
-        return new static($index, $head, $body);
+        return new self($index, $head, $body);
     }
 }

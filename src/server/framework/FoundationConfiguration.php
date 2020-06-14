@@ -25,7 +25,6 @@ use kuiper\logger\LoggerFactoryInterface;
 use kuiper\swoole\task\DispatcherInterface;
 use kuiper\swoole\task\Queue;
 use kuiper\swoole\task\QueueInterface;
-use Monolog\Logger;
 use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface as PsrEventDispatcher;
 use Psr\Log\LoggerAwareInterface;

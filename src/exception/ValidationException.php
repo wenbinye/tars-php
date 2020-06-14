@@ -60,7 +60,7 @@ class ValidationException extends \Exception
      * IMPORTANT error message structure:
      * Each invalid parameter have string with joined all error messages into single message.
      *
-     * @return array array with errors messages
+     * @return string the error message
      */
     public function getFullMessage($delimiter = ': '): string
     {

@@ -128,8 +128,6 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
     /**
      * Helper method to handle connection errors.
      *
-     * @param ErrorCode
-     *
      * @throws CommunicationException
      */
     protected function onConnectionError(ErrorCode $errorCode, string $message = null): void

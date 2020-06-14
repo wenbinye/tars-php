@@ -25,7 +25,6 @@
     "php": "^7.2",
     "ext-json": "*",
     "doctrine/annotations": "^1.8",
-    "php-di/phpdoc-reader": "^2.1",
     "php-di/php-di": "^6.0",
     "psr/container": "^1.0",
     "psr/event-dispatcher": "^1.0",
@@ -43,10 +42,9 @@
     "laminas/laminas-diactoros": "^2.2"
   },
   "require-dev": {
-    "ext-sockets": "*",
     "copyrenzhe/tars-ide-helper": "dev-master",
-    "laravel/lumen-framework": "^7.1",
     "mockery/mockery": "^1.3",
+    "phpstan/phpstan": "^0.12",
     "phpunit/phpunit": "^8.4",
     "slim/slim": "^4.3",
     "swoft/swoole-ide-helper": "^4.4",

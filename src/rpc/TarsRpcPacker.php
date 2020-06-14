@@ -138,7 +138,8 @@ class TarsRpcPacker
                 continue;
             }
             $type = $this->parser->parse($parameter->type, $method->getNamespace());
-            $result[] = new ReturnValue($parameter->name, $data[i], $this->packer->pack($type, $parameter->name, $data[$i], $version));
+            $result[] = new ReturnValue($parameter->name, $data[$i],
+                $this->packer->pack($type, $parameter->name, $data[$i], $version));
         }
 
         return $result;
