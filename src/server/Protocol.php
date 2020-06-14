@@ -14,12 +14,12 @@ use kuiper\swoole\constants\ServerType;
  */
 class Protocol extends Enum
 {
-    const HTTP = 'http';
-    const HTTP2 = 'http2';
-    const WEBSOCKET = 'websocket';
-    const GRPC = 'grpc';
-    const JSONRPC = 'jsonrpc';
-    const TARS = 'tars';
+    public const HTTP = 'http';
+    public const HTTP2 = 'http2';
+    public const WEBSOCKET = 'websocket';
+    public const GRPC = 'grpc';
+    public const JSONRPC = 'jsonrpc';
+    public const TARS = 'tars';
 
     protected static $PROPERTIES = [
         'serverType' => [

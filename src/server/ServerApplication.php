@@ -16,7 +16,9 @@ class ServerApplication
     {
         $app = new Application(self::APP_NAME);
         $command = new ServerCommand();
-        $command->setContainerFactory($containerFactory ?? self::createContainerFactory());
+        $command->setContainerFactory($containerFactory ?? static function () {
+            return ContainerBuilder::create(self::detectBasePath())->build();
+        });
         $app->add($command);
         $app->setDefaultCommand(ServerCommand::COMMAND_NAME, true);
 
@@ -32,14 +34,7 @@ class ServerApplication
         return $app->run();
     }
 
-    private static function createContainerFactory(): callable
-    {
-        return static function () {
-            return ContainerBuilder::create(self::detectBasePath())->build();
-        };
-    }
-
-    private static function detectBasePath(): string
+    public static function detectBasePath(): string
     {
         if (defined('APP_PATH')) {
             $basePath = APP_PATH;

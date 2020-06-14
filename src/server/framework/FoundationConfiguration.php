@@ -22,13 +22,11 @@ use kuiper\di\PropertiesDefinitionSource;
 use kuiper\helper\PropertyResolverInterface;
 use kuiper\logger\LoggerFactory;
 use kuiper\logger\LoggerFactoryInterface;
-use kuiper\swoole\monolog\CoroutineIdProcessor;
 use kuiper\swoole\task\DispatcherInterface;
 use kuiper\swoole\task\Queue;
 use kuiper\swoole\task\QueueInterface;
-use Monolog\Formatter\LineFormatter;
-use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
+use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface as PsrEventDispatcher;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
@@ -135,38 +133,18 @@ class FoundationConfiguration implements DefinitionConfiguration
     /**
      * @Bean()
      */
-    public function logger(ServerProperties $serverProperties): LoggerInterface
+    public function logger(LoggerFactoryInterface $loggerFactory): LoggerInterface
     {
-        $logger = new Logger($serverProperties->getServerName());
-        $loggerLevelName = strtoupper($serverProperties->getLogLevel());
-
-        $loggerLevel = constant(Logger::class.'::'.$loggerLevelName);
-        if (!isset($loggerLevel)) {
-            throw new \InvalidArgumentException("Unknown logger level '{$loggerLevelName}'");
-        }
-
-        $logPath = $serverProperties->getAppLogPath().'/';
-        $logger->pushHandler(new StreamHandler($logPath.$serverProperties->getServerName().'.log', $loggerLevel));
-        $handler = new StreamHandler($logPath.'log_'.strtolower($loggerLevelName).'.log', $loggerLevel);
-        $lineFormatter = new LineFormatter();
-        $lineFormatter->allowInlineLineBreaks();
-        $handler->setFormatter($lineFormatter);
-        $logger->pushHandler($handler);
-        $handler = new StreamHandler('php://stderr', $loggerLevel);
-        $handler->setFormatter($lineFormatter);
-        $logger->pushHandler($handler);
-        $logger->pushProcessor(new CoroutineIdProcessor());
-
-        return $logger;
+        return $loggerFactory->create();
     }
 
     /**
      * @Bean()
-     * @Inject({"logLevels" = "application.logging.level"})
+     * @Inject({"loggingConfig" = "application.logging"})
      */
-    public function loggerFactory(LoggerInterface $logger, ServerProperties $serverProperties, ?array $logLevels): LoggerFactoryInterface
+    public function loggerFactory(ContainerInterface $container, array $loggingConfig): LoggerFactoryInterface
     {
-        return new LoggerFactory($logger, $logLevels ?? [], strtolower($serverProperties->getLogLevel()));
+        return new LoggerFactory($container, $loggingConfig);
     }
 
     /**
