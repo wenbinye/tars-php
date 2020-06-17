@@ -18,9 +18,8 @@ class ClientProperties
     private $asyncThread;
     /**
      * @ConfigItem(factory="wenbinye\tars\rpc\route\Route::fromString")
-     * @Assert\NotNull()
      *
-     * @var Route
+     * @var ?Route
      */
     private $locator;
     /**
@@ -91,7 +90,7 @@ class ClientProperties
         return $this->asyncThread;
     }
 
-    public function getLocator(): Route
+    public function getLocator(): ?Route
     {
         return $this->locator;
     }

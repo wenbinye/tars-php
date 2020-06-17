@@ -74,6 +74,11 @@ class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
      */
     public function process($task): void
     {
+        if (!$this->clientProperties->getLocator()) {
+            $this->logger->debug(static::TAG.'locator is missing, healthy check is disabled');
+
+            return;
+        }
         $this->sendServerInfo();
         $this->server->tick($this->clientProperties->getKeepAliveInterval(), function () {
             $this->sendServerInfo();

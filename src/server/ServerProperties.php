@@ -80,9 +80,7 @@ class ServerProperties
     /**
      * @ConfigItem(factory="wenbinye\tars\rpc\route\Route::fromString")
      *
-     * @Assert\NotNull()
-     *
-     * @var Route
+     * @var ?Route
      */
     private $node;
     /**
@@ -224,7 +222,7 @@ class ServerProperties
         $this->logSize = $logSize;
     }
 
-    public function getNode(): Route
+    public function getNode(): ?Route
     {
         return $this->node;
     }

@@ -103,11 +103,15 @@ class ClientConfiguration implements DefinitionConfiguration
         ClientProperties $clientProperties,
         ServerProperties $serverProperties): InMemoryRouteResolver
     {
-        $factory = new InMemoryRouteResolver();
-        $factory->addRoute($clientProperties->getLocator());
-        $factory->addRoute($serverProperties->getNode());
+        $routeResolver = new InMemoryRouteResolver();
+        if ($clientProperties->getLocator()) {
+            $routeResolver->addRoute($clientProperties->getLocator());
+        }
+        if ($serverProperties->getNode()) {
+            $routeResolver->addRoute($serverProperties->getNode());
+        }
 
-        return $factory;
+        return $routeResolver;
     }
 
     /**

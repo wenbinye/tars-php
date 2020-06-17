@@ -60,7 +60,7 @@ class ErrorCode extends Enum
     public const SERVER_DECODE_ERR = -1; //服务器端解码异常
     public const SERVER_ENCODE_ERR = -2; //服务器端编码异常
     public const SERVER_NO_FUNC_ERR = -3; //服务器端没有该函数
-    public const SERVER_NO_SERVANT_ERR = -4; //服务器端五该Servant对象
+    public const SERVER_NO_SERVANT_ERR = -4; //服务器端无该Servant对象
     public const SERVER_RESET_GRID = -5; //服务器端灰度状态不一致
     public const SERVER_QUEUE_TIMEOUT = -6; //服务器队列超过限制
     public const SERVER_ASYNC_CALL_TIMEOUT = -7; //异步调用超时

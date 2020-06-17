@@ -85,7 +85,7 @@ class ResponsePacket
         if (Tup::VERSION === $version) {
             $parsedBody = \TUPAPI::decodeReqPacket($response);
             $status = isset($parsedBody['status']) && is_array($parsedBody['status']) ? $parsedBody['status'] : [];
-            $returnCode = $status[self::RESULT_CODE] ?? ErrorCode::SERVER_SUCCESS;
+            $returnCode = (int) ($status[self::RESULT_CODE] ?? ErrorCode::SERVER_SUCCESS);
             $resultDesc = $status[self::RESULT_DESC] ?? '';
             unset($status[self::RESULT_DESC], $status[self::RESULT_CODE]);
 
