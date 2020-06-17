@@ -7,6 +7,21 @@ namespace wenbinye\tars\rpc\message;
 interface ResponseInterface extends MessageInterface
 {
     /**
+     * Retrieve the return code.
+     */
+    public function getReturnCode(): int;
+
+    /**
+     * Check whether the request is success.
+     */
+    public function isSuccess(): bool;
+
+    /**
+     * Retrieve the message for the return code.
+     */
+    public function getMessage(): string;
+
+    /**
      * Retrieve the request.
      */
     public function getRequest(): RequestInterface;
@@ -24,26 +39,4 @@ interface ResponseInterface extends MessageInterface
      * @return static
      */
     public function withReturnValues(array $returnValues);
-
-    /**
-     * Retrieve the return code.
-     */
-    public function getReturnCode(): int;
-
-    /**
-     * Check whether the request is success.
-     *
-     * @return int
-     */
-    public function isSuccess(): bool;
-
-    /**
-     * Retrieve the message for the return code.
-     */
-    public function getMessage(): string;
-
-    /**
-     * Retrieve the response payload.
-     */
-    public function getBody(): string;
 }

@@ -6,11 +6,25 @@ namespace wenbinye\tars\rpc\message;
 
 interface ReturnValueInterface
 {
+    /**
+     * Checks the data is return by output parameter.
+     */
     public function isParameter(): bool;
 
-    public function getName(): string;
+    /**
+     * Gets the name of the output parameter.
+     */
+    public function getName(): ?string;
 
+    /**
+     * Gets the php type value.
+     *
+     * @return mixed
+     */
     public function getData();
 
-    public function getPayload(): string;
+    /**
+     * Gets the packet data.
+     */
+    public function getPayload(): ?string;
 }

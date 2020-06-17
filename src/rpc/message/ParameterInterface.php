@@ -24,7 +24,7 @@ interface ParameterInterface
     /**
      * Retrieve the parameter packed data.
      */
-    public function getPayload(): string;
+    public function getPayload(): ?string;
 
     /**
      * Retrieve the parameter original data.

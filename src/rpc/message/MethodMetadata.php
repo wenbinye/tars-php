@@ -37,8 +37,13 @@ class MethodMetadata implements MethodMetadataInterface
     /**
      * MethodMetadata constructor.
      */
-    public function __construct(string $className, string $namespace, string $methodName,
-                                string $servantName, array $parameters, ?TarsReturnType $returnType = null)
+    public function __construct(
+        string $className,
+        string $namespace,
+        string $methodName,
+        string $servantName,
+        array $parameters,
+        ?TarsReturnType $returnType = null)
     {
         $this->className = $className;
         $this->namespace = $namespace;

@@ -6,6 +6,7 @@ namespace wenbinye\tars\server\listener;
 
 use kuiper\event\EventListenerInterface;
 use kuiper\swoole\event\ReceiveEvent;
+use wenbinye\tars\rpc\exception\RequestException;
 use wenbinye\tars\rpc\message\RequestAttribute;
 use wenbinye\tars\rpc\message\ServerRequestFactoryInterface;
 use wenbinye\tars\rpc\server\RequestHandlerInterface;
@@ -37,13 +38,17 @@ class TarsTcpReceiveEventListener implements EventListenerInterface
     {
         // TODO: 会不会有数据包不完整情况？
         $server = $event->getServer();
-        $request = $this->serverRequestFactory->create($event->getData());
-        $connectionInfo = $server->getConnectionInfo($event->getClientId());
-        if ($connectionInfo) {
-            $request = $request->withAttribute(RequestAttribute::CLIENT_IP, $connectionInfo->getRemoteIp());
+        try {
+            $request = $this->serverRequestFactory->create($event->getData());
+            $connectionInfo = $server->getConnectionInfo($event->getClientId());
+            if ($connectionInfo) {
+                $request = $request->withAttribute(RequestAttribute::CLIENT_IP, $connectionInfo->getRemoteIp());
+            }
+            $response = $this->requestHandler->handle($request);
+            $server->send($event->getClientId(), $response->getBody());
+        } catch (RequestException $e) {
+            $server->send($event->getClientId(), $e->toResponseBody());
         }
-        $response = $this->requestHandler->handle($request);
-        $server->send($event->getClientId(), $response->getBody());
     }
 
     public function getSubscribedEvent(): string

@@ -24,6 +24,8 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 use wenbinye\tars\client\PropertyFServant;
 use wenbinye\tars\rpc\message\ServerRequestFactory;
 use wenbinye\tars\rpc\message\ServerRequestFactoryInterface as TarsServerRequestFactoryInterface;
+use wenbinye\tars\rpc\server\DefaultErrorHandler;
+use wenbinye\tars\rpc\server\ErrorHandlerInterface;
 use wenbinye\tars\rpc\server\RequestHandlerInterface;
 use wenbinye\tars\rpc\server\TarsRequestHandler;
 use wenbinye\tars\server\Config;
@@ -50,6 +52,7 @@ class ServerConfiguration implements DefinitionConfiguration
             StatStoreAdapter::class => autowire(SwooleTableStatStore::class),
             TarsServerRequestFactoryInterface::class => autowire(ServerRequestFactory::class),
             RequestHandlerInterface::class => autowire(TarsRequestHandler::class),
+            ErrorHandlerInterface::class => autowire(DefaultErrorHandler::class),
             SwooleResponseBridgeInterface::class => autowire(SwooleResponseBridge::class),
         ];
     }

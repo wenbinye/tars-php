@@ -4,55 +4,111 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc\message;
 
-use wenbinye\tars\rpc\message\RequestInterface;
-use wenbinye\tars\rpc\message\ResponseInterface;
-use wenbinye\tars\rpc\message\ResponseTrait;
-use wenbinye\tars\rpc\message\ReturnValueInterface;
+use wenbinye\tars\rpc\ErrorCode;
+use wenbinye\tars\rpc\message\tup\ResponsePacket;
+use wenbinye\tars\rpc\message\tup\ResponsePacketBuilder;
 
-class ServerResponse implements ResponseInterface
+class ServerResponse extends AbstractResponse
 {
-    use ResponseTrait;
+    /**
+     * @var ResponsePacketBuilder
+     */
+    private $responsePacketBuilder;
 
-    public function __construct(RequestInterface $request, array $returnValues, int $returnCode)
+    public function __construct(RequestInterface $request, array $returnValues)
     {
+        $this->responsePacketBuilder = ResponsePacket::builder();
         $this->request = $request;
+        $this->responsePacketBuilder->setReturnCode(ErrorCode::SERVER_SUCCESS)
+            ->setRequestId($request->getRequestId())
+            ->setVersion($request->getVersion())
+            ->setPacketType($request->getPacketType())
+            ->setMessageType($request->getMessageType());
         $this->returnValues = $returnValues;
-        $this->returnCode = $returnCode;
     }
 
     public function getBody(): string
     {
-        if (self::TUP_VERSION === $this->getVersion()) {
-            return \TUPAPI::encode($this->getVersion(),
-                $this->request->getRequestId(),
-                $this->request->getServantName(),
-                $this->request->getFuncName(),
-                $this->request->getPacketType(),
-                $this->request->getMessageType(),
-                0,
-                [],
-                ['STATUS_RESULT_CODE' => $this->getReturnCode()],
-                $this->getReturnValueArray());
-        }
-
-        return \TUPAPI::encodeRspPacket($this->getVersion(),
-            $this->request->getPacketType(),
-            $this->request->getMessageType(),
-            $this->request->getRequestId(),
-            $this->getReturnCode(),
-            $this->getMessage(),
-            $this->getReturnValueArray(),
-            []);
+        return $this->responsePacketBuilder->build()->pack(
+            $this->request->getServantName(), $this->request->getFuncName(), $this->packReturnValues());
     }
 
-    private function getReturnValueArray(): array
+    private function packReturnValues(): array
     {
         $ret = [];
-        /** @var ReturnValueInterface $returnValue */
         foreach ($this->returnValues as $returnValue) {
-            $ret[$returnValue->getName()] = $returnValue->getPayload();
+            $ret[$returnValue->getName() ?? ''] = $returnValue->getPayload();
         }
 
-        return self::TUP_VERSION === $this->getVersion() ? $ret : array_values($ret);
+        return $this->isCurrentVersion() ? $ret : array_values($ret);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getVersion(): int
+    {
+        return $this->responsePacketBuilder->getVersion();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getPacketType(): int
+    {
+        return $this->responsePacketBuilder->getPacketType();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getMessageType(): int
+    {
+        return $this->responsePacketBuilder->getMessageType();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getRequestId(): int
+    {
+        return $this->responsePacketBuilder->getRequestId();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getStatus(): array
+    {
+        return $this->responsePacketBuilder->getStatus();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getContext(): array
+    {
+        return $this->responsePacketBuilder->getContext();
+    }
+
+    public function getResponsePacketBuilder(): ResponsePacketBuilder
+    {
+        return $this->responsePacketBuilder;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getReturnCode(): int
+    {
+        return $this->responsePacketBuilder->getReturnCode();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getMessage(): string
+    {
+        return $this->responsePacketBuilder->getResultDesc();
     }
 }

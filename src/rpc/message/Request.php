@@ -4,77 +4,38 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc\message;
 
-class Request implements RequestInterface
+use wenbinye\tars\rpc\message\tup\RequestPacket;
+use wenbinye\tars\rpc\message\tup\RequestPacketBuilder;
+
+class Request extends AbstractRequest
 {
-    use RequestTrait;
-
     /**
-     * @var array
+     * @var RequestPacketBuilder
      */
-    private $context;
+    private $requestPacketBuilder;
 
-    /**
-     * @var array
-     */
-    private $status;
-
-    /**
-     * Request constructor.
-     */
-    public function __construct($servant, MethodMetadataInterface $methodMetadata,
-                                int $requestId,
-                                array $parameters,
-                                int $timeout = self::DEFAULT_TIMEOUT,
-                                array $context = [],
-                                array $status = [],
-                                int $version = self::TUP_VERSION,
-                                int $packetType = self::PACKET_TYPE,
-                                int $messageType = self::MESSAGE_TYPE)
+    public function __construct(
+        int $requestId,
+        $servant,
+        MethodMetadataInterface $methodMetadata,
+        array $parameters)
     {
         $this->servant = $servant;
         $this->methodMetadata = $methodMetadata;
-        $this->requestId = $requestId;
         $this->parameters = $parameters;
-        $this->timeout = $timeout;
-        $this->context = $context;
-        $this->status = $status;
-        $this->version = $version;
-        $this->packetType = $packetType;
-        $this->messageType = $messageType;
+        $this->requestPacketBuilder = RequestPacket::builder();
+        $this->requestPacketBuilder->setRequestId($requestId)
+            ->setServantName($methodMetadata->getServantName())
+            ->setFuncName($methodMetadata->getMethodName());
     }
 
-    public function getContext(): array
-    {
-        return $this->context;
-    }
-
-    public function withContext(array $context)
-    {
-        $new = clone $this;
-        $new->context = $context;
-
-        return $new;
-    }
-
-    public function getStatus(): array
-    {
-        return $this->status;
-    }
-
-    public function withStatus(array $status)
-    {
-        $new = clone $this;
-        $new->status = $status;
-
-        return $new;
-    }
-
-    private function getParameterArray(): array
+    private function packParameters(): array
     {
         $ret = [];
         /** @var ParameterInterface $parameter */
         foreach ($this->parameters as $parameter) {
-            $ret[self::TARS_VERSION === $this->version ? $parameter->getOrder() : $parameter->getName()] = $parameter->getPayload();
+            $key = $this->isCurrentVersion() ? $parameter->getName() : $parameter->getOrder();
+            $ret[$key] = $parameter->getPayload();
         }
 
         return $ret;
@@ -83,10 +44,92 @@ class Request implements RequestInterface
     public function getBody(): string
     {
         return \TUPAPI::encode(
-            $this->version, $this->requestId,
-            $this->getServantName(), $this->getFuncName(),
-            $this->packetType, $this->messageType,
-            $this->timeout, $this->context, $this->status,
-            $this->getParameterArray());
+            $this->requestPacketBuilder->getVersion(),
+            $this->requestPacketBuilder->getRequestId(),
+            $this->requestPacketBuilder->getServantName(),
+            $this->requestPacketBuilder->getFuncName(),
+            $this->requestPacketBuilder->getPacketType(),
+            $this->requestPacketBuilder->getMessageType(),
+            $this->requestPacketBuilder->getTimeout(),
+            $this->requestPacketBuilder->getContext(),
+            $this->requestPacketBuilder->getStatus(),
+            $this->packParameters());
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getVersion(): int
+    {
+        return $this->requestPacketBuilder->getVersion();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getPacketType(): int
+    {
+        return $this->requestPacketBuilder->getPacketType();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getMessageType(): int
+    {
+        return $this->requestPacketBuilder->getMessageType();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getRequestId(): int
+    {
+        return $this->requestPacketBuilder->getRequestId();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getStatus(): array
+    {
+        return $this->requestPacketBuilder->getStatus();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getContext(): array
+    {
+        return $this->requestPacketBuilder->getContext();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getServantName(): string
+    {
+        return $this->requestPacketBuilder->getServantName();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getFuncName(): string
+    {
+        return $this->requestPacketBuilder->getFuncName();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getTimeout(): int
+    {
+        return $this->requestPacketBuilder->getTimeout();
+    }
+
+    public function getRequestPacketBuilder(): RequestPacketBuilder
+    {
+        return $this->requestPacketBuilder;
     }
 }

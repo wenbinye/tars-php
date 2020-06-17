@@ -8,12 +8,10 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use wenbinye\tars\protocol\PackerInterface;
-use wenbinye\tars\rpc\ErrorCode;
 use wenbinye\tars\rpc\message\ParameterInterface;
 use wenbinye\tars\rpc\message\ResponseInterface;
 use wenbinye\tars\rpc\message\ServerRequestInterface;
 use wenbinye\tars\rpc\message\ServerResponse;
-use wenbinye\tars\rpc\middleware\MiddlewareInterface;
 use wenbinye\tars\rpc\MiddlewareSupport;
 use wenbinye\tars\rpc\TarsRpcPacker;
 
@@ -24,17 +22,17 @@ class TarsRequestHandler implements RequestHandlerInterface, LoggerAwareInterfac
     /**
      * @var TarsRpcPacker
      */
-    private $packer;
-
+    private $tarsRpcPacker;
     /**
-     * TarsRequestHandler constructor.
-     *
-     * @param MiddlewareInterface[] $middlewares
+     * @var ErrorHandlerInterface|null
      */
-    public function __construct(PackerInterface $packer, ?LoggerInterface $logger, array $middlewares = [])
+    private $errorHandler;
+
+    public function __construct(PackerInterface $packer, ErrorHandlerInterface $errorHandler, ?LoggerInterface $logger, array $middlewares = [])
     {
-        $this->packer = new TarsRpcPacker($packer);
+        $this->tarsRpcPacker = new TarsRpcPacker($packer);
         $this->setLogger($logger ?? new NullLogger());
+        $this->errorHandler = $errorHandler;
         $this->middlewares = $middlewares;
     }
 
@@ -45,18 +43,17 @@ class TarsRequestHandler implements RequestHandlerInterface, LoggerAwareInterfac
 
     public function invoke(ServerRequestInterface $request): ResponseInterface
     {
-        if (null === $request->getServant()) {
-            return new ServerResponse($request, [], ErrorCode::SERVER_NO_SERVANT_ERR);
-        }
-        if (empty($request->getMethod()->getMethodName())) {
-            return new ServerResponse($request, [], ErrorCode::SERVER_NO_FUNC_ERR);
-        }
         $parameters = array_map(static function (ParameterInterface $parameter) {
             return $parameter->isOut() ? null : $parameter->getData();
         }, $request->getParameters());
-        $parameters[] = call_user_func_array([$request->getServant(), $request->getFuncName()], $parameters);
+        try {
+            $parameters[] = call_user_func_array([$request->getServant(), $request->getFuncName()], $parameters);
 
-        return new ServerResponse($request, $this->packer->packResponse($request->getMethod(), $parameters, $request->getVersion()),
-            ErrorCode::SERVER_SUCCESS);
+            return new ServerResponse(
+                $request,
+                $this->tarsRpcPacker->packResponse($request->getMethod(), $parameters, $request->getVersion()));
+        } catch (\Exception $e) {
+            return $this->errorHandler->handle($request, $e);
+        }
     }
 }

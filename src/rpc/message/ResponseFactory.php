@@ -6,6 +6,7 @@ namespace wenbinye\tars\rpc\message;
 
 use wenbinye\tars\protocol\PackerInterface;
 use wenbinye\tars\rpc\ErrorCode;
+use wenbinye\tars\rpc\message\tup\ResponsePacket;
 use wenbinye\tars\rpc\TarsRpcPacker;
 
 class ResponseFactory implements ResponseFactoryInterface
@@ -22,17 +23,19 @@ class ResponseFactory implements ResponseFactoryInterface
 
     public function create(string $response, RequestInterface $request): ResponseInterface
     {
-        $parsedBody = \TUPAPI::decode($response, $request->getVersion());
-        if (isset($parsedBody['iRequestId']) && $parsedBody['iRequestId'] !== $request->getRequestId()) {
-            throw new \InvalidArgumentException("request id not match, got {$parsedBody['iRequestId']}, expected ".$request->getRequestId());
+        $responsePacket = ResponsePacket::parse($response, $request->getVersion());
+        $requestId = $responsePacket->getRequestId();
+        if ($requestId > 0 && $requestId !== $request->getRequestId()) {
+            throw new \InvalidArgumentException("request id not match, got {$requestId}, expected ".$request->getRequestId());
         }
-        $returnCode = $parsedBody['iRet'] ?? ErrorCode::UNKNOWN;
         $returnValues = [];
-
-        if (ErrorCode::SERVER_SUCCESS === $returnCode) {
-            $returnValues = $this->packer->unpackResponse($request->getMethod(), $parsedBody['sBuffer'], $request->getVersion());
+        if (ErrorCode::SERVER_SUCCESS === $responsePacket->getResultCode()) {
+            $returnValues = $this->packer->unpackResponse(
+                $request->getMethod(),
+                $responsePacket->getBuffer(),
+                $responsePacket->getVersion());
         }
 
-        return new Response($request, $response, $returnCode, $returnValues);
+        return new Response($responsePacket, $request, $returnValues);
     }
 }

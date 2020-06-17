@@ -6,11 +6,9 @@ namespace wenbinye\tars\rpc\message;
 
 use Psr\Container\ContainerInterface;
 use wenbinye\tars\protocol\PackerInterface;
-use wenbinye\tars\rpc\message\MethodMetadata;
-use wenbinye\tars\rpc\message\MethodMetadataFactoryInterface;
-use wenbinye\tars\rpc\message\ServerRequest;
-use wenbinye\tars\rpc\message\ServerRequestFactoryInterface;
-use wenbinye\tars\rpc\message\ServerRequestInterface;
+use wenbinye\tars\rpc\ErrorCode;
+use wenbinye\tars\rpc\exception\RequestException;
+use wenbinye\tars\rpc\message\tup\RequestPacket;
 use wenbinye\tars\rpc\TarsRpcPacker;
 
 class ServerRequestFactory implements ServerRequestFactoryInterface
@@ -32,10 +30,11 @@ class ServerRequestFactory implements ServerRequestFactoryInterface
      */
     private $servants;
 
-    /**
-     * ServerRequestFactory constructor.
-     */
-    public function __construct(ContainerInterface $container, PackerInterface $packer, MethodMetadataFactoryInterface $methodMetadataFactory, array $servants = [])
+    public function __construct(
+        ContainerInterface $container,
+        PackerInterface $packer,
+        MethodMetadataFactoryInterface $methodMetadataFactory,
+        array $servants = [])
     {
         $this->container = $container;
         $this->packer = new TarsRpcPacker($packer);
@@ -50,20 +49,18 @@ class ServerRequestFactory implements ServerRequestFactoryInterface
 
     public function create(string $requestBody): ServerRequestInterface
     {
-        $unpackResult = \TUPAPI::decodeReqPacket($requestBody);
-        $servantInterface = $this->servants[$unpackResult['sServantName']] ?? null;
-        $version = $unpackResult['iVersion'];
-        $requestId = $unpackResult['iRequestId'];
+        $requestPacket = RequestPacket::parse($requestBody);
+        $servantInterface = $this->servants[$requestPacket->getServantName()] ?? null;
         if (!isset($servantInterface) || !$this->container->has($servantInterface)) {
-            return new ServerRequest(null, MethodMetadata::dummy(), $requestBody, [], $version, $requestId);
+            throw new RequestException($requestPacket, 'Unknown servant '.$requestPacket->getServantName(), ErrorCode::SERVER_NO_SERVANT_ERR);
         }
         $servant = $this->container->get($servantInterface);
-        if (!method_exists($servant, $unpackResult['sFuncName'])) {
-            return new ServerRequest($servant, MethodMetadata::dummy(), $requestBody, [], $version, $requestId);
+        if (!method_exists($servant, $requestPacket->getFuncName())) {
+            throw new RequestException($requestPacket, 'Unknown function '.$requestPacket->getServantName().'::'.$requestPacket->getFuncName(), ErrorCode::SERVER_NO_FUNC_ERR);
         }
-        $methodMetadata = $this->methodMetadataFactory->create($servant, $unpackResult['sFuncName']);
-        $parameters = $this->packer->unpackRequest($methodMetadata, $unpackResult['sBuffer'], $version);
+        $methodMetadata = $this->methodMetadataFactory->create($servant, $requestPacket->getFuncName());
+        $parameters = $this->packer->unpackRequest($methodMetadata, $requestPacket->getBuffer(), $requestPacket->getVersion());
 
-        return new ServerRequest($servant, $methodMetadata, $requestBody, $parameters, $version, $requestId);
+        return new ServerRequest($servant, $methodMetadata, $requestPacket, $parameters);
     }
 }

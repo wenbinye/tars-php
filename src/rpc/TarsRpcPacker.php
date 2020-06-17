@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc;
 
+use wenbinye\tars\protocol\exception\SyntaxErrorException;
 use wenbinye\tars\protocol\PackerInterface;
 use wenbinye\tars\protocol\TypeParser;
-use wenbinye\tars\rpc\message\MethodMetadata;
 use wenbinye\tars\rpc\message\MethodMetadataInterface;
 use wenbinye\tars\rpc\message\Parameter;
 use wenbinye\tars\rpc\message\ParameterInterface;
@@ -25,9 +25,6 @@ class TarsRpcPacker
      */
     private $parser;
 
-    /**
-     * RpcPacker constructor.
-     */
     public function __construct(PackerInterface $packer)
     {
         $this->packer = $packer;
@@ -35,24 +32,26 @@ class TarsRpcPacker
     }
 
     /**
-     * Pack request parameters.
-     *
-     * @param MethodMetadata $method
+     * Pack client request parameters.
      *
      * @return ParameterInterface[]
      *
-     * @throws \wenbinye\tars\protocol\exception\SyntaxErrorException
+     * @throws SyntaxErrorException
      */
     public function packRequest(MethodMetadataInterface $method, array $parameters, int $version): array
     {
         $paramObjs = [];
-        foreach ($method->getParameters() as $i => $parameter) {
+        foreach ($method->getParameters() as $order => $parameter) {
             if ($parameter->out) {
                 continue;
             }
-            $data = $parameters[$i] ?? null;
+            $data = $parameters[$order] ?? null;
             $type = $this->parser->parse($parameter->type, $method->getNamespace());
-            $paramObjs[] = new Parameter($i, $parameter->name, false, $data,
+            $paramObjs[] = new Parameter(
+                $order,
+                $parameter->name,
+                false,
+                $data,
                 $this->packer->pack($type, $parameter->name, $data, $version));
         }
 
@@ -60,11 +59,11 @@ class TarsRpcPacker
     }
 
     /**
-     * @param MethodMetadata $method
+     * Extracts client response result.
      *
      * @return ReturnValueInterface[]
      *
-     * @throws \wenbinye\tars\protocol\exception\SyntaxErrorException
+     * @throws SyntaxErrorException
      */
     public function unpackResponse(MethodMetadataInterface $method, string $data, int $version): array
     {
@@ -74,13 +73,18 @@ class TarsRpcPacker
                 continue;
             }
             $type = $this->parser->parse($parameter->type, $method->getNamespace());
-            $result[] = new ReturnValue($parameter->name,
-                $this->packer->unpack($type, $parameter->name, $data, $version), '');
+            $result[] = new ReturnValue(
+                $parameter->name,
+                $this->packer->unpack($type, $parameter->name, $data, $version),
+                null);
         }
         if (null !== $method->getReturnType()) {
             $type = $this->parser->parse($method->getReturnType()->type, $method->getNamespace());
             if (!$type->isVoid()) {
-                $result[] = new ReturnValue('', $this->packer->unpack($type, '', $data, $version), '');
+                $result[] = new ReturnValue(
+                    null,
+                    $this->packer->unpack($type, '', $data, $version),
+                    null);
             }
         }
 
@@ -88,40 +92,40 @@ class TarsRpcPacker
     }
 
     /**
-     * Unpack request parameters.
-     *
-     * @param MethodMetadata $method
+     * Unpack server request parameters.
      *
      * @return ParameterInterface[]
      *
-     * @throws \wenbinye\tars\protocol\exception\SyntaxErrorException
+     * @throws SyntaxErrorException
      */
     public function unpackRequest(MethodMetadataInterface $method, string $data, int $version): array
     {
         $parameters = [];
-        foreach ($method->getParameters() as $i => $parameter) {
-            if ($parameter->out) {
-                $parameters[] = new Parameter($parameter->order ?? $i, $parameter->name, true, null, '');
-            } else {
+        foreach ($method->getParameters() as $order => $parameter) {
+            $paramData = null;
+            if (!$parameter->out) {
                 $type = $this->parser->parse($parameter->type, $method->getNamespace());
                 $paramData = $this->packer->unpack($type, $parameter->name, $data, $version);
-
-                $parameters[] = new Parameter($parameter->order ?? $i, $parameter->name, false, $paramData, '');
             }
+            $parameters[] = new Parameter(
+                $parameter->order ?? $order,
+                $parameter->name,
+                $parameter->out ?? false,
+                $paramData,
+                null);
         }
 
         return $parameters;
     }
 
     /**
-     * Pack server response.
+     * Generates server response.
      *
-     * @param MethodMetadata $method
-     * @param array          $data   method parameters and return value
+     * @param array $data method parameters and return value
      *
      * @return ReturnValueInterface[] return packed output value array
      *
-     * @throws \wenbinye\tars\protocol\exception\SyntaxErrorException
+     * @throws SyntaxErrorException
      */
     public function packResponse(MethodMetadataInterface $method, array $data, int $version): array
     {
@@ -130,7 +134,10 @@ class TarsRpcPacker
             $type = $this->parser->parse($method->getReturnType()->type, $method->getNamespace());
             if (!$type->isVoid()) {
                 $ret = end($data);
-                $result[] = new ReturnValue('', $ret, $this->packer->pack($type, '', $ret, $version));
+                $result[] = new ReturnValue(
+                    null,
+                    $ret,
+                    $this->packer->pack($type, '', $ret, $version));
             }
         }
         foreach ($method->getParameters() as $i => $parameter) {
@@ -138,7 +145,9 @@ class TarsRpcPacker
                 continue;
             }
             $type = $this->parser->parse($parameter->type, $method->getNamespace());
-            $result[] = new ReturnValue($parameter->name, $data[$i],
+            $result[] = new ReturnValue(
+                $parameter->name,
+                $data[$i],
                 $this->packer->pack($type, $parameter->name, $data[$i], $version));
         }
 

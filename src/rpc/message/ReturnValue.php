@@ -7,7 +7,7 @@ namespace wenbinye\tars\rpc\message;
 class ReturnValue implements ReturnValueInterface
 {
     /**
-     * @var string
+     * @var ?string
      */
     private $name;
     /**
@@ -15,18 +15,18 @@ class ReturnValue implements ReturnValueInterface
      */
     private $data;
     /**
-     * @var string
+     * @var ?string
      */
     private $payload;
 
-    public function __construct(string $name, $data, string $payload)
+    public function __construct(?string $name, $data, ?string $payload)
     {
         $this->name = $name;
         $this->data = $data;
         $this->payload = $payload;
     }
 
-    public function getName(): string
+    public function getName(): ?string
     {
         return $this->name;
     }
@@ -39,7 +39,7 @@ class ReturnValue implements ReturnValueInterface
         return $this->data;
     }
 
-    public function getPayload(): string
+    public function getPayload(): ?string
     {
         return $this->payload;
     }

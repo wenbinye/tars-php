@@ -23,11 +23,11 @@ class Parameter implements ParameterInterface
      */
     private $data;
     /**
-     * @var string
+     * @var ?string
      */
     private $payload;
 
-    public function __construct(int $order, string $name, bool $out, $data, string $payload)
+    public function __construct(int $order, string $name, bool $out, $data, ?string $payload)
     {
         $this->order = $order;
         $this->name = $name;
@@ -51,15 +51,12 @@ class Parameter implements ParameterInterface
         return $this->out;
     }
 
-    /**
-     * @return mixed
-     */
     public function getData()
     {
         return $this->data;
     }
 
-    public function getPayload(): string
+    public function getPayload(): ?string
     {
         return $this->payload;
     }

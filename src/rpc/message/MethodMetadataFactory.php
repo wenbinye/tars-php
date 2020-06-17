@@ -76,8 +76,13 @@ class MethodMetadataFactory implements MethodMetadataFactoryInterface
                 }
             }
 
-            return new MethodMetadata($interface->getName(), $interface->getNamespaceName(), $method,
-                $servantAnnotation->name, $parameters, $returnType);
+            return new MethodMetadata(
+                $interface->getName(),
+                $interface->getNamespaceName(),
+                $method,
+                $servantAnnotation->name,
+                $parameters,
+                $returnType);
         }
         throw new InvalidMethodException(sprintf("%s does not contain valid method definition, check it's interfaces should annotated with @TarsServant", get_class($servant)));
     }

@@ -5,57 +5,33 @@ declare(strict_types=1);
 namespace wenbinye\tars\rpc\message;
 
 use wenbinye\tars\rpc\ErrorCode;
+use wenbinye\tars\rpc\message\tup\Tup;
 
-trait ResponseTrait
+abstract class AbstractResponse implements ResponseInterface
 {
-    /**
-     * @var string
-     */
-    private $body;
-
     /**
      * @var RequestInterface
      */
-    private $request;
-
-    /**
-     * @var int
-     */
-    private $returnCode;
+    protected $request;
 
     /**
      * @var ReturnValueInterface[]
      */
-    private $returnValues;
+    protected $returnValues;
 
     public function getRequest(): RequestInterface
     {
         return $this->request;
     }
 
-    public function getVersion(): int
+    public function isCurrentVersion(): bool
     {
-        return $this->request->getVersion();
-    }
-
-    public function getBody(): string
-    {
-        return $this->body;
-    }
-
-    public function getReturnCode(): int
-    {
-        return $this->returnCode;
+        return $this->getVersion() === Tup::VERSION;
     }
 
     public function isSuccess(): bool
     {
         return ErrorCode::SERVER_SUCCESS === $this->getReturnCode();
-    }
-
-    public function getMessage(): string
-    {
-        return ErrorCode::fromValue($this->getReturnCode(), ErrorCode::UNKNOWN)->message;
     }
 
     public function getReturnValues(): array

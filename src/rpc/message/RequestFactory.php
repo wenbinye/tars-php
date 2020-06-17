@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace wenbinye\tars\rpc\message;
 
 use wenbinye\tars\protocol\PackerInterface;
+use wenbinye\tars\rpc\message\tup\Tup;
 use wenbinye\tars\rpc\TarsRpcPacker;
 
 class RequestFactory implements RequestFactoryInterface
@@ -16,12 +17,11 @@ class RequestFactory implements RequestFactoryInterface
     /**
      * @var TarsRpcPacker
      */
-    private $packer;
+    private $tarsRpcPacker;
     /**
      * @var RequestIdGeneratorInterface
      */
     private $requestIdGenerator;
-
     /**
      * @var int
      */
@@ -39,19 +39,17 @@ class RequestFactory implements RequestFactoryInterface
      */
     private $timeout;
 
-    /**
-     * RequestFactory constructor.
-     */
-    public function __construct(MethodMetadataFactoryInterface $methodMetadataFactory,
-                                PackerInterface $packer,
-                                RequestIdGeneratorInterface $requestIdGenerator,
-                                int $timeout = RequestInterface::DEFAULT_TIMEOUT,
-                                int $version = RequestInterface::TUP_VERSION,
-                                int $packetType = RequestInterface::PACKET_TYPE,
-                                int $messageType = RequestInterface::MESSAGE_TYPE)
+    public function __construct(
+        MethodMetadataFactoryInterface $methodMetadataFactory,
+        PackerInterface $packer,
+        RequestIdGeneratorInterface $requestIdGenerator,
+        int $timeout = Tup::TIMEOUT,
+        int $version = Tup::VERSION,
+        int $packetType = Tup::PACKET_TYPE,
+        int $messageType = Tup::MESSAGE_TYPE)
     {
         $this->methodMetadataFactory = $methodMetadataFactory;
-        $this->packer = new TarsRpcPacker($packer);
+        $this->tarsRpcPacker = new TarsRpcPacker($packer);
         $this->requestIdGenerator = $requestIdGenerator;
         $this->version = $version;
         $this->packetType = $packetType;
@@ -82,10 +80,19 @@ class RequestFactory implements RequestFactoryInterface
     public function createRequest($servant, string $method, array $parameters): RequestInterface
     {
         $methodMetadata = $this->methodMetadataFactory->create($servant, $method);
-        $parameters = $this->packer->packRequest($methodMetadata, $parameters, $this->version);
+        $parameters = $this->tarsRpcPacker->packRequest($methodMetadata, $parameters, $this->version);
 
-        return new Request($servant, $methodMetadata, $this->requestIdGenerator->generate(),
-            $parameters, $this->timeout, [], [],
-            $this->version, $this->packetType, $this->messageType);
+        $request = new Request(
+            $this->requestIdGenerator->generate(),
+            $servant,
+            $methodMetadata,
+            $parameters);
+        $request->getRequestPacketBuilder()
+            ->setVersion($this->version)
+            ->setPacketType($this->packetType)
+            ->setMessageType($this->messageType)
+            ->setTimeout($this->timeout);
+
+        return $request;
     }
 }

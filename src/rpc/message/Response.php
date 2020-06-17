@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc\message;
 
+use wenbinye\tars\rpc\ErrorCode;
+use wenbinye\tars\rpc\message\tup\ResponsePacket;
+
 /**
  * version=3 TUPAPI::decode 返回：
  * ```
@@ -33,18 +36,93 @@ namespace wenbinye\tars\rpc\message;
  *
  * Class Response
  */
-class Response implements ResponseInterface
+class Response extends AbstractResponse
 {
-    use ResponseTrait;
+    /**
+     * @var ResponsePacket
+     */
+    private $responsePacket;
 
     /**
      * Response constructor.
      */
-    public function __construct(RequestInterface $request, string $body, int $returnCode, array $returnValues)
+    public function __construct(ResponsePacket $responsePacket, RequestInterface $request, array $returnValues)
     {
-        $this->body = $body;
+        $this->responsePacket = $responsePacket;
         $this->request = $request;
-        $this->returnCode = $returnCode;
         $this->returnValues = $returnValues;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getVersion(): int
+    {
+        return $this->responsePacket->getVersion();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getPacketType(): int
+    {
+        return $this->responsePacket->getPacketType();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getMessageType(): int
+    {
+        return $this->responsePacket->getMessageType();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getRequestId(): int
+    {
+        return $this->responsePacket->getRequestId();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getBody(): string
+    {
+        return $this->responsePacket->getBuffer();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getReturnCode(): int
+    {
+        return $this->responsePacket->getResultCode();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getMessage(): string
+    {
+        return $this->responsePacket->getResultDesc()
+            ?: ErrorCode::fromValue($this->responsePacket->getResultCode(), ErrorCode::UNKNOWN)->message;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getStatus(): array
+    {
+        return $this->responsePacket->getStatus();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getContext(): array
+    {
+        return $this->responsePacket->getContext();
     }
 }

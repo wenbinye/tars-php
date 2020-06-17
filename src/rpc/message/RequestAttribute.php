@@ -6,11 +6,11 @@ namespace wenbinye\tars\rpc\message;
 
 class RequestAttribute
 {
-    public const CLIENT_IP = '__ip__';
+    public const CLIENT_IP = '__IP';
 
-    public const SERVER_ADDR = '__addr__';
+    public const SERVER_ADDR = '__ADDR';
 
-    public const TIME = '__time__';
+    public const TIME = '__TIME';
 
     public static function getRemoteAddress(RequestInterface $request): ?string
     {
