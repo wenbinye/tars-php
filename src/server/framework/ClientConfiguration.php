@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server\framework;
 
+use DI\Annotation\Inject;
 use function DI\autowire;
 use function DI\factory;
 use function DI\get;
@@ -33,6 +34,7 @@ use wenbinye\tars\rpc\message\ResponseFactoryInterface;
 use wenbinye\tars\rpc\route\ChainRouteResolver;
 use wenbinye\tars\rpc\route\InMemoryRouteResolver;
 use wenbinye\tars\rpc\route\RegistryRouteResolver;
+use wenbinye\tars\rpc\route\Route;
 use wenbinye\tars\rpc\route\RouteResolverInterface;
 use wenbinye\tars\rpc\route\ServerAddressHolderFactory;
 use wenbinye\tars\rpc\route\ServerAddressHolderFactoryInterface;
@@ -98,10 +100,12 @@ class ClientConfiguration implements DefinitionConfiguration
 
     /**
      * @Bean
+     * @Inject({"routeList" = "application.tars.route_list"})
      */
     public function inMemoryRouteResolver(
         ClientProperties $clientProperties,
-        ServerProperties $serverProperties): InMemoryRouteResolver
+        ServerProperties $serverProperties,
+        ?array $routeList): InMemoryRouteResolver
     {
         $routeResolver = new InMemoryRouteResolver();
         if ($clientProperties->getLocator()) {
@@ -109,6 +113,11 @@ class ClientConfiguration implements DefinitionConfiguration
         }
         if ($serverProperties->getNode()) {
             $routeResolver->addRoute($serverProperties->getNode());
+        }
+        if ($routeList) {
+            foreach ($routeList as $route) {
+                $routeResolver->addRoute(Route::fromString($route));
+            }
         }
 
         return $routeResolver;
