@@ -20,6 +20,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Validator\Validation;
 use wenbinye\tars\client\ConfigServant;
 use wenbinye\tars\rpc\middleware\RequestLog;
+use wenbinye\tars\rpc\middleware\Retry;
 use wenbinye\tars\rpc\middleware\SendStat;
 use wenbinye\tars\rpc\middleware\ServerRequestLog;
 use wenbinye\tars\rpc\route\Route;
@@ -92,8 +93,9 @@ class ConfigLoader implements ConfigLoaderInterface
                 ],
                 'middleware' => [
                     'client' => [
-                        SendStat::class,
                         RequestLog::class,
+                        SendStat::class,
+                        Retry::class,
                     ],
                     'web' => [
                         AccessLog::class,

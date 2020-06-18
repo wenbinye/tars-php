@@ -17,8 +17,8 @@ abstract class CommunicationException extends \Exception
         ConnectionInterface $connection,
         $message = null,
         $code = null,
-        \Exception $cause = null
-    ) {
+        \Exception $cause = null)
+    {
         parent::__construct($message, $code, $cause);
         $this->connection = $connection;
     }
@@ -46,14 +46,12 @@ abstract class CommunicationException extends \Exception
      *
      * @throws CommunicationException
      */
-    public static function handle(CommunicationException $exception)
+    public static function handle(CommunicationException $exception): void
     {
         if ($exception->shouldResetConnection()) {
             $connection = $exception->getConnection();
 
-            if ($connection->isConnected()) {
-                $connection->disconnect();
-            }
+            $connection->reconnect();
         }
 
         throw $exception;

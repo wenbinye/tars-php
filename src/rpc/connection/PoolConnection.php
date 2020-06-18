@@ -30,7 +30,7 @@ class PoolConnection implements ConnectionInterface
 
     private function getConnection(): ConnectionInterface
     {
-        if (!$this->connection) {
+        if (!$this->isConnected()) {
             $this->connection = $this->pool->take();
         }
 
@@ -54,6 +54,14 @@ class PoolConnection implements ConnectionInterface
             $this->pool->release($this->connection);
             unset($this->connection);
         }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function reconnect(): void
+    {
+        $this->getConnection()->reconnect();
     }
 
     /**

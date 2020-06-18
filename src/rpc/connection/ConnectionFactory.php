@@ -80,9 +80,9 @@ class ConnectionFactory implements ConnectionFactoryInterface, LoggerAwareInterf
 
     private function getConnectionFactory(string $servantName): callable
     {
-        return function () use ($servantName) {
+        return function ($connId) use ($servantName) {
             $connectionClass = Coroutine::isEnabled() ? SwooleCoroutineTcpConnection::class : SwooleTcpConnection::class;
-            $this->logger->debug(static::TAG.'create connection instance of '.$connectionClass);
+            $this->logger->info(static::TAG."create connection $servantName#$connId", ['class' => $connectionClass]);
             $routeHolder = $this->serverAddressHolderFactory->create($servantName);
             /** @var ConnectionInterface $conn */
             $conn = new $connectionClass($routeHolder, $this->logger);

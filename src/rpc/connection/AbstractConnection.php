@@ -11,6 +11,7 @@ use Psr\Log\NullLogger;
 use wenbinye\tars\rpc\ErrorCode;
 use wenbinye\tars\rpc\exception\CommunicationException;
 use wenbinye\tars\rpc\exception\ConnectionException;
+use wenbinye\tars\rpc\exception\RetryableException;
 use wenbinye\tars\rpc\message\RequestInterface;
 use wenbinye\tars\rpc\route\RefreshableServerAddressHolderInterface;
 use wenbinye\tars\rpc\route\ServerAddress;
@@ -19,6 +20,8 @@ use wenbinye\tars\rpc\route\ServerAddressHolderInterface;
 abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
+
+    private const RETRYABLE_ERRORS = [ErrorCode::TARS_SOCKET_CLOSED];
 
     /**
      * @var mixed
@@ -88,6 +91,14 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
         unset($this->resource);
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function reconnect(): void
+    {
+        $this->disconnect();
+    }
+
     public function getResource()
     {
         if (isset($this->resource)) {
@@ -132,9 +143,14 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
      */
     protected function onConnectionError(ErrorCode $errorCode, string $message = null): void
     {
-        CommunicationException::handle(
-            new ConnectionException($this, static::createExceptionMessage($this, $message ?? $errorCode->message), $errorCode->value)
-        );
+        $message = static::createExceptionMessage($this, $message ?? $errorCode->message);
+        if (in_array($errorCode->value, self::RETRYABLE_ERRORS, true)) {
+            $exception = new RetryableException($this, $message, $errorCode->value);
+        } else {
+            $exception = new ConnectionException($this, $message, $errorCode->value);
+        }
+
+        CommunicationException::handle($exception);
     }
 
     protected static function createExceptionMessage(ConnectionInterface $connection, string $message): string

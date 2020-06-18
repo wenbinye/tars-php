@@ -66,16 +66,14 @@ class SwooleTcpConnection extends AbstractConnection
         /** @var Client $client */
         $client = $this->getResource();
         if (!$client->send($request->getBody())) {
-            $this->disconnect();
             $this->onConnectionError(ErrorCode::fromValue(ErrorCode::TARS_SOCKET_SEND_FAILED));
         }
         //读取最多32M的数据
         $response = $client->recv();
 
         if ('' === $response) {
-            $this->disconnect();
             // 已经断开连接
-            $this->onConnectionError(ErrorCode::fromValue(ErrorCode::TARS_SOCKET_RECEIVE_FAILED));
+            $this->onConnectionError(ErrorCode::fromValue(ErrorCode::TARS_SOCKET_CLOSED));
         } elseif (false === $response) {
             $this->onConnectionError(ErrorCode::fromValue(ErrorCode::TARS_SOCKET_RECEIVE_FAILED), socket_strerror($client->errCode));
         }
