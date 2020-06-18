@@ -24,7 +24,7 @@ class ServerRequestFactory implements ServerRequestFactoryInterface
     /**
      * @var TarsRpcPacker
      */
-    private $packer;
+    private $tarsRpcPacker;
     /**
      * @var array
      */
@@ -37,7 +37,7 @@ class ServerRequestFactory implements ServerRequestFactoryInterface
         array $servants = [])
     {
         $this->container = $container;
-        $this->packer = new TarsRpcPacker($packer);
+        $this->tarsRpcPacker = new TarsRpcPacker($packer);
         $this->methodMetadataFactory = $methodMetadataFactory;
         $this->servants = $servants;
     }
@@ -59,7 +59,7 @@ class ServerRequestFactory implements ServerRequestFactoryInterface
             throw new RequestException($requestPacket, 'Unknown function '.$requestPacket->getServantName().'::'.$requestPacket->getFuncName(), ErrorCode::SERVER_NO_FUNC_ERR);
         }
         $methodMetadata = $this->methodMetadataFactory->create($servant, $requestPacket->getFuncName());
-        $parameters = $this->packer->unpackRequest($methodMetadata, $requestPacket->getBuffer(), $requestPacket->getVersion());
+        $parameters = $this->tarsRpcPacker->unpackRequest($methodMetadata, $requestPacket->getBuffer(), $requestPacket->getVersion());
 
         return new ServerRequest($servant, $methodMetadata, $requestPacket, $parameters);
     }

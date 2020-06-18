@@ -12,6 +12,7 @@ use wenbinye\tars\rpc\message\Parameter;
 use wenbinye\tars\rpc\message\ParameterInterface;
 use wenbinye\tars\rpc\message\ReturnValue;
 use wenbinye\tars\rpc\message\ReturnValueInterface;
+use wenbinye\tars\rpc\message\tup\Tup;
 
 class TarsRpcPacker
 {
@@ -101,14 +102,16 @@ class TarsRpcPacker
     public function unpackRequest(MethodMetadataInterface $method, string $data, int $version): array
     {
         $parameters = [];
-        foreach ($method->getParameters() as $order => $parameter) {
+        foreach ($method->getParameters() as $i => $parameter) {
+            $order = $parameter->order ?? ($i + 1);
             $paramData = null;
             if (!$parameter->out) {
+                $key = Tup::VERSION === $version ? $parameter->name : $order;
                 $type = $this->parser->parse($parameter->type, $method->getNamespace());
-                $paramData = $this->packer->unpack($type, $parameter->name, $data, $version);
+                $paramData = $this->packer->unpack($type, $key, $data, $version);
             }
             $parameters[] = new Parameter(
-                $parameter->order ?? $order,
+                $order,
                 $parameter->name,
                 $parameter->out ?? false,
                 $paramData,
