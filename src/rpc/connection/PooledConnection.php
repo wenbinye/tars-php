@@ -8,7 +8,7 @@ use kuiper\swoole\pool\PoolInterface;
 use wenbinye\tars\rpc\message\RequestInterface;
 use wenbinye\tars\rpc\route\ServerAddress;
 
-class PoolConnection implements ConnectionInterface
+class PooledConnection implements ConnectionInterface
 {
     /**
      * @var PoolInterface
