@@ -10,6 +10,8 @@ use wenbinye\tars\rpc\message\RequestInterface;
 
 class SocketTcpConnection extends AbstractConnection
 {
+    protected const TAG = '['.__CLASS__.'] ';
+
     /**
      * {@inheritdoc}
      *

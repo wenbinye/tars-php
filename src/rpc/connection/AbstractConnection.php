@@ -21,6 +21,8 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
 {
     use LoggerAwareTrait;
 
+    protected const TAG = '['.__CLASS__.'] ';
+
     private const RETRYABLE_ERRORS = [ErrorCode::TARS_SOCKET_CLOSED];
 
     /**
@@ -80,6 +82,7 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
     {
         if (!$this->isConnected()) {
             $this->resource = $this->createResource();
+            $this->logger->info(static::TAG.'connect to '.$this->getAddress());
         }
     }
 

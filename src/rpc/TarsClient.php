@@ -64,10 +64,10 @@ class TarsClient implements TarsClientInterface, LoggerAwareInterface
     {
         $request = $this->requestFactory->createRequest($servant, $method, $args);
         $connection = $this->connectionFactory->create($request->getServantName());
-        $request = $request->withAttribute(RequestAttribute::SERVER_ADDR,
-            $connection->getAddress()->getAddress());
-        $response = $this->buildMiddlewareStack(function (RequestInterface $request) use ($connection) {
-            try {
+        try {
+            $request = $request->withAttribute(RequestAttribute::SERVER_ADDR,
+                $connection->getAddress()->getAddress());
+            $response = $this->buildMiddlewareStack(function (RequestInterface $request) use ($connection) {
                 $rawContent = $connection->send($request);
 
                 $response = $this->responseFactory->create($rawContent, $request);
@@ -76,14 +76,14 @@ class TarsClient implements TarsClientInterface, LoggerAwareInterface
                 }
 
                 return $response;
-            } finally {
-                $connection->disconnect();
-            }
-        })->__invoke($request);
+            })->__invoke($request);
 
-        return array_map(static function (ReturnValueInterface $value) {
-            return $value->getData();
-        }, $response->getReturnValues());
+            return array_map(static function (ReturnValueInterface $value) {
+                return $value->getData();
+            }, $response->getReturnValues());
+        } finally {
+            $connection->disconnect();
+        }
     }
 
     public static function builder(): TarsClientBuilder
