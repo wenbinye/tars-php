@@ -42,19 +42,19 @@ class ServerRequestFactory implements ServerRequestFactoryInterface
         $this->servants = $servants;
     }
 
-    public function register(string $servantName, string $servantInterface): void
+    public function register(string $servantName, string $servantComponentId): void
     {
-        $this->servants[$servantName] = $servantInterface;
+        $this->servants[$servantName] = $servantComponentId;
     }
 
     public function create(string $requestBody): ServerRequestInterface
     {
         $requestPacket = RequestPacket::parse($requestBody);
-        $servantInterface = $this->servants[$requestPacket->getServantName()] ?? null;
-        if (!isset($servantInterface) || !$this->container->has($servantInterface)) {
+        $servantComponentId = $this->servants[$requestPacket->getServantName()] ?? null;
+        if (!isset($servantComponentId) || !$this->container->has($servantComponentId)) {
             throw new RequestException($requestPacket, 'Unknown servant '.$requestPacket->getServantName(), ErrorCode::SERVER_NO_SERVANT_ERR);
         }
-        $servant = $this->container->get($servantInterface);
+        $servant = $this->container->get($servantComponentId);
         if (!method_exists($servant, $requestPacket->getFuncName())) {
             throw new RequestException($requestPacket, 'Unknown function '.$requestPacket->getServantName().'::'.$requestPacket->getFuncName(), ErrorCode::SERVER_NO_FUNC_ERR);
         }

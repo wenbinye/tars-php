@@ -86,18 +86,17 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
         $serverRequestFactory = $this->container->get(TarsServerRequestFactoryInterface::class);
         $serverProperties = $this->container->get(ServerProperties::class);
         if ($serverRequestFactory instanceof TarsServerRequestFactory) {
-            foreach (ComponentCollection::getComponents(TarsServant::class) as $servantInterface) {
-                /** @var TarsServant $annotation */
-                $annotation = ComponentCollection::getAnnotation($servantInterface, TarsServant::class);
-                $servants[$annotation->name] = $servantInterface;
+            foreach (ComponentCollection::getAnnotations(TarsServant::class) as $annotation) {
+                /* @var TarsServant $annotation */
+                $servants[$annotation->name] = $annotation->getComponentId();
             }
-            foreach ($servants as $servantName => $servantInterface) {
+            foreach ($servants as $servantName => $servantComponentId) {
                 $servantName = $this->normalizeServantName($servantName, $serverProperties);
                 $this->logger->info(static::TAG.'register servant', [
                     'servant' => $servantName,
-                    'service' => $servantInterface,
+                    'service' => $servantComponentId,
                 ]);
-                $serverRequestFactory->register($servantName, $servantInterface);
+                $serverRequestFactory->register($servantName, $servantComponentId);
             }
         }
     }
@@ -131,12 +130,11 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
             $events[] = $this->attach($listenerId, $eventName);
         }
         /** @var EventListener $annotation */
-        foreach (ComponentCollection::getComponents(EventListener::class) as $annotation) {
-            $listener = $annotation->getTarget()->getName();
+        foreach (ComponentCollection::getAnnotations(EventListener::class) as $annotation) {
             try {
-                $this->attach($listener, $annotation->value);
+                $this->attach($annotation->getComponentId(), $annotation->value);
             } catch (\InvalidArgumentException $e) {
-                throw new \InvalidArgumentException("EventListener $listener should implements ".EventListenerInterface::class);
+                throw new \InvalidArgumentException('EventListener should implements '.EventListenerInterface::class);
             }
         }
         $protocol = Protocol::fromValue($config->get('application.protocol'));

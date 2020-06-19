@@ -26,7 +26,7 @@ use wenbinye\tars\rpc\middleware\ServerRequestLog;
 use wenbinye\tars\rpc\route\Route;
 use wenbinye\tars\rpc\TarsClient;
 use wenbinye\tars\server\listener\WorkerKeepAlive;
-use wenbinye\tars\stat\collector\SystemCpuCollector;
+use wenbinye\tars\stat\collector\MemoryUsageCollector;
 
 class ConfigLoader implements ConfigLoaderInterface
 {
@@ -88,7 +88,7 @@ class ConfigLoader implements ConfigLoaderInterface
                 'http_protocol' => Protocol::fromValue($protocol)->isHttpProtocol() ? $protocol : null,
                 'monitor' => [
                     'collectors' => [
-                        SystemCpuCollector::class,
+                        MemoryUsageCollector::class,
                     ],
                 ],
                 'middleware' => [
