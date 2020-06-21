@@ -74,7 +74,8 @@ class SwooleTcpConnection extends AbstractConnection
             // 已经断开连接
             $this->onConnectionError(ErrorCode::fromValue(ErrorCode::TARS_SOCKET_CLOSED));
         } elseif (false === $response) {
-            $this->onConnectionError(ErrorCode::fromValue(ErrorCode::TARS_SOCKET_RECEIVE_FAILED), socket_strerror($client->errCode));
+            $this->onConnectionError(ErrorCode::fromValue(ErrorCode::TARS_SOCKET_RECEIVE_FAILED),
+                socket_strerror($client->errCode));
         }
 
         return $response;

@@ -7,6 +7,7 @@ namespace wenbinye\tars\server\listener;
 use kuiper\di\ComponentCollection;
 use kuiper\event\annotation\EventListener;
 use kuiper\event\EventListenerInterface;
+use kuiper\swoole\coroutine\Coroutine;
 use kuiper\swoole\event\BootstrapEvent;
 use kuiper\swoole\event\ReceiveEvent;
 use kuiper\swoole\event\RequestEvent;
@@ -54,6 +55,9 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
     public function __invoke($event): void
     {
         $config = Config::getInstance();
+        if ($config->getBool('application.enable_coroutine', true)) {
+            Coroutine::enable();
+        }
         $this->addTarsClientMiddleware($config->get('application.middleware.client', []));
         $this->registerServants($config->get('application.servants', []));
         $this->addTarsServantMiddleware($config->get('application.middleware.servant', []));
@@ -149,7 +153,7 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
     /**
      * @param string $eventName
      */
-    private function attach(string $listenerId, $eventName = null): string
+    private function attach(string $listenerId, ?string $eventName = null): string
     {
         $this->logger->debug(static::TAG."attach $listenerId");
         $listener = $this->container->get($listenerId);

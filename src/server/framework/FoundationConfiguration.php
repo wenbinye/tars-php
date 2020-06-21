@@ -22,6 +22,8 @@ use kuiper\di\PropertiesDefinitionSource;
 use kuiper\helper\PropertyResolverInterface;
 use kuiper\logger\LoggerFactory;
 use kuiper\logger\LoggerFactoryInterface;
+use kuiper\swoole\pool\PoolFactory;
+use kuiper\swoole\pool\PoolFactoryInterface;
 use kuiper\swoole\task\DispatcherInterface;
 use kuiper\swoole\task\Queue;
 use kuiper\swoole\task\QueueInterface;
@@ -141,5 +143,23 @@ class FoundationConfiguration implements DefinitionConfiguration
     public function packer(AnnotationReaderInterface $annotationReader): PackerInterface
     {
         return new Packer($annotationReader);
+    }
+
+    /**
+     * @Bean()
+     * @Inject({"poolConfig" = "application.pool"})
+     */
+    public function poolFactory(?array $poolConfig, LoggerFactoryInterface $loggerFactory): PoolFactoryInterface
+    {
+        $poolFactory = new PoolFactory();
+        $poolFactory->setLogger($loggerFactory->create(PoolFactory::class));
+
+        if ($poolConfig) {
+            foreach ($poolConfig as $poolName => $config) {
+                $poolFactory->setPoolConfig($poolName, $config);
+            }
+        }
+
+        return $poolFactory;
     }
 }

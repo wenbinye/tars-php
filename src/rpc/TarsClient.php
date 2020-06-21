@@ -64,26 +64,22 @@ class TarsClient implements TarsClientInterface, LoggerAwareInterface
     {
         $request = $this->requestFactory->createRequest($servant, $method, $args);
         $connection = $this->connectionFactory->create($request->getServantName());
-        try {
-            $request = $request->withAttribute(RequestAttribute::SERVER_ADDR,
-                $connection->getAddress()->getAddress());
-            $response = $this->buildMiddlewareStack(function (RequestInterface $request) use ($connection) {
-                $rawContent = $connection->send($request);
+        $request = $request->withAttribute(RequestAttribute::SERVER_ADDR,
+            $connection->getAddress()->getAddress());
+        $response = $this->buildMiddlewareStack(function (RequestInterface $request) use ($connection) {
+            $rawContent = $connection->send($request);
 
-                $response = $this->responseFactory->create($rawContent, $request);
-                if (isset($this->errorHandler) && !$response->isSuccess()) {
-                    return $this->errorHandler->handle($response);
-                }
+            $response = $this->responseFactory->create($rawContent, $request);
+            if (isset($this->errorHandler) && !$response->isSuccess()) {
+                return $this->errorHandler->handle($response);
+            }
 
-                return $response;
-            })->__invoke($request);
+            return $response;
+        })->__invoke($request);
 
-            return array_map(static function (ReturnValueInterface $value) {
-                return $value->getData();
-            }, $response->getReturnValues());
-        } finally {
-            $connection->disconnect();
-        }
+        return array_map(static function (ReturnValueInterface $value) {
+            return $value->getData();
+        }, $response->getReturnValues());
     }
 
     public static function builder(): TarsClientBuilder
