@@ -6,6 +6,8 @@ namespace wenbinye\tars\rpc;
 
 use InvalidArgumentException;
 use kuiper\annotations\AnnotationReader;
+use kuiper\swoole\pool\PoolFactory;
+use kuiper\swoole\pool\PoolFactoryInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\SimpleCache\CacheInterface;
@@ -59,6 +61,11 @@ class TarsClientBuilder implements LoggerAwareInterface
      * @var PackerInterface
      */
     private $packer;
+
+    /**
+     * @var PoolFactoryInterface
+     */
+    private $poolFactory;
 
     /**
      * @var MethodMetadataFactoryInterface
@@ -126,7 +133,7 @@ class TarsClientBuilder implements LoggerAwareInterface
             $routeResolver = new InMemoryRouteResolver();
             $routeResolver->addRoute($this->locator);
             $routeHolderFactory = new ServerAddressHolderFactory($routeResolver);
-            $connectionFactory = new ConnectionFactory($routeHolderFactory, $this->logger);
+            $connectionFactory = new ConnectionFactory($this->getPoolFactory(), $routeHolderFactory, $this->logger);
             $tarsClient = new TarsClient(
                 $connectionFactory,
                 $this->getRequestFactory(),
@@ -161,6 +168,22 @@ class TarsClientBuilder implements LoggerAwareInterface
     public function setCache(CacheInterface $cache): TarsClientBuilder
     {
         $this->cache = $cache;
+
+        return $this;
+    }
+
+    public function getPoolFactory(): PoolFactoryInterface
+    {
+        if (!$this->poolFactory) {
+            $this->poolFactory = new PoolFactory();
+        }
+
+        return $this->poolFactory;
+    }
+
+    public function setPoolFactory(PoolFactoryInterface $poolFactory): TarsClientBuilder
+    {
+        $this->poolFactory = $poolFactory;
 
         return $this;
     }
@@ -267,7 +290,7 @@ class TarsClientBuilder implements LoggerAwareInterface
     public function getConnectionFactory(): ConnectionFactoryInterface
     {
         if (!$this->connectionFactory) {
-            $this->connectionFactory = new ConnectionFactory($this->getServerAddressHolderFactory(), $this->logger);
+            $this->connectionFactory = new ConnectionFactory($this->getPoolFactory(), $this->getServerAddressHolderFactory(), $this->logger);
         }
 
         return $this->connectionFactory;

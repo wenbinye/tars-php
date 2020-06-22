@@ -13,6 +13,7 @@ use kuiper\di\annotation\Configuration;
 use kuiper\di\ContainerBuilderAwareTrait;
 use kuiper\di\DefinitionConfiguration;
 use kuiper\logger\LoggerFactoryInterface;
+use kuiper\swoole\pool\PoolFactoryInterface;
 use wenbinye\tars\client\ConfigServant;
 use wenbinye\tars\client\LogServant;
 use wenbinye\tars\client\PropertyFServant;
@@ -127,6 +128,7 @@ class ClientConfiguration implements DefinitionConfiguration
      * @Bean()
      */
     public function queryFClient(
+        PoolFactoryInterface $poolFactory,
         InMemoryRouteResolver $inMemoryRouteResolver,
         RequestFactoryInterface $requestFactory,
         ResponseFactoryInterface $responseFactory,
@@ -137,7 +139,7 @@ class ClientConfiguration implements DefinitionConfiguration
         $lb = Config::getInstance()->getString('tars.application.client.load_balance', Algorithm::ROUND_ROBIN);
         $logger = $loggerFactory->create(QueryFServant::class);
         $addressHolderFactory = new ServerAddressHolderFactory($inMemoryRouteResolver, $lb, $logger);
-        $connectionFactory = new ConnectionFactory($addressHolderFactory, $logger);
+        $connectionFactory = new ConnectionFactory($poolFactory, $addressHolderFactory, $logger);
         $client = new TarsClient($connectionFactory, $requestFactory, $responseFactory, $logger, $errorHandler);
 
         return (new TarsClientFactory($client, $proxyGenerator))->create(QueryFServant::class);

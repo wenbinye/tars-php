@@ -131,7 +131,7 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
         $config = Config::getInstance();
         $events = [];
         foreach ($config->get('application.listeners', []) as $eventName => $listenerId) {
-            $events[] = $this->attach($listenerId, $eventName);
+            $events[] = $this->attach($listenerId, is_string($eventName) ? $eventName : null);
         }
         /** @var EventListener $annotation */
         foreach (ComponentCollection::getAnnotations(EventListener::class) as $annotation) {
