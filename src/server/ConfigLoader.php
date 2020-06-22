@@ -60,7 +60,8 @@ class ConfigLoader implements ConfigLoaderInterface
         Config::parseFile($configFile);
         $config = Config::getInstance();
         $serverProperties = $this->propertyLoader->loadServerProperties($config);
-        $this->addDefaultConfig($config, $input, $serverProperties);
+        $this->addDefaultConfig($config, $serverProperties);
+        $this->addCommandLineOptions($config, $input);
         $this->loadEnvFile($config, $serverProperties);
         $configFile = $serverProperties->getSourcePath().'/config.php';
         if (file_exists($configFile)) {
@@ -78,7 +79,15 @@ class ConfigLoader implements ConfigLoaderInterface
         $this->addDefaultLoggers($config, $serverProperties);
     }
 
-    private function addDefaultConfig(Properties $config, InputInterface $input, ServerProperties $serverProperties): void
+    private function addCommandLineOptions(Properties $config, InputInterface $input): void
+    {
+        foreach ($input->getOption('define') as $item) {
+            $pair = explode('=', $item, 2);
+            $config->set($pair[0], $pair[1] ?? null);
+        }
+    }
+
+    private function addDefaultConfig(Properties $config, ServerProperties $serverProperties): void
     {
         $protocol = $serverProperties->getPrimaryAdapter()->getProtocol();
         $enablePhpServer = $config->getBool('tars.application.server.enable_php_server', false);
@@ -87,8 +96,8 @@ class ConfigLoader implements ConfigLoaderInterface
                 'name' => $serverProperties->getServerName(),
                 'protocol' => $protocol,
                 'http_protocol' => Protocol::fromValue($protocol)->isHttpProtocol() ? $protocol : null,
+                'env_file' => $config->get('tars.application.server.env_file'),
                 'enable_php_server' => $enablePhpServer,
-                'enable_coroutine' => $enablePhpServer ? false : true,
                 'listeners' => [
                     StartEventListener::class,
                     ManagerStartEventListener::class,
@@ -129,10 +138,6 @@ class ConfigLoader implements ConfigLoaderInterface
                 ],
             ],
         ]);
-        foreach ($input->getOption('define') as $item) {
-            $pair = explode('=', $item, 2);
-            $config->set($pair[0], $pair[1] ?? null);
-        }
     }
 
     protected function loadEnvFile(Properties $config, ServerProperties $serverProperties): void
@@ -141,7 +146,7 @@ class ConfigLoader implements ConfigLoaderInterface
             return;
         }
         $envFiles = ['.env'];
-        $env = $config->getString('tars.application.server.env_config_file');
+        $env = $config->getString('application.env_file');
         if ($env) {
             $localFile = $serverProperties->getBasePath().'/'.$env;
             /** @var ConfigServant $configServant */

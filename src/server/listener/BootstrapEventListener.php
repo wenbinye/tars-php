@@ -55,7 +55,7 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
     public function __invoke($event): void
     {
         $config = Config::getInstance();
-        if ($config->getBool('application.enable_coroutine', true)) {
+        if (!$config->getBool('application.enable_php_server', false)) {
             Coroutine::enable();
         }
         $this->addTarsClientMiddleware($config->get('application.tars.middleware.client', []));
