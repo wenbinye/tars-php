@@ -81,35 +81,40 @@ class ConfigLoader implements ConfigLoaderInterface
     private function addDefaultConfig(Properties $config, InputInterface $input, ServerProperties $serverProperties): void
     {
         $protocol = $serverProperties->getPrimaryAdapter()->getProtocol();
+        $enablePhpServer = $config->getBool('tars.application.server.enable_php_server', false);
         $config->merge([
             'application' => [
                 'name' => $serverProperties->getServerName(),
                 'protocol' => $protocol,
                 'http_protocol' => Protocol::fromValue($protocol)->isHttpProtocol() ? $protocol : null,
-                'monitor' => [
-                    'collectors' => [
-                        MemoryUsageCollector::class,
-                    ],
-                ],
-                'middleware' => [
-                    'client' => [
-                        RequestLog::class,
-                        SendStat::class,
-                        Retry::class,
-                    ],
-                    'web' => [
-                        AccessLog::class,
-                    ],
-                    'servant' => [
-                        ServerRequestLog::class,
-                    ],
-                ],
+                'enable_php_server' => $enablePhpServer,
+                'enable_coroutine' => $enablePhpServer ? false : true,
                 'listeners' => [
                     StartEventListener::class,
                     ManagerStartEventListener::class,
                     WorkerStartEventListener::class,
                     TaskEventListener::class,
                     WorkerKeepAlive::class,
+                ],
+                'web' => [
+                    'middleware' => [
+                        AccessLog::class,
+                    ],
+                ],
+                'tars' => [
+                    'middleware' => [
+                        'client' => [
+                            RequestLog::class,
+                            SendStat::class,
+                            Retry::class,
+                        ],
+                        'servant' => [
+                            ServerRequestLog::class,
+                        ],
+                    ],
+                    'collectors' => [
+                        MemoryUsageCollector::class,
+                    ],
                 ],
                 'logging' => [
                     'path' => $serverProperties->getAppLogPath(),

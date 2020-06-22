@@ -68,7 +68,7 @@ class ServerConfiguration implements DefinitionConfiguration
         $config = Config::getInstance();
         $serverFactory = new ServerFactory($loggerFactory->create(ServerFactory::class));
         $serverFactory->setEventDispatcher($eventDispatcher);
-        $serverFactory->enablePhpServer($config->getBool('tars.application.server.enable_php_server'));
+        $serverFactory->enablePhpServer($config->getBool('application.enable_php_server'));
         if ($config->get('application.http_protocol')) {
             $serverFactory->setHttpMessageFactoryHolder($container->get(HttpMessageFactoryHolder::class));
             $serverFactory->setSwooleRequestBridge($container->get(SwooleRequestBridgeInterface::class));
@@ -108,7 +108,7 @@ class ServerConfiguration implements DefinitionConfiguration
         LoggerFactoryInterface $loggerFactory): MonitorInterface
     {
         $collectors = [];
-        foreach (Config::getInstance()->get('application.monitor.collectors', []) as $collector) {
+        foreach (Config::getInstance()->get('application.tars.collectors', []) as $collector) {
             $collectors[] = $container->get($collector);
         }
 
