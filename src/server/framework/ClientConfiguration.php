@@ -32,6 +32,8 @@ use wenbinye\tars\rpc\message\RequestIdGenerator;
 use wenbinye\tars\rpc\message\RequestIdGeneratorInterface;
 use wenbinye\tars\rpc\message\ResponseFactory;
 use wenbinye\tars\rpc\message\ResponseFactoryInterface;
+use wenbinye\tars\rpc\middleware\RequestLog;
+use wenbinye\tars\rpc\middleware\Retry;
 use wenbinye\tars\rpc\route\ChainRouteResolver;
 use wenbinye\tars\rpc\route\InMemoryRouteResolver;
 use wenbinye\tars\rpc\route\RegistryRouteResolver;
@@ -140,7 +142,10 @@ class ClientConfiguration implements DefinitionConfiguration
         $logger = $loggerFactory->create(QueryFServant::class);
         $addressHolderFactory = new ServerAddressHolderFactory($inMemoryRouteResolver, $lb, $logger);
         $connectionFactory = new ConnectionFactory($poolFactory, $addressHolderFactory, $logger);
-        $client = new TarsClient($connectionFactory, $requestFactory, $responseFactory, $logger, $errorHandler);
+        $requestLog = new RequestLog();
+        $requestLog->setLogger($logger);
+        $middlewares = [new Retry(null), $requestLog];
+        $client = new TarsClient($connectionFactory, $requestFactory, $responseFactory, $logger, $errorHandler, $middlewares);
 
         return (new TarsClientFactory($client, $proxyGenerator))->create(QueryFServant::class);
     }

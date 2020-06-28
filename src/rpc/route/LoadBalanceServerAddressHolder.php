@@ -57,7 +57,7 @@ class LoadBalanceServerAddressHolder implements RefreshableServerAddressHolderIn
 
     public function get(): ServerAddress
     {
-        if (!$this->currentAddress) {
+        if (!isset($this->currentAddress)) {
             try {
                 $route = $this->routeResolver->resolve($this->servantName);
             } catch (\Exception $e) {
@@ -84,6 +84,7 @@ class LoadBalanceServerAddressHolder implements RefreshableServerAddressHolderIn
     {
         if ($force) {
             $this->currentAddress = null;
+            $this->loadBalance = null;
         } elseif (isset($this->loadBalance)) {
             $this->currentAddress = $this->loadBalance->select();
         }

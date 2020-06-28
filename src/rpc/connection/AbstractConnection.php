@@ -162,13 +162,15 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
         } else {
             $exception = new ConnectionException($this, $message, $errorCode->value);
         }
+        if ($this->serverAddressHolder instanceof RefreshableServerAddressHolderInterface) {
+            $this->serverAddressHolder->refresh(true);
+        }
 
         CommunicationException::handle($exception);
     }
 
     protected static function createExceptionMessage(ConnectionInterface $connection, string $message): string
     {
-        // TODO: message format with request info
         return $message.'(address='.$connection->getAddress().')';
     }
 
