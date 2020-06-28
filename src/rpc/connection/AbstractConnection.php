@@ -10,8 +10,9 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use wenbinye\tars\rpc\ErrorCode;
 use wenbinye\tars\rpc\exception\CommunicationException;
+use wenbinye\tars\rpc\exception\ConnectFailedException;
+use wenbinye\tars\rpc\exception\ConnectionClosedException;
 use wenbinye\tars\rpc\exception\ConnectionException;
-use wenbinye\tars\rpc\exception\RetryableException;
 use wenbinye\tars\rpc\message\RequestInterface;
 use wenbinye\tars\rpc\route\RefreshableServerAddressHolderInterface;
 use wenbinye\tars\rpc\route\ServerAddress;
@@ -23,7 +24,10 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
 
     protected const TAG = '['.__CLASS__.'] ';
 
-    private const RETRYABLE_ERRORS = [ErrorCode::TARS_SOCKET_CLOSED];
+    private const ERROR_EXCEPTIONS = [
+        ErrorCode::TARS_SOCKET_CLOSED => ConnectionClosedException::class,
+        ErrorCode::TARS_SOCKET_CONNECT_FAILED => ConnectFailedException::class,
+    ];
 
     /**
      * @var mixed
@@ -121,6 +125,11 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
         return $this->serverAddressHolder->get();
     }
 
+    public function getServerAddressHolder(): ServerAddressHolderInterface
+    {
+        return $this->serverAddressHolder;
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -147,8 +156,9 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
     protected function onConnectionError(ErrorCode $errorCode, string $message = null): void
     {
         $message = static::createExceptionMessage($this, $message ?? $errorCode->message);
-        if (in_array($errorCode->value, self::RETRYABLE_ERRORS, true)) {
-            $exception = new RetryableException($this, $message, $errorCode->value);
+        if (array_key_exists($errorCode->value, self::ERROR_EXCEPTIONS)) {
+            $class = self::ERROR_EXCEPTIONS[$errorCode->value];
+            $exception = new $class($this, $message, $errorCode->value);
         } else {
             $exception = new ConnectionException($this, $message, $errorCode->value);
         }

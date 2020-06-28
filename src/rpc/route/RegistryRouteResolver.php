@@ -52,4 +52,9 @@ class RegistryRouteResolver implements RouteResolverInterface
 
         return new Route($servantName, $addresses);
     }
+
+    public function clear(string $servantName): void
+    {
+        $this->cache->delete($servantName);
+    }
 }
