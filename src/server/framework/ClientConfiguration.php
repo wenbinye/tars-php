@@ -144,7 +144,9 @@ class ClientConfiguration implements DefinitionConfiguration
         $connectionFactory = new ConnectionFactory($poolFactory, $addressHolderFactory, $logger);
         $requestLog = new RequestLog();
         $requestLog->setLogger($logger);
-        $middlewares = [new Retry(null), $requestLog];
+        $retry = new Retry(null);
+        $retry->setLogger($logger);
+        $middlewares = [$retry, $requestLog];
         $client = new TarsClient($connectionFactory, $requestFactory, $responseFactory, $logger, $errorHandler, $middlewares);
 
         return (new TarsClientFactory($client, $proxyGenerator))->create(QueryFServant::class);
