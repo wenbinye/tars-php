@@ -16,7 +16,7 @@ $proxy = TarsClient::builder()
 $proxy->logger("PHPTest", "PHPHttpServer", "app", "%Y%m%d", ["hello world\n"]);
 ```
 
-在没有启动 Registry 的情况下，可以通过内存数值查询服务器地址：
+在没有启动 Registry 的情况下，可以通过内存数组查询服务器地址：
 
 ```php
 <?php

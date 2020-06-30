@@ -56,7 +56,9 @@ fi
 
 use wenbinye\tars\server\ServerApplication;
 
-require __DIR__ . '/vendor/autoload.php';
+define('APP_PATH', dirname(__DIR__));
+
+require APP_PATH . '/vendor/autoload.php';
 
 ServerApplication::run();
 ```
@@ -64,13 +66,4 @@ ServerApplication::run();
 在 ServerApplication 中使用 Symfony Console Application 运行 `wenbinye\tars\server\ServerCommand` 命令。
 
 服务启动过程中，最重要的两个步骤是配置文件的解析和DI容器配置。
-
-## 服务配置
-
-
-
-## 健康检查
-
-
-
 

@@ -1,57 +1,64 @@
 # 本地开发
 
-使用 docker 搭建本地环境：
+在使用 `tars-skeleton` 脚手架创建项目时会在项目目录自动生成 `config.conf` 文件，
+修改这个配置文件将 client.locator 注释后，程序启动后就不会向 tars 注册中心注册服务，
+从而可以本地启动 tars 应用。
 
-```yaml
-version: '3'
+修改 `config.conf` 文件如下：
 
-services:
-  mysql:
-    image: mysql:5.7
-    environment:
-      MYSQL_ROOT_PASSWORD: "pa3sW0rd"
-    volumes:
-      - ./mysql-data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
-      timeout: 20s
-      retries: 10
-  tars:
-    image: wenbinye/tars
-    ports:
-      - '3000:3000'
-      - '3001:3001'
-      - 12000:12000
-      - 17890:17890
-      - 17891:17891
-      - 18193:18193
-      - 18293:18293
-      - 18393:18393
-      - 18493:18493
-      - 18593:18593
-      - 18693:18693
-      - 18793:18793
-      - 18993:18993
-      - 19385:19385      
-    environment:
-      MYSQL_HOST: 'mysql'
-      MYSQL_ROOT_PASSWORD: 'pa3sW0rd'
-      REBUILD: 'true'
-    links:
-      - mysql
-    depends_on:
-      - mysql
-    volumes:
-      - ./tars-data:/data/tars
 ```
+		<client>
+			asyncthread=3
+			# locator=tars.tarsregistry.QueryObj@tcp -h 127.0.0.1 -p 17890
+``` 
+
+启动服务：
+
 ```bash
-docker-compose up -d
+php src/index.php --config config.conf
 ```
 
-启动后打开 http://localhost:3000 。
+## 自动重启
 
-> 正常是会提示设置 admin 密码，如果没有，使用如下命令设置
-> ``` 
-> docker exec -it tars_mysql_1 mysql -uroot -ppa3sW0rd db_user_system -e "update t_user_info set password = '7c4a8d09ca3762af61e59520943dc26494f8941b'"
-> ```
-> 密码可以使用 `php -r 'echo sha1("123456");'` 生成。
+在安装 [fswatch](https://github.com/emcrisostomo/fswatch) 后，可以用这个脚本启动，可以实现修改代码后自动重启。 
+
+```php
+#!/bin/bash
+
+function restart() {
+    pid=`cat runtime/master.pid`
+
+    if kill -0 $pid 2>/dev/null; then
+        kill -9 $pid
+    fi
+
+    echo "restart server"
+    composer serve &
+}
+
+restart
+
+fswatch --event Removed --event Renamed --event Updated --event Created -or -l 3 -0 src/ | while read -d "" event
+do
+    restart
+done
+```
+
+## xdebug 调试
+
+swoole 扩展和 xdebug 扩展冲突，启用 swoole 扩展是不能用 xdebug 进行调试。
+[kuiper](https://github.com/wenbinye/kuiper) 对 `Swoole\Server` 做了一层封装，
+可以用 PHP 的 socket 实现替换 swoole 扩展，从而可以对服务进行调试。
+
+启用 php socket 服务通过修改配置文件：
+
+```
+<server>
+enable_php_server=1
+```
+
+或者在命令行启动时添加参数：
+
+```bash
+php src/index.php --config config.conf -D application.enable_php_server=1
+```
