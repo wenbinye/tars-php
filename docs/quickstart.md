@@ -92,6 +92,9 @@ tars 协议文件在 `tars/servant/` 目录中。使用 `composer gen` 命令生
 
 > 代码生成需要使用 java，请先安装配置好 java 环境
 
+项目基于 [Kuiper 框架](https://github.com/wenbinye/kuiper/blob/v0.5.0/docs/index.md)进行开发。Kuiper 框架是一个轻量级框架，是建立在 [Symfony](https://symfony.com/), [PHP-DI](http://php-di.org/)，
+[Slim](https://www.slimframework.com/), [Doctrine Annotations](https://github.com/doctrine/annotations) 这些组件基础上。框架在很多方面借鉴 Spring 和 Spring Boot，大量使用注解，简化开发。
+
 代码只生成服务接口文件，我们需要按业务需要实现服务。编辑 `src/servant/HelloServantImpl.php` 文件：
 
 ```php
@@ -130,7 +133,6 @@ OBJ 和 HelloServant 中 `@TarsServant` 注解值相同，使用 HelloObj。端�
 点击调试，在模块/接口/方法选中要调试的 test/Hello/hello 方法。
 下方输入文本框中会显示 JSON 格式参数。填写参数值后点击调试，可以查看接口调用结果。
 
-## Kuiper 框架
+## 下一步
 
-项目基于 [Kuiper 框架](https://github.com/wenbinye/kuiper/blob/v0.5.0/docs/index.md)进行开发。Kuiper 框架是一个轻量级框架，是建立在 [Symfony](https://symfony.com/), [PHP-DI](http://php-di.org/)，
-[Slim](https://www.slimframework.com/), [Doctrine Annotations](https://github.com/doctrine/annotations) 这些组件基础上。框架在很多方面借鉴 Spring 和 Spring Boot，大量使用注解，简化开发。
+目前我们已经运行一个最简单的rpc服务。在 [tars-demo](https://github.com/wenbinye/tars-demo) 中有更多项目示例。[tars-cli](https://github.com/wenbinye/tars-cli) 项目提供命令行接口用于快速部署管理应用。
