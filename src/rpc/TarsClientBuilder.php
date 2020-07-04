@@ -369,9 +369,13 @@ class TarsClientBuilder implements LoggerAwareInterface
         return $this;
     }
 
-    public function build(): TarsClientInterface
+    public function build(?string $clientClass = null): TarsClientInterface
     {
-        return new TarsClient(
+        if (!isset($clientClass)) {
+            $clientClass = TarsClient::class;
+        }
+
+        return new $clientClass(
             $this->getConnectionFactory(),
             $this->getRequestFactory(),
             $this->getResponseFactory(),
@@ -381,9 +385,9 @@ class TarsClientBuilder implements LoggerAwareInterface
         );
     }
 
-    public function createProxy(string $clientClassName)
+    public function createProxy(string $clientClassName, ?string $servantName = null)
     {
-        $proxyClass = $this->getServantProxyGenerator()->generate($clientClassName);
+        $proxyClass = $this->getServantProxyGenerator()->generate($clientClassName, $servantName);
 
         return new $proxyClass($this->build());
     }

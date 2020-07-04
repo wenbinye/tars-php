@@ -6,8 +6,10 @@ namespace wenbinye\tars\rpc;
 
 use kuiper\annotations\AnnotationReaderInterface;
 use Laminas\Code\Generator\ClassGenerator;
+use Laminas\Code\Generator\DocBlockGenerator;
 use Laminas\Code\Generator\MethodGenerator;
 use Laminas\Code\Generator\PropertyGenerator;
+use Laminas\Code\Reflection\DocBlockReflection;
 use wenbinye\tars\protocol\annotation\TarsReturnType;
 
 class ServantProxyGenerator implements ServantProxyGeneratorInterface
@@ -30,36 +32,9 @@ class ServantProxyGenerator implements ServantProxyGeneratorInterface
     /**
      * {@inheritdoc}
      */
-    public function generate(string $clientClassName): string
+    public function generate(string $clientClassName, ?string $servant = null): string
     {
-        $class = new \ReflectionClass($clientClassName);
-        if (!$class->isInterface()) {
-            throw new \InvalidArgumentException("$clientClassName should be an interface");
-        }
-        $phpClass = new ClassGenerator($class->getName().'Client'.md5(uniqid('', true)));
-        $phpClass->setImplementedInterfaces([$class->getName()]);
-        $phpClass->addProperty('client', null, PropertyGenerator::FLAG_PRIVATE);
-        $phpClass->addMethod('__construct',
-            [
-                [
-                    'type' => TarsClientInterface::class,
-                    'name' => 'client',
-                ],
-            ],
-            MethodGenerator::FLAG_PUBLIC,
-            '$this->client = $client;'
-        );
-
-        foreach ($class->getMethods() as $reflectionMethod) {
-            $phpClass->addMethod(
-                $reflectionMethod->getName(),
-                array_map(function ($parameter) {
-                    return $this->createParameter($parameter);
-                }, $reflectionMethod->getParameters()),
-                MethodGenerator::FLAG_PUBLIC,
-                $this->createBody($reflectionMethod, $this->annotationReader->getMethodAnnotation($reflectionMethod, TarsReturnType::class))
-            );
-        }
+        $phpClass = $this->createClassGenerator($clientClassName, $servant);
         $this->load($phpClass);
 
         return $phpClass->getNamespaceName().'\\'.$phpClass->getName();
@@ -67,17 +42,19 @@ class ServantProxyGenerator implements ServantProxyGeneratorInterface
 
     private function load(ClassGenerator $phpClass): void
     {
-        if (!$this->eval) {
+        $code = $phpClass->generate();
+        if ($this->eval) {
+            eval($code);
+        } else {
             $fileName = tempnam(sys_get_temp_dir(), 'TarsClientGenerator.php.tmp.');
 
-            file_put_contents($fileName, "<?php\n".$phpClass->generate());
+            file_put_contents($fileName, "<?php\n".$code);
             /* @noinspection PhpIncludeInspection */
             require $fileName;
             unlink($fileName);
 
             return;
         }
-        eval($phpClass->generate());
     }
 
     private function createParameter(\ReflectionParameter $parameter): array
@@ -128,5 +105,64 @@ class ServantProxyGenerator implements ServantProxyGeneratorInterface
         return implode(', ', array_map(static function ($name) {
             return '$'.$name;
         }, $parameters));
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
+    public function createClassGenerator(string $clientClassName, ?string $servantName): ClassGenerator
+    {
+        $class = new \ReflectionClass($clientClassName);
+        if (!$class->isInterface()) {
+            throw new \InvalidArgumentException("$clientClassName should be an interface");
+        }
+        $phpClass = new ClassGenerator(
+            $class->getShortName().'Client'.md5(uniqid('', true)),
+            $class->getNamespaceName(),
+            $flags = null,
+            $extends = null,
+            $interfaces = [],
+            $properties = [],
+            $methods = [],
+            DocBlockGenerator::fromReflection(new DocBlockReflection($this->createDocBlock($class->getDocComment(), $servantName)))
+        );
+
+        $phpClass->setImplementedInterfaces([$class->getName()]);
+        $phpClass->addProperty('client', null, PropertyGenerator::FLAG_PRIVATE);
+        $phpClass->addMethod('__construct',
+            [
+                [
+                    'type' => TarsClientInterface::class,
+                    'name' => 'client',
+                ],
+            ],
+            MethodGenerator::FLAG_PUBLIC,
+            '$this->client = $client;'
+        );
+
+        foreach ($class->getMethods() as $reflectionMethod) {
+            $methodBody = $this->createBody($reflectionMethod, $this->annotationReader->getMethodAnnotation($reflectionMethod, TarsReturnType::class));
+            $phpClass->addMethod(
+                $reflectionMethod->getName(),
+                array_map(function ($parameter) {
+                    return $this->createParameter($parameter);
+                }, $reflectionMethod->getParameters()),
+                MethodGenerator::FLAG_PUBLIC,
+                $methodBody
+            );
+        }
+
+        return $phpClass;
+    }
+
+    private function createDocBlock(string $docComment, ?string $servantName): string
+    {
+        if ($servantName) {
+            return "/**\n"
+                .sprintf(" * @\\%s(name=\"%s\")\n", \wenbinye\tars\protocol\annotation\TarsClient::class, $servantName)
+                .'*/';
+        }
+
+        return $docComment;
     }
 }

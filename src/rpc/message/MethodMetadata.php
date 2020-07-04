@@ -85,14 +85,4 @@ class MethodMetadata implements MethodMetadataInterface
     {
         return $this->returnType;
     }
-
-    public static function dummy(): MethodMetadata
-    {
-        static $dummy;
-        if (!$dummy) {
-            $dummy = new MethodMetadata('', '', '', '', []);
-        }
-
-        return $dummy;
-    }
 }

@@ -13,5 +13,5 @@ interface ServantProxyGeneratorInterface
      *
      * @return string the proxy class name
      */
-    public function generate(string $clientClassName): string;
+    public function generate(string $clientClassName, ?string $servant = null): string;
 }

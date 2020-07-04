@@ -56,34 +56,67 @@ class MethodMetadataFactory implements MethodMetadataFactoryInterface
     private function getMetadataFromAnnotation($servant, string $method): MethodMetadata
     {
         $reflectionClass = new \ReflectionClass($servant);
+        if (!$reflectionClass->hasMethod($method)) {
+            throw new InvalidMethodException(sprintf("%s does not contain method '$method'", $reflectionClass));
+        }
+        $servantAnnotation = $this->getTarsServantAnnotation($reflectionClass);
+        $reflectionMethod = $reflectionClass->getMethod($method);
+        $parameters = [];
+        $returnType = null;
+        foreach ($this->getMethodAnnotations($reflectionMethod) as $methodAnnotation) {
+            if ($methodAnnotation instanceof TarsParameter) {
+                $parameters[] = $methodAnnotation;
+            } elseif ($methodAnnotation instanceof TarsReturnType) {
+                $returnType = $methodAnnotation;
+            }
+        }
+
+        return new MethodMetadata(
+            $reflectionClass->getName(),
+            $reflectionClass->getNamespaceName(),
+            $method,
+            $servantAnnotation->name,
+            $parameters,
+            $returnType);
+    }
+
+    private function getTarsServantAnnotation(\ReflectionClass $reflectionClass): TarsServant
+    {
+        $annotation = $this->annotationReader->getClassAnnotation($reflectionClass, TarsServant::class);
+        if ($annotation) {
+            return $annotation;
+        }
+        if (false !== ($parent = $reflectionClass->getParentClass())) {
+            return $this->getTarsServantAnnotation($parent);
+        }
         foreach ($reflectionClass->getInterfaces() as $interface) {
-            if (!$interface->hasMethod($method)) {
-                continue;
+            $annotation = $this->annotationReader->getClassAnnotation($interface, TarsServant::class);
+            if ($annotation) {
+                return $annotation;
             }
-            /** @var TarsServant $servantAnnotation */
-            $servantAnnotation = $this->annotationReader->getClassAnnotation($interface, TarsServant::class);
-            if (!$servantAnnotation) {
-                continue;
-            }
-            $reflectionMethod = $interface->getMethod($method);
-            $parameters = [];
-            $returnType = null;
-            foreach ($this->annotationReader->getMethodAnnotations($reflectionMethod) as $methodAnnotation) {
-                if ($methodAnnotation instanceof TarsParameter) {
-                    $parameters[] = $methodAnnotation;
-                } elseif ($methodAnnotation instanceof TarsReturnType) {
-                    $returnType = $methodAnnotation;
+        }
+
+        throw new InvalidMethodException(sprintf('%s does not contain valid method definition, '."check it's interfaces should annotated with @TarsServant", $reflectionClass));
+    }
+
+    private function getMethodAnnotations(\ReflectionMethod $method): array
+    {
+        $docComment = $method->getDocComment();
+        if ($docComment && false !== stripos($docComment, '@inheritdoc')) {
+            $name = $method->getName();
+            $class = $method->getDeclaringClass();
+            if (false !== ($parent = $class->getParentClass())) {
+                if ($parent->hasMethod($name)) {
+                    return $this->getMethodAnnotations($parent->getMethod($name));
                 }
             }
-
-            return new MethodMetadata(
-                $interface->getName(),
-                $interface->getNamespaceName(),
-                $method,
-                $servantAnnotation->name,
-                $parameters,
-                $returnType);
+            foreach ($class->getInterfaces() as $interface) {
+                if ($interface->hasMethod($name)) {
+                    return $this->annotationReader->getMethodAnnotations($interface->getMethod($name));
+                }
+            }
         }
-        throw new InvalidMethodException(sprintf("%s does not contain valid method definition, check it's interfaces should annotated with @TarsServant", get_class($servant)));
+
+        return $this->annotationReader->getMethodAnnotations($method);
     }
 }

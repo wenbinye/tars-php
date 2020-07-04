@@ -24,9 +24,9 @@ class TarsClientFactory implements TarsClientFactoryInterface
     /**
      * {@inheritdoc}
      */
-    public function create(string $clientClassName)
+    public function create(string $clientClassName, ?string $servantName = null)
     {
-        $generatedClass = $this->tarsClientGenerator->generate($clientClassName);
+        $generatedClass = $this->tarsClientGenerator->generate($clientClassName, $servantName);
 
         return new $generatedClass($this->tarsClient);
     }

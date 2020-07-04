@@ -18,6 +18,10 @@ use wenbinye\tars\rpc\middleware\MiddlewareInterface;
 class TarsClient implements TarsClientInterface, LoggerAwareInterface
 {
     use MiddlewareSupport;
+    /**
+     * @var ConnectionFactoryInterface
+     */
+    private $connectionFactory;
 
     /**
      * @var RequestFactoryInterface
@@ -25,13 +29,10 @@ class TarsClient implements TarsClientInterface, LoggerAwareInterface
     private $requestFactory;
 
     /**
-     * @var ConnectionFactoryInterface
-     */
-    private $connectionFactory;
-    /**
      * @var ResponseFactoryInterface
      */
     private $responseFactory;
+
     /**
      * @var ErrorHandlerInterface|null
      */
@@ -62,7 +63,16 @@ class TarsClient implements TarsClientInterface, LoggerAwareInterface
      */
     public function call($servant, string $method, ...$args): array
     {
-        $request = $this->requestFactory->createRequest($servant, $method, $args);
+        return $this->send($this->createRequest($servant, $method, $args));
+    }
+
+    public static function builder(): TarsClientBuilder
+    {
+        return new TarsClientBuilder();
+    }
+
+    protected function send(RequestInterface $request): array
+    {
         $connection = $this->connectionFactory->create($request->getServantName());
         $request = $request->withAttribute(RequestAttribute::SERVER_ADDR,
             $connection->getAddress()->getAddress());
@@ -82,8 +92,11 @@ class TarsClient implements TarsClientInterface, LoggerAwareInterface
         }, $response->getReturnValues());
     }
 
-    public static function builder(): TarsClientBuilder
+    /**
+     * @param object $servant
+     */
+    protected function createRequest($servant, string $method, array $args): RequestInterface
     {
-        return new TarsClientBuilder();
+        return $this->requestFactory->createRequest($servant, $method, $args);
     }
 }

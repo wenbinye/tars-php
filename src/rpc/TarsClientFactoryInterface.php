@@ -13,5 +13,5 @@ interface TarsClientFactoryInterface
      *
      * @return object
      */
-    public function create(string $clientClassName);
+    public function create(string $clientClassName, ?string $servantName = null);
 }
