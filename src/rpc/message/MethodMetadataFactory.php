@@ -60,10 +60,10 @@ class MethodMetadataFactory implements MethodMetadataFactoryInterface
             throw new InvalidMethodException(sprintf("%s does not contain method '$method'", $reflectionClass));
         }
         $servantAnnotation = $this->getTarsServantAnnotation($reflectionClass);
-        $reflectionMethod = $reflectionClass->getMethod($method);
+        $reflectionMethod = $this->getAnnotatedMethod($reflectionClass->getMethod($method));
         $parameters = [];
         $returnType = null;
-        foreach ($this->getMethodAnnotations($reflectionMethod) as $methodAnnotation) {
+        foreach ($this->annotationReader->getMethodAnnotations($reflectionMethod) as $methodAnnotation) {
             if ($methodAnnotation instanceof TarsParameter) {
                 $parameters[] = $methodAnnotation;
             } elseif ($methodAnnotation instanceof TarsReturnType) {
@@ -72,8 +72,8 @@ class MethodMetadataFactory implements MethodMetadataFactoryInterface
         }
 
         return new MethodMetadata(
-            $reflectionClass->getName(),
-            $reflectionClass->getNamespaceName(),
+            $reflectionMethod->getDeclaringClass()->getName(),
+            $reflectionMethod->getDeclaringClass()->getNamespaceName(),
             $method,
             $servantAnnotation->name,
             $parameters,
@@ -99,7 +99,7 @@ class MethodMetadataFactory implements MethodMetadataFactoryInterface
         throw new InvalidMethodException(sprintf('%s does not contain valid method definition, '."check it's interfaces should annotated with @TarsServant", $reflectionClass));
     }
 
-    private function getMethodAnnotations(\ReflectionMethod $method): array
+    private function getAnnotatedMethod(\ReflectionMethod $method): \ReflectionMethod
     {
         $docComment = $method->getDocComment();
         if ($docComment && false !== stripos($docComment, '@inheritdoc')) {
@@ -107,16 +107,16 @@ class MethodMetadataFactory implements MethodMetadataFactoryInterface
             $class = $method->getDeclaringClass();
             if (false !== ($parent = $class->getParentClass())) {
                 if ($parent->hasMethod($name)) {
-                    return $this->getMethodAnnotations($parent->getMethod($name));
+                    return $this->getAnnotatedMethod($parent->getMethod($name));
                 }
             }
             foreach ($class->getInterfaces() as $interface) {
                 if ($interface->hasMethod($name)) {
-                    return $this->annotationReader->getMethodAnnotations($interface->getMethod($name));
+                    return $interface->getMethod($name);
                 }
             }
         }
 
-        return $this->annotationReader->getMethodAnnotations($method);
+        return $method;
     }
 }

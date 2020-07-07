@@ -116,6 +116,11 @@ class ServantProxyGenerator implements ServantProxyGeneratorInterface
         if (!$class->isInterface()) {
             throw new \InvalidArgumentException("$clientClassName should be an interface");
         }
+        $constructDocBlock = null;
+        if ($servantName) {
+            $constructDocBlock = DocBlockGenerator::fromReflection(
+                new DocBlockReflection($this->createDocBlock($servantName)));
+        }
         $phpClass = new ClassGenerator(
             $class->getShortName().'Client'.md5(uniqid('', true)),
             $class->getNamespaceName(),
@@ -124,7 +129,7 @@ class ServantProxyGenerator implements ServantProxyGeneratorInterface
             $interfaces = [],
             $properties = [],
             $methods = [],
-            DocBlockGenerator::fromReflection(new DocBlockReflection($this->createDocBlock($class->getDocComment(), $servantName)))
+            $constructDocBlock
         );
 
         $phpClass->setImplementedInterfaces([$class->getName()]);
@@ -156,14 +161,10 @@ class ServantProxyGenerator implements ServantProxyGeneratorInterface
         return $phpClass;
     }
 
-    private function createDocBlock(string $docComment, ?string $servantName): string
+    private function createDocBlock(string $servantName): string
     {
-        if ($servantName) {
-            return "/**\n"
-                .sprintf(" * @\\%s(name=\"%s\")\n", \wenbinye\tars\protocol\annotation\TarsClient::class, $servantName)
-                .'*/';
-        }
-
-        return $docComment;
+        return "/**\n"
+            .sprintf(" * @\\%s(name=\"%s\")\n", \wenbinye\tars\protocol\annotation\TarsClient::class, $servantName)
+            .'*/';
     }
 }
