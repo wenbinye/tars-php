@@ -127,16 +127,16 @@ class ClientConfiguration implements DefinitionConfiguration
     }
 
     /**
-     * @Bean()
+     * @Bean("InMemoryRouteTarsClientFactory")
      */
-    public function queryFClient(
+    public function inMemoryRouteTarsClientFactory(
         PoolFactoryInterface $poolFactory,
         InMemoryRouteResolver $inMemoryRouteResolver,
         RequestFactoryInterface $requestFactory,
         ResponseFactoryInterface $responseFactory,
         ErrorHandlerInterface $errorHandler,
-        ServantProxyGeneratorInterface $proxyGenerator,
-        LoggerFactoryInterface $loggerFactory): QueryFServant
+        LoggerFactoryInterface $loggerFactory,
+        ServantProxyGenerator $servantProxyGenerator)
     {
         $lb = Config::getInstance()->getString('tars.application.client.load_balance', Algorithm::ROUND_ROBIN);
         $logger = $loggerFactory->create(QueryFServant::class);
@@ -149,6 +149,16 @@ class ClientConfiguration implements DefinitionConfiguration
         $middlewares = [$retry, $requestLog];
         $client = new TarsClient($connectionFactory, $requestFactory, $responseFactory, $logger, $errorHandler, $middlewares);
 
-        return (new TarsClientFactory($client, $proxyGenerator))->create(QueryFServant::class);
+        return new TarsClientFactory($client, $servantProxyGenerator);
+    }
+
+    /**
+     * @Bean()
+     * @Inject({"clientFactory": "InMemoryRouteTarsClientFactory"})
+     */
+    public function queryFClient(TarsClientFactoryInterface $clientFactory): QueryFServant
+    {
+        /* @noinspection PhpIncompatibleReturnTypeInspection */
+        return $clientFactory->create(QueryFServant::class);
     }
 }

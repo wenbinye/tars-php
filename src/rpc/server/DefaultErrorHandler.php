@@ -15,7 +15,7 @@ class DefaultErrorHandler implements ErrorHandlerInterface
     {
         $serverResponse = new ServerResponse($request, []);
         $serverResponse->getResponsePacketBuilder()
-            ->setReturnCode($error->getCode() > 0 ? $error->getCode() : ErrorCode::UNKNOWN)
+            ->setReturnCode($error->getCode() > 0 ? (int) $error->getCode() : ErrorCode::UNKNOWN)
             ->setResultDesc($error->getMessage());
 
         return $serverResponse;

@@ -28,10 +28,10 @@ class ValidationException extends \Exception
      *
      * @param ConstraintViolationListInterface $violations array with validation errors (violations)
      */
-    public function __construct($violations)
+    public function __construct($violations, int $code = 0)
     {
         $this->violations = $violations;
-        parent::__construct($this->getFullMessage());
+        parent::__construct($this->getFullMessage(), $code);
     }
 
     /**

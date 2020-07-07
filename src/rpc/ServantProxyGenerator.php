@@ -148,7 +148,8 @@ class ServantProxyGenerator implements ServantProxyGeneratorInterface
                     return $this->createParameter($parameter);
                 }, $reflectionMethod->getParameters()),
                 MethodGenerator::FLAG_PUBLIC,
-                $methodBody
+                $methodBody,
+                DocBlockGenerator::fromReflection(new DocBlockReflection('/** @inheritdoc */'))
             );
         }
 
