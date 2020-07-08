@@ -7,6 +7,7 @@ namespace wenbinye\tars\server\listener;
 use kuiper\di\ComponentCollection;
 use kuiper\event\annotation\EventListener;
 use kuiper\event\EventListenerInterface;
+use kuiper\swoole\constants\ServerType;
 use kuiper\swoole\coroutine\Coroutine;
 use kuiper\swoole\event\BootstrapEvent;
 use kuiper\swoole\event\ReceiveEvent;
@@ -61,7 +62,7 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
         $this->addTarsClientMiddleware($config->get('application.tars.middleware.client', []));
         $this->registerServants($config->get('application.tars.servants', []));
         $this->addTarsServantMiddleware($config->get('application.tars.middleware.servant', []));
-        $this->addEventListeners();
+        $this->addEventListeners($event);
     }
 
     public function setEventDispatcher(EventDispatcherInterface $eventDispatcher): void
@@ -126,34 +127,41 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
         return $servantName;
     }
 
-    private function addEventListeners(): void
+    private function addEventListeners(BootstrapEvent $event): void
     {
         $config = Config::getInstance();
         $events = [];
         foreach ($config->get('application.listeners', []) as $eventName => $listenerId) {
-            $events[] = $this->attach($listenerId, is_string($eventName) ? $eventName : null);
+            $events[] = $this->attach($event, $listenerId, is_string($eventName) ? $eventName : null);
         }
         /** @var EventListener $annotation */
         foreach (ComponentCollection::getAnnotations(EventListener::class) as $annotation) {
             try {
-                $this->attach($annotation->getComponentId(), $annotation->value);
+                $this->attach($event, $annotation->getComponentId(), $annotation->value);
             } catch (\InvalidArgumentException $e) {
                 throw new \InvalidArgumentException('EventListener should implements '.EventListenerInterface::class);
             }
         }
-        $protocol = Protocol::fromValue($config->get('application.protocol'));
-        if ($protocol->isHttpProtocol() && !in_array(RequestEvent::class, $events, true)) {
-            $this->attach(HttpRequestEventListener::class);
+
+        $serverProperties = $this->container->get(ServerProperties::class);
+        $serverType = ServerType::fromValue($serverProperties->getPrimaryAdapter()->getServerType());
+        if ($serverType->isHttpProtocol() && !in_array(RequestEvent::class, $events, true)) {
+            $this->attach($event, HttpRequestEventListener::class);
         }
-        if (Protocol::TARS === $protocol->value && !in_array(ReceiveEvent::class, $events, true)) {
-            $this->attach(TarsTcpReceiveEventListener::class);
+        if (!in_array(ReceiveEvent::class, $events, true)) {
+            foreach ($serverProperties->getAdapters() as $adapter) {
+                if (Protocol::TARS === $adapter->getProtocol()) {
+                    $this->attach($event, TarsTcpReceiveEventListener::class);
+                    break;
+                }
+            }
         }
     }
 
     /**
      * @param string $eventName
      */
-    private function attach(string $listenerId, ?string $eventName = null): string
+    private function attach(BootstrapEvent $event, string $listenerId, ?string $eventName = null): string
     {
         $this->logger->debug(static::TAG."attach $listenerId");
         $listener = $this->container->get($listenerId);
@@ -162,7 +170,11 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
             $eventName = $listener->getSubscribedEvent();
         }
         if (is_string($eventName)) {
-            $this->eventDispatcher->addListener($eventName, $listener);
+            if (BootstrapEvent::class === $eventName) {
+                call_user_func($listener, $event);
+            } else {
+                $this->eventDispatcher->addListener($eventName, $listener);
+            }
 
             return $eventName;
         }

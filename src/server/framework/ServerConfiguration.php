@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace wenbinye\tars\server\framework;
 
 use function DI\autowire;
-use function DI\factory;
 use kuiper\di\annotation\Bean;
 use kuiper\di\annotation\Configuration;
 use kuiper\di\ContainerBuilderAwareTrait;
@@ -47,7 +46,6 @@ class ServerConfiguration implements DefinitionConfiguration
     public function getDefinitions(): array
     {
         return [
-            ServerInterface::class => factory([ServerFactory::class, 'create']),
             StatInterface::class => autowire(Stat::class),
             StatStoreAdapter::class => autowire(SwooleTableStatStore::class),
             TarsServerRequestFactoryInterface::class => autowire(ServerRequestFactory::class),
@@ -60,22 +58,23 @@ class ServerConfiguration implements DefinitionConfiguration
     /**
      * @Bean()
      */
-    public function serverFactory(
+    public function server(
         ContainerInterface $container,
+        ServerConfig $serverConfig,
         EventDispatcherInterface $eventDispatcher,
-        LoggerFactoryInterface $loggerFactory): ServerFactory
+        LoggerFactoryInterface $loggerFactory): ServerInterface
     {
         $config = Config::getInstance();
         $serverFactory = new ServerFactory($loggerFactory->create(ServerFactory::class));
         $serverFactory->setEventDispatcher($eventDispatcher);
         $serverFactory->enablePhpServer($config->getBool('application.enable_php_server'));
-        if ($config->get('application.http_protocol')) {
+        if ($serverConfig->getPort()->isHttpProtocol()) {
             $serverFactory->setHttpMessageFactoryHolder($container->get(HttpMessageFactoryHolder::class));
             $serverFactory->setSwooleRequestBridge($container->get(SwooleRequestBridgeInterface::class));
             $serverFactory->setSwooleResponseBridge($container->get(SwooleResponseBridgeInterface::class));
         }
 
-        return $serverFactory;
+        return $serverFactory->create($serverConfig);
     }
 
     /**

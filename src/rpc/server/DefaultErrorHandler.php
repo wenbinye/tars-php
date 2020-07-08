@@ -23,7 +23,7 @@ class DefaultErrorHandler implements ErrorHandlerInterface, LoggerAwareInterface
                 $request->getServantName(), $request->getMethod(), $error));
         $serverResponse = new ServerResponse($request, []);
         $serverResponse->getResponsePacketBuilder()
-            ->setReturnCode($error->getCode() > 0 ? (int) $error->getCode() : ErrorCode::UNKNOWN)
+            ->setReturnCode(is_numeric($error->getCode()) ? (int) $error->getCode() : ErrorCode::UNKNOWN)
             ->setResultDesc($error->getMessage());
 
         return $serverResponse;

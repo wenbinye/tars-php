@@ -89,13 +89,10 @@ class ConfigLoader implements ConfigLoaderInterface
 
     private function addDefaultConfig(Properties $config, ServerProperties $serverProperties): void
     {
-        $protocol = $serverProperties->getPrimaryAdapter()->getProtocol();
         $enablePhpServer = $config->getBool('tars.application.server.enable_php_server', false);
         $config->merge([
             'application' => [
                 'name' => $serverProperties->getServerName(),
-                'protocol' => $protocol,
-                'http_protocol' => Protocol::fromValue($protocol)->isHttpProtocol() ? $protocol : null,
                 'env_file' => $config->get('tars.application.server.env_file'),
                 'enable_php_server' => $enablePhpServer,
                 'listeners' => [

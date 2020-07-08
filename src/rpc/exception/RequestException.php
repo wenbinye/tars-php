@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc\exception;
 
-use wenbinye\tars\rpc\ErrorCode;
 use wenbinye\tars\rpc\message\tup\RequestPacket;
 use wenbinye\tars\rpc\message\tup\ResponsePacket;
 
@@ -18,7 +17,7 @@ class RequestException extends \Exception
     /**
      * InvalidRequestException constructor.
      */
-    public function __construct(RequestPacket $requestPacket, string $message, int $code = ErrorCode::UNKNOWN)
+    public function __construct(RequestPacket $requestPacket, string $message, int $code)
     {
         parent::__construct($message, $code);
         $this->requestPacket = $requestPacket;

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc\message\tup;
 
+use wenbinye\tars\rpc\message\RequestInterface;
+
 /**
  * Class RequestPacket.
  */
@@ -92,6 +94,22 @@ class RequestPacket
             $unpackResult['iTimeout'] ?? Tup::TIMEOUT,
             $unpackResult['context'] ?? [],
             $unpackResult['status'] ?? []
+        );
+    }
+
+    public static function fromRequest(RequestInterface $request): RequestPacket
+    {
+        return new self(
+            $request->getVersion(),
+            $request->getPacketType(),
+            $request->getMessageType(),
+            $request->getRequestId(),
+            $request->getServantName(),
+            $request->getFuncName(),
+            '',
+            $request->getTimeout(),
+            $request->getContext(),
+            $request->getStatus()
         );
     }
 

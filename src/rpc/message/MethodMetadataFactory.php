@@ -101,19 +101,9 @@ class MethodMetadataFactory implements MethodMetadataFactoryInterface
 
     private function getAnnotatedMethod(\ReflectionMethod $method): \ReflectionMethod
     {
-        $docComment = $method->getDocComment();
-        if ($docComment && false !== stripos($docComment, '@inheritdoc')) {
-            $name = $method->getName();
-            $class = $method->getDeclaringClass();
-            if (false !== ($parent = $class->getParentClass())) {
-                if ($parent->hasMethod($name)) {
-                    return $this->getAnnotatedMethod($parent->getMethod($name));
-                }
-            }
-            foreach ($class->getInterfaces() as $interface) {
-                if ($interface->hasMethod($name)) {
-                    return $interface->getMethod($name);
-                }
+        foreach ($method->getDeclaringClass()->getInterfaces() as $interface) {
+            if ($interface->hasMethod($method->getName())) {
+                return $interface->getMethod($method->getName());
             }
         }
 

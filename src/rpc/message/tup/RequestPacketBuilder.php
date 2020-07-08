@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc\message\tup;
 
+use wenbinye\tars\rpc\message\RequestInterface;
+
 class RequestPacketBuilder
 {
     /**
@@ -181,5 +183,21 @@ class RequestPacketBuilder
             $this->context,
             $this->status
         );
+    }
+
+    public static function fromRequest(RequestInterface $request): RequestPacketBuilder
+    {
+        $builder = new static();
+        $builder->setVersion($request->getVersion())
+            ->setMessageType($request->getMessageType())
+            ->setPacketType($request->getPacketType())
+            ->setServantName($request->getServantName())
+            ->setFuncName($request->getFuncName())
+            ->setRequestId($request->getRequestId())
+            ->setTimeout($request->getTimeout())
+            ->setStatus($request->getStatus())
+            ->setContext($request->getContext());
+
+        return $builder;
     }
 }

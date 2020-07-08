@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server;
 
+use kuiper\swoole\constants\ServerType;
 use Symfony\Component\Validator\Constraints as Assert;
 use wenbinye\tars\rpc\route\Route;
 use wenbinye\tars\rpc\route\ServerAddress;
@@ -121,6 +122,11 @@ class ServerProperties
      * @var AdapterProperties[]
      */
     private $adapters = [];
+
+    /**
+     * @var array
+     */
+    private $portAdapters;
 
     public function getApp(): string
     {
@@ -295,6 +301,21 @@ class ServerProperties
      */
     public function setAdapters(array $adapters): void
     {
+        usort($adapters, function (AdapterProperties $a, AdapterProperties $b) {
+            if ($b->getServerType() === $a->getServerType()) {
+                return 0;
+            }
+            if (ServerType::fromValue($a->getServerType())->isHttpProtocol()) {
+                return -1;
+            }
+
+            return 1;
+        });
+        $this->portAdapters = [];
+        foreach ($adapters as $adapter) {
+            $this->portAdapters[$adapter->getEndpoint()->getPort()][] = $adapter;
+        }
+
         $this->adapters = $adapters;
     }
 
@@ -313,15 +334,12 @@ class ServerProperties
         return array_values($this->adapters)[0];
     }
 
-    public function getAdapterByPort(int $port): ?AdapterProperties
+    /**
+     * @return AdapterProperties[]
+     */
+    public function getAdaptersByPort(int $port): array
     {
-        foreach ($this->adapters as $adapterProperties) {
-            if ($adapterProperties->getEndpoint()->getPort() === $port) {
-                return $adapterProperties;
-            }
-        }
-
-        return null;
+        return $this->portAdapters[$port] ?? [];
     }
 
     public function getMasterPidFile(): string
