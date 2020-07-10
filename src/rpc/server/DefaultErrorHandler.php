@@ -20,7 +20,7 @@ class DefaultErrorHandler implements ErrorHandlerInterface, LoggerAwareInterface
     public function handle(ServerRequestInterface $request, \Throwable $error): ResponseInterface
     {
         $this->logger->error(static::TAG.sprintf('process %s#%s failed: %s',
-                $request->getServantName(), $request->getMethod(), $error));
+                $request->getServantName(), $request->getFuncName(), $error));
         $serverResponse = new ServerResponse($request, []);
         $serverResponse->getResponsePacketBuilder()
             ->setReturnCode(is_numeric($error->getCode()) ? (int) $error->getCode() : ErrorCode::UNKNOWN)

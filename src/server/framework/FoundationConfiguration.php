@@ -61,9 +61,9 @@ class FoundationConfiguration implements DefinitionConfiguration
                 $name = $definition->getName().'.logger';
                 $class = $definition->getClassName();
                 $loggerDefinition = new FactoryDefinition(
-                $name, static function (LoggerFactoryInterface $loggerFactory) use ($class) {
-                    return $loggerFactory->create($class);
-                });
+                    $name, static function (LoggerFactoryInterface $loggerFactory) use ($class) {
+                        return $loggerFactory->create($class);
+                    });
 
                 return [$loggerDefinition];
             }));
@@ -132,9 +132,13 @@ class FoundationConfiguration implements DefinitionConfiguration
      * @Bean()
      * @Inject({"loggingConfig" = "application.logging"})
      */
-    public function loggerFactory(ContainerInterface $container, array $loggingConfig): LoggerFactoryInterface
+    public function loggerFactory(ContainerInterface $container, ?array $loggingConfig): LoggerFactoryInterface
     {
-        return new LoggerFactory($container, $loggingConfig);
+        return new LoggerFactory($container, $loggingConfig ?? [
+                'loggers' => [
+                    'root' => ['console' => true],
+                ],
+            ]);
     }
 
     /**
