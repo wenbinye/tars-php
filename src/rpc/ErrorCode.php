@@ -66,9 +66,10 @@ class ErrorCode extends Enum
     public const SERVER_ASYNC_CALL_TIMEOUT = -7; //异步调用超时
     public const SERVER_PROXY_CONNECT_ERR = -8; //proxy链接异常
     public const SERVER_UNKNOWN_ERR = -99; //服务器端未知异常
-
     public const ROUTE_FAIL = -100;
+
     public const UNKNOWN = 99999;
+    public const INVALID_ARGUMENT = 100000;
 
     protected static $PROPERTIES = [
         'message' => [
@@ -125,7 +126,9 @@ class ErrorCode extends Enum
             self::TARS_SOCKET_CONNECT_FAILED => 'socket tcp 连接失败',
             self::TARS_SOCKET_CLOSED => 'socket tcp 服务端连接关闭',
             self::TARS_SOCKET_CREATE_FAILED => 'socket 创建失败',
+
             self::UNKNOWN => '未定义异常',
+            self::INVALID_ARGUMENT => '参数不正确',
         ],
     ];
 }

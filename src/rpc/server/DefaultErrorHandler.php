@@ -23,9 +23,20 @@ class DefaultErrorHandler implements ErrorHandlerInterface, LoggerAwareInterface
                 $request->getServantName(), $request->getFuncName(), $error));
         $serverResponse = new ServerResponse($request, []);
         $serverResponse->getResponsePacketBuilder()
-            ->setReturnCode(is_numeric($error->getCode()) ? (int) $error->getCode() : ErrorCode::UNKNOWN)
+            ->setReturnCode($this->getErrorCode($error))
             ->setResultDesc($error->getMessage());
 
         return $serverResponse;
+    }
+
+    protected function getErrorCode(\Throwable $error): int
+    {
+        if ($error instanceof \InvalidArgumentException) {
+            return ErrorCode::INVALID_ARGUMENT;
+        }
+
+        return is_numeric($error->getCode()) && 0 !== $error->getCode()
+            ? (int) $error->getCode()
+            : ErrorCode::UNKNOWN;
     }
 }
