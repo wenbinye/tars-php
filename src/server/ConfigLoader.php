@@ -189,50 +189,37 @@ class ConfigLoader implements ConfigLoaderInterface
         if (!isset($loggerLevel)) {
             throw new \InvalidArgumentException("Unknown logger level '{$loggerLevelName}'");
         }
+        $handlers = [];
+        if ($config->getBool('application.logging.console')) {
+            $handlers[] = [
+                'handler' => [
+                    'class' => StreamHandler::class,
+                    'constructor' => [
+                        'stream' => 'php://stderr',
+                        'level' => $loggerLevel,
+                    ],
+                ],
+                'formatter' => [
+                    'class' => LineFormatter::class,
+                    'constructor' => [
+                        'allowInlineLineBreaks' => true,
+                    ],
+                ],
+            ];
+        }
+        $handlers[] = [
+            'handler' => [
+                'class' => StreamHandler::class,
+                'constructor' => [
+                    'stream' => sprintf('%s/%s.log', $serverProperties->getAppLogPath(), $serverProperties->getServer()),
+                    'level' => $loggerLevel,
+                ],
+            ],
+        ];
         $config->set('application.logging.loggers', [
             'root' => [
                 'name' => $serverProperties->getServer(),
-                'handlers' => [
-                    [
-                        'handler' => [
-                            'class' => StreamHandler::class,
-                            'constructor' => [
-                                'stream' => 'php://stderr',
-                                'level' => $loggerLevel,
-                            ],
-                        ],
-                        'formatter' => [
-                            'class' => LineFormatter::class,
-                            'constructor' => [
-                                'allowInlineLineBreaks' => true,
-                            ],
-                        ],
-                    ],
-                    [
-                        'handler' => [
-                            'class' => StreamHandler::class,
-                            'constructor' => [
-                                'stream' => sprintf('%s/log_%s.log', $serverProperties->getAppLogPath(), strtolower($loggerLevelName)),
-                                'level' => $loggerLevel,
-                            ],
-                        ],
-                    ],
-                    [
-                        'handler' => [
-                            'class' => StreamHandler::class,
-                            'constructor' => [
-                                'stream' => sprintf('%s/%s.log', $serverProperties->getAppLogPath(), $serverProperties->getServer()),
-                                'level' => $loggerLevel,
-                            ],
-                        ],
-                        'formatter' => [
-                            'class' => LineFormatter::class,
-                            'constructor' => [
-                                'allowInlineLineBreaks' => true,
-                            ],
-                        ],
-                    ],
-                ],
+                'handlers' => $handlers,
                 'processors' => [
                     CoroutineIdProcessor::class,
                 ],
