@@ -87,6 +87,9 @@ class PropertyLoader
             $swooleServerSettings[ServerSetting::TASK_WORKER_NUM] = 1;
         }
         $serverProperties->setAdapters($adapters);
+        if (empty($swooleServerSettings[ServerSetting::WORKER_NUM])) {
+            $swooleServerSettings[ServerSetting::WORKER_NUM] = $serverProperties->getPrimaryAdapter()->getThreads();
+        }
         $serverProperties->setServerSettings($swooleServerSettings);
         $errors = $this->validator->validate($serverProperties);
         if ($errors->count() > 0) {
