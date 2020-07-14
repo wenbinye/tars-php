@@ -19,9 +19,28 @@ class PackageConfig
      */
     private $finders;
     /**
+     * @var string[]
+     */
+    private $files;
+    /**
      * @var string
      */
     private $basePath;
+
+    private static $DEFAULTS = [
+        'src' => [],
+        'vendor' => [
+            'followLinks' => true,
+            'exclude' => [
+                'phpunit',
+                'mockery',
+                'hamcrest',
+                'php-cs-fixer',
+                'vendor',
+                'tars-gen',
+            ],
+        ],
+    ];
 
     public function __construct(string $basePath, array $options)
     {
@@ -31,12 +50,20 @@ class PackageConfig
         $this->basePath = rtrim($basePath, '/');
         $this->serverName = $options['server-name'];
         $this->finders[0] = [];
-        foreach ($options['manifest'] as $methods) {
-            if (is_string($methods)) {
-                $this->finders[0][] = new \SplFileInfo($this->getCanonicalPath($methods));
-            } elseif (is_array($methods)) {
-                $this->finders[] = $this->createFinder($methods);
+        $this->addFile('composer.json');
+        $defaults = self::$DEFAULTS;
+        foreach ($options['manifest'] ?? [] as $item) {
+            if (is_string($item)) {
+                $this->addFile($item);
+            } elseif (is_array($item)) {
+                if (isset($item['in'])) {
+                    unset($defaults[$item['in']]);
+                }
+                $this->finders[] = $this->createFinder($item);
             }
+        }
+        foreach ($defaults as $dir => $item) {
+            $this->finders[] = $this->createFinder(array_merge(['in' => $dir], $item));
         }
     }
 
@@ -88,5 +115,14 @@ class PackageConfig
     private function getCanonicalPath($path): string
     {
         return $this->basePath.'/'.ltrim($path, '/');
+    }
+
+    private function addFile(string $fileName): void
+    {
+        if (isset($this->files[$fileName])) {
+            return;
+        }
+        $this->files[$fileName] = true;
+        $this->finders[0][] = new \SplFileInfo($this->getCanonicalPath($fileName));
     }
 }
