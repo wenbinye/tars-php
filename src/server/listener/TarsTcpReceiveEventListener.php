@@ -65,6 +65,7 @@ class TarsTcpReceiveEventListener implements EventListenerInterface, LoggerAware
                 return;
             }
             if (!isset($this->servants[$connectionInfo->getServerPort()][$request->getServantName()])) {
+                $this->logger->warning(static::TAG.'cannot find adapter match servant, check config file');
                 throw new RequestException(RequestPacket::fromRequest($request), 'Unknown servant '.$request->getServantName(), ErrorCode::SERVER_NO_SERVANT_ERR);
             }
             $request = $request->withAttribute(RequestAttribute::CLIENT_IP, $connectionInfo->getRemoteIp());

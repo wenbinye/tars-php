@@ -27,9 +27,9 @@ class LogRotateProcessor implements ProcessorInterface, LoggerAwareInterface
     private $server;
 
     /**
-     * @var ServerProperties
+     * @var string
      */
-    private $serverProperties;
+    private $logPath;
 
     /**
      * LogRotateProcessor constructor.
@@ -37,7 +37,7 @@ class LogRotateProcessor implements ProcessorInterface, LoggerAwareInterface
     public function __construct(ServerInterface $server, ServerProperties $serverProperties)
     {
         $this->server = $server;
-        $this->serverProperties = $serverProperties;
+        $this->logPath = $serverProperties->getAppLogPath();
     }
 
     /**
@@ -47,7 +47,8 @@ class LogRotateProcessor implements ProcessorInterface, LoggerAwareInterface
      */
     public function process($task)
     {
-        $this->server->tick(60, function () use ($task) {
+        $this->tryRotateLog($task);
+        $this->server->tick(60000, function () use ($task) {
             $this->tryRotateLog($task);
         });
     }
@@ -57,7 +58,7 @@ class LogRotateProcessor implements ProcessorInterface, LoggerAwareInterface
         $oldStatus = $status = $this->readStatus();
         $rotateFiles = [];
         $now = time();
-        foreach (glob($this->serverProperties->getLogPath().'/*.log') as $logFile) {
+        foreach (glob($this->logPath.'/*.log') as $logFile) {
             if (!isset($status[$logFile])) {
                 $status[$logFile] = date(self::DATE_FORMAT, $now);
             }
@@ -83,6 +84,7 @@ class LogRotateProcessor implements ProcessorInterface, LoggerAwareInterface
         if (empty($rotateFiles)) {
             return;
         }
+        $this->logger->info(static::TAG.'reload server since log rotated');
         $this->server->reload();
     }
 
@@ -112,6 +114,6 @@ class LogRotateProcessor implements ProcessorInterface, LoggerAwareInterface
 
     private function getStatusFile(): string
     {
-        return $this->serverProperties->getLogPath().'/'.self::ROTATE_STATUS_FILE;
+        return $this->logPath.'/'.self::ROTATE_STATUS_FILE;
     }
 }

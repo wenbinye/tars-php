@@ -123,7 +123,7 @@ class ServantProxyGenerator implements ServantProxyGeneratorInterface
         }
         $phpClass = new ClassGenerator(
             $class->getShortName().'Client'.md5(uniqid('', true)),
-            $class->getNamespaceName(),
+            $class->getNamespaceName() ?: null,
             $flags = null,
             $extends = null,
             $interfaces = [],
