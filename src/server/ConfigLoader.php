@@ -25,6 +25,7 @@ use wenbinye\tars\rpc\middleware\SendStat;
 use wenbinye\tars\rpc\middleware\ServerRequestLog;
 use wenbinye\tars\rpc\route\Route;
 use wenbinye\tars\rpc\TarsClient;
+use wenbinye\tars\server\listener\RotateLog;
 use wenbinye\tars\server\listener\WorkerKeepAlive;
 use wenbinye\tars\stat\collector\MemoryUsageCollector;
 
@@ -100,6 +101,7 @@ class ConfigLoader implements ConfigLoaderInterface
                     ManagerStartEventListener::class,
                     WorkerStartEventListener::class,
                     TaskEventListener::class,
+                    RotateLog::class,
                     WorkerKeepAlive::class,
                 ],
                 'web' => [
@@ -190,7 +192,7 @@ class ConfigLoader implements ConfigLoaderInterface
             throw new \InvalidArgumentException("Unknown logger level '{$loggerLevelName}'");
         }
         $handlers = [];
-        if ($config->getBool('application.logging.console')) {
+        if ($config->getBool('tars.application.server.enable_console_logging', true)) {
             $handlers[] = [
                 'handler' => [
                     'class' => StreamHandler::class,

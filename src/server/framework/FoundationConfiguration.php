@@ -44,6 +44,7 @@ use wenbinye\tars\server\Config;
 use wenbinye\tars\server\listener\BootstrapEventListener;
 use wenbinye\tars\server\PropertyLoader;
 use wenbinye\tars\server\ServerProperties;
+use wenbinye\tars\server\task\LogRotate;
 
 /**
  * @Configuration()
@@ -139,6 +140,15 @@ class FoundationConfiguration implements DefinitionConfiguration
                     'root' => ['console' => true],
                 ],
             ]);
+    }
+
+    /**
+     * @Bean()
+     * @Inject({"suffix" = "application.logging.rotate.suffix"})
+     */
+    public function logRotateTask(?string $suffix): LogRotate
+    {
+        return new LogRotate($suffix ?? '-Ymd');
     }
 
     /**
