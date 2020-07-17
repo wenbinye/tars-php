@@ -1,0 +1,13 @@
+{
+    "client": {
+        "tars_path": "tars",
+        "servants": {
+            "StatF": "tars.tarsstat.StatObj",
+            "PropertyF": "tars.tarsproperty.PropertyObj",
+            "ServerF": "tars.tarsnode.ServerObj",
+            "Log": "tars.tarslog.LogObj",
+            "QueryF": "tars.tarsregistry.QueryObj",
+            "Config": "tars.tarsconfig.ConfigObj"
+        }
+    }
+}
