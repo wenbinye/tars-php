@@ -16,7 +16,6 @@ use kuiper\web\middleware\AccessLog;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
-use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Validator\Validation;
 use wenbinye\tars\client\ConfigServant;
 use wenbinye\tars\rpc\middleware\RequestLog;
@@ -49,9 +48,11 @@ class ConfigLoader implements ConfigLoaderInterface
                 Validation::createValidatorBuilder()->getValidator());
     }
 
-    public function load(InputInterface $input): void
+    /**
+     * {@inheritdoc}
+     */
+    public function load(string $configFile, array $properties = []): void
     {
-        $configFile = $input->getOption('config');
         if (!$configFile) {
             throw new \InvalidArgumentException('config file is required');
         }
@@ -62,7 +63,7 @@ class ConfigLoader implements ConfigLoaderInterface
         $config = Config::getInstance();
         $serverProperties = $this->propertyLoader->loadServerProperties($config);
         $this->addDefaultConfig($config, $serverProperties);
-        $this->addCommandLineOptions($config, $input);
+        $this->addCommandLineOptions($config, $properties);
         $this->loadEnvFile($config, $serverProperties);
         $configFile = $serverProperties->getSourcePath().'/config.php';
         if (file_exists($configFile)) {
@@ -80,11 +81,13 @@ class ConfigLoader implements ConfigLoaderInterface
         $this->addDefaultLoggers($config, $serverProperties);
     }
 
-    private function addCommandLineOptions(Properties $config, InputInterface $input): void
+    private function addCommandLineOptions(Properties $config, array $properties): void
     {
-        foreach ($input->getOption('define') as $item) {
-            $pair = explode('=', $item, 2);
-            $config->set($pair[0], $pair[1] ?? null);
+        $define = parse_ini_string(implode("\n", $properties));
+        if (is_array($define)) {
+            foreach ($define as $key => $value) {
+                $config->set($key, $value ?? null);
+            }
         }
     }
 

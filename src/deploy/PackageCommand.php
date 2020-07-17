@@ -12,9 +12,11 @@ use wenbinye\tars\server\Composer;
 
 class PackageCommand extends Command
 {
+    public const COMMAND_NAME = 'package';
+
     protected function configure()
     {
-        $this->setName('package');
+        $this->setName(self::COMMAND_NAME);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)

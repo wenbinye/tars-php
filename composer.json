@@ -55,6 +55,11 @@
     "scripts": {
         "gen": "./vendor/bin/tars-gen"
     },
+    "archive": {
+        "exclude": [
+            "tests"
+        ]
+    },
     "extra": {
         "kuiper": {
             "component-scan": [

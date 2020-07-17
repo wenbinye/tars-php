@@ -70,4 +70,24 @@ class Config
         }
         static::setInstance($config);
     }
+
+    public static function createDummyConfig(): void
+    {
+        self::setInstance(Properties::create([
+            'tars' => [
+                'application' => [
+                    'server' => [
+                        'app' => 'dummy',
+                        'server' => 'dummy',
+                        'basepath' => '.',
+                        'datapath' => '.',
+                        'dummy.dummy.objAdapter' => [
+                            'endpoint' => 'tcp -h 127.0.0.1 -p 18080 -t 60000',
+                            'protocol' => 'tars',
+                        ],
+                    ],
+                ],
+            ],
+        ]));
+    }
 }

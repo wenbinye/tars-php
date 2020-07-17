@@ -28,7 +28,9 @@ bar=2
 
     public function testParseFile()
     {
-        $config = Config::parseFile(__DIR__.'/fixtures/PHPTest.PHPHttpServer.config.conf');
+        Config::parseFile(__DIR__.'/fixtures/PHPTest.PHPHttpServer.config.conf');
+        $config = Config::getInstance();
+
         $config->tars->application->server->merge([
             'PHPTest.PHPHttpServer.objAdapter' => [
                 'protocol' => 'http',

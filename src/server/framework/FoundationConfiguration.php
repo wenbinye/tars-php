@@ -16,6 +16,7 @@ use kuiper\annotations\AnnotationReaderInterface;
 use kuiper\di\annotation\Bean;
 use kuiper\di\annotation\Configuration;
 use kuiper\di\AwareInjection;
+use kuiper\di\ContainerAwareInterface;
 use kuiper\di\ContainerBuilderAwareTrait;
 use kuiper\di\DefinitionConfiguration;
 use kuiper\di\PropertiesDefinitionSource;
@@ -68,6 +69,7 @@ class FoundationConfiguration implements DefinitionConfiguration
 
                 return [$loggerDefinition];
             }));
+        $this->containerBuilder->addAwareInjection(AwareInjection::create(ContainerAwareInterface::class));
         $this->containerBuilder->addDefinitions(new PropertiesDefinitionSource(Config::getInstance()));
 
         return [
