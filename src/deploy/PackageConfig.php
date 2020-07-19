@@ -29,6 +29,7 @@ class PackageConfig
 
     private static $DEFAULTS = [
         'src' => [],
+        'resources' => [],
         'vendor' => [
             'followLinks' => true,
             'exclude' => [

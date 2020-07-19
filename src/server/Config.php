@@ -84,6 +84,8 @@ class Config
                         'dummy.dummy.objAdapter' => [
                             'endpoint' => 'tcp -h 127.0.0.1 -p 18080 -t 60000',
                             'protocol' => 'tars',
+                            'threads' => '0',
+                            'servant' => 'dummy.dummy.obj',
                         ],
                     ],
                 ],
