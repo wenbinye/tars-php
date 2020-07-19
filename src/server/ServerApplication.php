@@ -62,7 +62,7 @@ class ServerApplication
 
         $app = new Application(self::APP_NAME);
         $app->setCommandLoader($commandLoader);
-        $app->setDefaultCommand(ServerCommand::COMMAND_NAME);
+        $app->setDefaultCommand(ServerStartCommand::COMMAND_NAME);
 
         return $app;
     }
@@ -157,7 +157,8 @@ class ServerApplication
             };
         };
         $commandMap = [
-            ServerCommand::COMMAND_NAME => $factory(ServerCommand::class),
+            ServerStartCommand::COMMAND_NAME => $factory(ServerStartCommand::class),
+            ServerStopCommand::COMMAND_NAME => $factory(ServerStopCommand::class),
         ];
         if ($container->has('application.commands')
             && $container->get('application.commands')) {
