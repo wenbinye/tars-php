@@ -64,7 +64,9 @@ class PackageConfig
             }
         }
         foreach ($defaults as $dir => $item) {
-            $this->finders[] = $this->createFinder(array_merge(['in' => $dir], $item));
+            if (is_dir($dir)) {
+                $this->finders[] = $this->createFinder(array_merge(['in' => $dir], $item));
+            }
         }
     }
 
