@@ -13,7 +13,7 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use wenbinye\tars\server\task\LogRotate;
 
-class RotateLog implements EventListenerInterface, LoggerAwareInterface
+class StartLogRotate implements EventListenerInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
@@ -30,17 +30,11 @@ class RotateLog implements EventListenerInterface, LoggerAwareInterface
     private $loggerFactory;
 
     /**
-     * @var LogRotate
-     */
-    private $logRotate;
-
-    /**
      * WorkerStartEventListener constructor.
      */
-    public function __construct(QueueInterface $taskQueue, LoggerFactoryInterface $loggerFactory, LogRotate $logRotate)
+    public function __construct(QueueInterface $taskQueue, LoggerFactoryInterface $loggerFactory)
     {
         $this->taskQueue = $taskQueue;
-        $this->logRotate = $logRotate;
         $this->loggerFactory = $loggerFactory;
     }
 
@@ -50,8 +44,7 @@ class RotateLog implements EventListenerInterface, LoggerAwareInterface
     public function __invoke($event): void
     {
         if (0 === $event->getWorkerId()) {
-            $this->logger->debug(static::TAG.'add rotate log task');
-            $this->taskQueue->put($this->logRotate);
+            $this->taskQueue->put(new LogRotate());
         }
         foreach ($this->loggerFactory->getLoggers() as $logger) {
             if ($logger instanceof Logger) {

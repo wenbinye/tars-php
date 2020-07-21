@@ -25,6 +25,7 @@ use kuiper\logger\LoggerFactory;
 use kuiper\logger\LoggerFactoryInterface;
 use kuiper\swoole\pool\PoolFactory;
 use kuiper\swoole\pool\PoolFactoryInterface;
+use kuiper\swoole\server\ServerInterface;
 use kuiper\swoole\task\DispatcherInterface;
 use kuiper\swoole\task\Queue;
 use kuiper\swoole\task\QueueInterface;
@@ -45,7 +46,7 @@ use wenbinye\tars\server\Config;
 use wenbinye\tars\server\listener\BootstrapEventListener;
 use wenbinye\tars\server\PropertyLoader;
 use wenbinye\tars\server\ServerProperties;
-use wenbinye\tars\server\task\LogRotate;
+use wenbinye\tars\server\task\LogRotateProcessor;
 
 /**
  * @Configuration()
@@ -146,11 +147,23 @@ class FoundationConfiguration implements DefinitionConfiguration
 
     /**
      * @Bean()
-     * @Inject({"suffix" = "application.logging.rotate.suffix"})
+     * @Inject({"options" = "application.logging.rotate"})
      */
-    public function logRotateTask(?string $suffix): LogRotate
+    public function logRotateProcessor(
+        ServerInterface $server,
+        ServerProperties $serverProperties,
+        LoggerFactoryInterface $loggerFactory,
+        ?array $options): LogRotateProcessor
     {
-        return new LogRotate($suffix ?? '-Ymd');
+        $options = ($options ?? []) + [
+            'log_path' => [$serverProperties->getAppLogPath()],
+            'suffix' => '-Ymd',
+        ];
+
+        $logRotateProcessor = new LogRotateProcessor($server, (array) $options['log_path'], $options['suffix']);
+        $logRotateProcessor->setLogger($loggerFactory->create(LogRotateProcessor::class));
+
+        return $logRotateProcessor;
     }
 
     /**

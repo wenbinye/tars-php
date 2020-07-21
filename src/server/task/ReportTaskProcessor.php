@@ -94,17 +94,21 @@ class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
 
     public function sendServerInfo(): void
     {
-        $serverInfo = new ServerInfo();
-        $serverInfo->serverName = $this->serverProperties->getServer();
-        $serverInfo->application = $this->serverProperties->getApp();
-        $serverInfo->pid = $this->server->getMasterPid();
-        foreach ($this->serverProperties->getAdapters() as $adapter) {
-            $serverInfo->adapter = $adapter->getAdapterName();
-            $this->logger->debug(static::TAG.'send keep alive message', ['server' => $serverInfo]);
+        try {
+            $serverInfo = new ServerInfo();
+            $serverInfo->serverName = $this->serverProperties->getServer();
+            $serverInfo->application = $this->serverProperties->getApp();
+            $serverInfo->pid = $this->server->getMasterPid();
+            foreach ($this->serverProperties->getAdapters() as $adapter) {
+                $serverInfo->adapter = $adapter->getAdapterName();
+                $this->logger->debug(static::TAG.'send keep alive message', ['server' => $serverInfo]);
+                $this->serverFClient->keepAlive($serverInfo);
+            }
+            $serverInfo->adapter = 'AdminAdapter';
             $this->serverFClient->keepAlive($serverInfo);
+        } catch (\Exception $e) {
+            $this->logger->error(static::TAG.'send server info fail', ['error' => $e->getMessage()]);
         }
-        $serverInfo->adapter = 'AdminAdapter';
-        $this->serverFClient->keepAlive($serverInfo);
     }
 
     public function sendStat(): void

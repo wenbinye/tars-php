@@ -24,7 +24,7 @@ use wenbinye\tars\rpc\middleware\SendStat;
 use wenbinye\tars\rpc\middleware\ServerRequestLog;
 use wenbinye\tars\rpc\route\Route;
 use wenbinye\tars\rpc\TarsClient;
-use wenbinye\tars\server\listener\RotateLog;
+use wenbinye\tars\server\listener\StartLogRotate;
 use wenbinye\tars\server\listener\WorkerKeepAlive;
 use wenbinye\tars\stat\collector\MemoryUsageCollector;
 
@@ -104,7 +104,7 @@ class ConfigLoader implements ConfigLoaderInterface
                     ManagerStartEventListener::class,
                     WorkerStartEventListener::class,
                     TaskEventListener::class,
-                    RotateLog::class,
+                    StartLogRotate::class,
                     WorkerKeepAlive::class,
                 ],
                 'web' => [
