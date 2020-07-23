@@ -178,17 +178,9 @@ class FoundationConfiguration implements DefinitionConfiguration
      * @Bean()
      * @Inject({"poolConfig" = "application.pool"})
      */
-    public function poolFactory(?array $poolConfig, LoggerFactoryInterface $loggerFactory): PoolFactoryInterface
+    public function poolFactory(EventDispatcherInterface $eventDispatcher, ?array $poolConfig, LoggerFactoryInterface $loggerFactory): PoolFactoryInterface
     {
-        $poolFactory = new PoolFactory();
-        $poolFactory->setLogger($loggerFactory->create(PoolFactory::class));
-
-        if ($poolConfig) {
-            foreach ($poolConfig as $poolName => $config) {
-                $poolFactory->setPoolConfig($poolName, $config);
-            }
-        }
-
-        return $poolFactory;
+        return new PoolFactory(
+            $eventDispatcher, $poolConfig ?? [], $loggerFactory->create(PoolFactory::class));
     }
 }
