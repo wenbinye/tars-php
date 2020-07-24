@@ -88,6 +88,7 @@ class Config
                             'servant' => 'dummy.dummy.obj',
                         ],
                     ],
+                    'client' => [],
                 ],
             ],
         ]));
