@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server\task;
 
-use kuiper\swoole\server\ServerInterface;
 use kuiper\swoole\task\ProcessorInterface;
+use kuiper\swoole\task\Task;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use wenbinye\tars\server\exception\IOException;
@@ -21,11 +21,6 @@ class LogRotateProcessor implements ProcessorInterface, LoggerAwareInterface
     protected const TAG = '['.__CLASS__.'] ';
 
     /**
-     * @var ServerInterface
-     */
-    private $server;
-
-    /**
      * @var array
      */
     private $logPath;
@@ -38,30 +33,31 @@ class LogRotateProcessor implements ProcessorInterface, LoggerAwareInterface
     /**
      * LogRotateProcessor constructor.
      */
-    public function __construct(ServerInterface $server, array $logPath, string $suffixDateFormat)
+    public function __construct(array $logPath, string $suffixDateFormat)
     {
-        $this->server = $server;
         $this->logPath = $logPath;
         $this->suffixDateFormat = $suffixDateFormat;
     }
 
     /**
      * {@inheritdoc}
-     *
-     * @param LogRotate $task
      */
-    public function process($task)
+    public function process(Task $task)
     {
-        $this->server->tick(60000, function () {
+        $server = $task->getServer();
+        $server->tick(60000, function () use ($server) {
             try {
-                $this->tryRotateLog();
+                if ($this->tryRotateLog()) {
+                    $this->logger->info(static::TAG.'reload server since log rotated');
+                    $server->reload();
+                }
             } catch (\Throwable $e) {
                 $this->logger->error(static::TAG.'fail to rotate log: '.$e);
             }
         });
     }
 
-    private function tryRotateLog(): void
+    private function tryRotateLog(): bool
     {
         $suffixDateFormat = $this->suffixDateFormat;
         $rotateFiles = [];
@@ -92,11 +88,8 @@ class LogRotateProcessor implements ProcessorInterface, LoggerAwareInterface
                 $this->saveStatus($logPath, $status);
             }
         }
-        if (empty($rotateFiles)) {
-            return;
-        }
-        $this->logger->info(static::TAG.'reload server since log rotated');
-        $this->server->reload();
+
+        return !empty($rotateFiles);
     }
 
     private function readStatus(string $logPath): array

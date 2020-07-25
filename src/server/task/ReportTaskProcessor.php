@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server\task;
 
-use kuiper\swoole\server\ServerInterface;
 use kuiper\swoole\task\ProcessorInterface;
+use kuiper\swoole\task\Task;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
@@ -32,10 +32,6 @@ class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
      */
     private $serverProperties;
     /**
-     * @var ServerInterface
-     */
-    private $server;
-    /**
      * @var ClientProperties
      */
     private $clientProperties;
@@ -54,14 +50,12 @@ class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
     public function __construct(
         ServerProperties $serverProperties,
         ClientProperties $clientProperties,
-        ServerInterface $server,
         ServerFServant $serverFClient,
         StatInterface $statClient,
         MonitorInterface $monitor,
         ?LoggerInterface $logger)
     {
         $this->clientProperties = $clientProperties;
-        $this->server = $server;
         $this->serverFClient = $serverFClient;
         $this->statClient = $statClient;
         $this->monitor = $monitor;
@@ -70,9 +64,9 @@ class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
     }
 
     /**
-     * @param ReportTask $task
+     * {@inheritdoc}
      */
-    public function process($task): void
+    public function process(Task $task)
     {
         if (!$this->clientProperties->getLocator()
             || !$this->serverProperties->getNode()) {
@@ -80,25 +74,27 @@ class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
 
             return;
         }
-        $this->sendServerInfo();
-        $this->server->tick($this->clientProperties->getKeepAliveInterval(), function () {
-            $this->sendServerInfo();
+        $server = $task->getServer();
+        $pid = $server->getMasterPid();
+        $this->sendServerInfo($pid);
+        $server->tick($this->clientProperties->getKeepAliveInterval(), function () use ($pid) {
+            $this->sendServerInfo($pid);
         });
-        $this->server->tick($this->clientProperties->getReportInterval(), function () {
+        $server->tick($this->clientProperties->getReportInterval(), function () {
             $this->sendStat();
         });
-        $this->server->tick($this->clientProperties->getReportInterval(), function () {
+        $server->tick($this->clientProperties->getReportInterval(), function () {
             $this->sendMonitorInfo();
         });
     }
 
-    public function sendServerInfo(): void
+    public function sendServerInfo(int $pid): void
     {
         try {
             $serverInfo = new ServerInfo();
             $serverInfo->serverName = $this->serverProperties->getServer();
             $serverInfo->application = $this->serverProperties->getApp();
-            $serverInfo->pid = $this->server->getMasterPid();
+            $serverInfo->pid = $pid;
             foreach ($this->serverProperties->getAdapters() as $adapter) {
                 $serverInfo->adapter = $adapter->getAdapterName();
                 $this->logger->debug(static::TAG.'send keep alive message', ['server' => $serverInfo]);

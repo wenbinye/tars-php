@@ -31,6 +31,11 @@ class ServerStartCommand extends Command implements ContainerAwareInterface
         $this->server = $serverManager;
     }
 
+    protected function configure()
+    {
+        $this->setDescription('start php server');
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $this->server->start();

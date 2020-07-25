@@ -25,7 +25,6 @@ use kuiper\logger\LoggerFactory;
 use kuiper\logger\LoggerFactoryInterface;
 use kuiper\swoole\pool\PoolFactory;
 use kuiper\swoole\pool\PoolFactoryInterface;
-use kuiper\swoole\server\ServerInterface;
 use kuiper\swoole\task\DispatcherInterface;
 use kuiper\swoole\task\Queue;
 use kuiper\swoole\task\QueueInterface;
@@ -150,7 +149,6 @@ class FoundationConfiguration implements DefinitionConfiguration
      * @Inject({"options" = "application.logging.rotate"})
      */
     public function logRotateProcessor(
-        ServerInterface $server,
         ServerProperties $serverProperties,
         LoggerFactoryInterface $loggerFactory,
         ?array $options): LogRotateProcessor
@@ -160,7 +158,7 @@ class FoundationConfiguration implements DefinitionConfiguration
             'suffix' => '-Ymd',
         ];
 
-        $logRotateProcessor = new LogRotateProcessor($server, (array) $options['log_path'], $options['suffix']);
+        $logRotateProcessor = new LogRotateProcessor((array) $options['log_path'], $options['suffix']);
         $logRotateProcessor->setLogger($loggerFactory->create(LogRotateProcessor::class));
 
         return $logRotateProcessor;
@@ -178,9 +176,9 @@ class FoundationConfiguration implements DefinitionConfiguration
      * @Bean()
      * @Inject({"poolConfig" = "application.pool"})
      */
-    public function poolFactory(EventDispatcherInterface $eventDispatcher, ?array $poolConfig, LoggerFactoryInterface $loggerFactory): PoolFactoryInterface
+    public function poolFactory(?array $poolConfig, LoggerFactoryInterface $loggerFactory, EventDispatcherInterface $eventDispatcher): PoolFactoryInterface
     {
         return new PoolFactory(
-            $eventDispatcher, $poolConfig ?? [], $loggerFactory->create(PoolFactory::class));
+            $poolConfig ?? [], $loggerFactory->create(PoolFactory::class), $eventDispatcher);
     }
 }

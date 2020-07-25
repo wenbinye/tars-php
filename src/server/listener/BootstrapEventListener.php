@@ -136,11 +136,11 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
         }
         /** @var EventListener $annotation */
         foreach (ComponentCollection::getAnnotations(EventListener::class) as $annotation) {
-            try {
-                $this->attach($event, $annotation->getComponentId(), $annotation->value);
-            } catch (\InvalidArgumentException $e) {
-                throw new \InvalidArgumentException('EventListener should implements '.EventListenerInterface::class);
+            $listener = $this->container->get($annotation->getComponentId());
+            if (!($listener instanceof EventListenerInterface)) {
+                throw new \InvalidArgumentException($annotation->getTarget()->getName().' should implements '.EventListenerInterface::class);
             }
+            $events[] = $this->attach($event, $annotation->getComponentId(), $annotation->value);
         }
 
         $serverProperties = $this->container->get(ServerProperties::class);
@@ -179,6 +179,6 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
             return $eventName;
         }
 
-        throw new \InvalidArgumentException("config application.listeners $listenerId does not bind to any event");
+        throw new \InvalidArgumentException("EventListener $listenerId does not bind to any event");
     }
 }
