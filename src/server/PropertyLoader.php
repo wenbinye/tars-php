@@ -9,8 +9,8 @@ use kuiper\helper\Properties;
 use kuiper\helper\Text;
 use kuiper\reflection\ReflectionType;
 use kuiper\swoole\constants\ServerSetting;
+use Symfony\Component\Validator\Exception\ValidationFailedException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use wenbinye\tars\exception\ValidationException;
 use wenbinye\tars\server\annotation\ConfigItem;
 
 class PropertyLoader
@@ -38,7 +38,7 @@ class PropertyLoader
     /**
      * Creates ClientProperties from config.
      *
-     * @throws ValidationException
+     * @throws ValidationFailedException
      * @throws \ReflectionException
      */
     public function loadClientProperties(Properties $config): ClientProperties
@@ -48,7 +48,7 @@ class PropertyLoader
 
         $errors = $this->validator->validate($clientProperties);
         if ($errors->count() > 0) {
-            throw new ValidationException($errors);
+            throw new ValidationFailedException($clientProperties, $errors);
         }
 
         return $clientProperties;
@@ -57,7 +57,7 @@ class PropertyLoader
     /**
      * Creates ServerProperties from config.
      *
-     * @throws ValidationException
+     * @throws ValidationFailedException
      * @throws \ReflectionException
      */
     public function loadServerProperties(Properties $config): ServerProperties
@@ -76,7 +76,7 @@ class PropertyLoader
                 $this->load($adapterProperties, $value);
                 $errors = $this->validator->validate($adapterProperties);
                 if ($errors->count() > 0) {
-                    throw new ValidationException($errors);
+                    throw new ValidationFailedException($adapterProperties, $errors);
                 }
             } elseif (ServerSetting::hasValue($key)) {
                 $swooleServerSettings[$key] = ReflectionType::forName(ServerSetting::fromValue($key)->type)->sanitize($value);
@@ -96,7 +96,7 @@ class PropertyLoader
         $serverProperties->setServerSettings($swooleServerSettings);
         $errors = $this->validator->validate($serverProperties);
         if ($errors->count() > 0) {
-            throw new ValidationException($errors);
+            throw new ValidationFailedException($serverProperties, $errors);
         }
 
         return $serverProperties;
