@@ -98,11 +98,6 @@ class TarsClientBuilder implements LoggerAwareInterface
     private $responseFactory;
 
     /**
-     * @var ErrorHandlerInterface
-     */
-    private $errorHandler;
-
-    /**
      * @var MiddlewareInterface[]
      */
     private $middlewares = [];
@@ -139,7 +134,6 @@ class TarsClientBuilder implements LoggerAwareInterface
                 $this->getRequestFactory(),
                 $this->getResponseFactory(),
                 $this->logger,
-                $this->getErrorHandler(),
                 $this->middlewares
             );
             $proxyClass = $this->getServantProxyGenerator()->generate(QueryFServant::class);
@@ -339,22 +333,6 @@ class TarsClientBuilder implements LoggerAwareInterface
         return $this;
     }
 
-    public function getErrorHandler(): ErrorHandlerInterface
-    {
-        if (!$this->errorHandler) {
-            $this->errorHandler = new DefaultErrorHandler();
-        }
-
-        return $this->errorHandler;
-    }
-
-    public function setErrorHandler(ErrorHandlerInterface $errorHandler): TarsClientBuilder
-    {
-        $this->errorHandler = $errorHandler;
-
-        return $this;
-    }
-
     public function addMiddleware(MiddlewareInterface $middleware): TarsClientBuilder
     {
         $this->middlewares[] = $middleware;
@@ -380,7 +358,6 @@ class TarsClientBuilder implements LoggerAwareInterface
             $this->getRequestFactory(),
             $this->getResponseFactory(),
             $this->logger,
-            $this->getErrorHandler(),
             $this->middlewares
         );
     }

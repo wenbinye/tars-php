@@ -19,6 +19,7 @@ use Monolog\Logger;
 use Symfony\Component\Validator\Validation;
 use wenbinye\tars\client\ConfigServant;
 use wenbinye\tars\rpc\middleware\AddRequestReferer;
+use wenbinye\tars\rpc\middleware\ErrorHandler;
 use wenbinye\tars\rpc\middleware\RequestLog;
 use wenbinye\tars\rpc\middleware\Retry;
 use wenbinye\tars\rpc\middleware\SendStat;
@@ -116,10 +117,11 @@ class ConfigLoader implements ConfigLoaderInterface
                 'tars' => [
                     'middleware' => [
                         'client' => [
-                            RequestLog::class,
+                            ErrorHandler::class,
                             AddRequestReferer::class,
                             SendStat::class,
                             Retry::class,
+                            RequestLog::class,
                         ],
                         'servant' => [
                             ServerRequestLog::class,

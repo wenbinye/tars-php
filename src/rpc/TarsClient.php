@@ -13,7 +13,6 @@ use wenbinye\tars\rpc\message\ClientRequestInterface;
 use wenbinye\tars\rpc\message\RequestAttribute;
 use wenbinye\tars\rpc\message\ResponseFactoryInterface;
 use wenbinye\tars\rpc\message\ReturnValueInterface;
-use wenbinye\tars\rpc\middleware\MiddlewareInterface;
 
 class TarsClient implements TarsClientInterface, LoggerAwareInterface
 {
@@ -33,28 +32,16 @@ class TarsClient implements TarsClientInterface, LoggerAwareInterface
      */
     private $responseFactory;
 
-    /**
-     * @var ErrorHandlerInterface|null
-     */
-    private $errorHandler;
-
-    /**
-     * AbstractClient constructor.
-     *
-     * @param MiddlewareInterface[] $middlewares
-     */
     public function __construct(ConnectionFactoryInterface $connectionFactory,
                                 ClientRequestFactoryInterface $requestFactory,
                                 ResponseFactoryInterface $responseFactory,
                                 ?LoggerInterface $logger,
-                                ?ErrorHandlerInterface $errorHandler = null,
                                 array $middlewares = [])
     {
         $this->requestFactory = $requestFactory;
         $this->connectionFactory = $connectionFactory;
         $this->responseFactory = $responseFactory;
         $this->setLogger($logger ?? new NullLogger());
-        $this->errorHandler = $errorHandler;
         $this->middlewares = $middlewares;
     }
 
@@ -79,12 +66,7 @@ class TarsClient implements TarsClientInterface, LoggerAwareInterface
         $response = $this->buildMiddlewareStack(function (ClientRequestInterface $request) use ($connection) {
             $rawContent = $connection->send($request);
 
-            $response = $this->responseFactory->create($rawContent, $request);
-            if (isset($this->errorHandler) && !$response->isSuccess()) {
-                return $this->errorHandler->handle($response);
-            }
-
-            return $response;
+            return $this->responseFactory->create($rawContent, $request);
         })->__invoke($request);
 
         return array_map(static function (ReturnValueInterface $value) {
@@ -92,9 +74,6 @@ class TarsClient implements TarsClientInterface, LoggerAwareInterface
         }, $response->getReturnValues());
     }
 
-    /**
-     * @param object $servant
-     */
     protected function createRequest($servant, string $method, array $args): ClientRequestInterface
     {
         return $this->requestFactory->createRequest($servant, $method, $args);

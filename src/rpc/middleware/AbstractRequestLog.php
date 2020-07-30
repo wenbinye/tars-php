@@ -7,9 +7,11 @@ namespace wenbinye\tars\rpc\middleware;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use wenbinye\tars\rpc\ErrorCode;
+use wenbinye\tars\rpc\message\ClientRequestInterface;
 use wenbinye\tars\rpc\message\RequestAttribute;
 use wenbinye\tars\rpc\message\RequestInterface;
 use wenbinye\tars\rpc\message\ResponseInterface;
+use wenbinye\tars\rpc\message\ServerRequestHolder;
 
 /**
  * Formats log messages using variable substitutions for requests, responses,
@@ -62,17 +64,18 @@ abstract class AbstractRequestLog implements LoggerAwareInterface
     protected function handle(RequestInterface $request, callable $next): ResponseInterface
     {
         $start = microtime(true);
-        $response = null;
         try {
             $response = $next($request);
+            $this->writeLog($request, $response, (microtime(true) - $start) * 1000);
 
             return $response;
-        } finally {
-            $this->writeLog($request, $response, (microtime(true) - $start) * 1000);
+        } catch (\Throwable $e) {
+            $this->writeLog($request, null, (microtime(true) - $start) * 1000);
+            throw $e;
         }
     }
 
-    public function writeLog(RequestInterface $request, ?ResponseInterface $response, float $responseTime): void
+    protected function writeLog(RequestInterface $request, ?ResponseInterface $response, float $responseTime): void
     {
         $time = sprintf('%.2f', $responseTime);
 
@@ -81,7 +84,7 @@ abstract class AbstractRequestLog implements LoggerAwareInterface
         $message = strtr($this->format, [
             '$remote_addr' => RequestAttribute::getRemoteAddress($request) ?? '-',
             '$time_local' => strftime('%d/%b/%Y:%H:%M:%S %z'),
-            '$referer' => $request->getContext()[AddRequestReferer::CONTEXT_KEY] ?? '',
+            '$referer' => $this->getReferer($request),
             '$request' => $this->formatRequest(isset($response) ? $response->getRequest() : $request),
             '$request_id' => $request->getRequestId(),
             '$servant' => $request->getServantName(),
@@ -125,5 +128,19 @@ abstract class AbstractRequestLog implements LoggerAwareInterface
             RequestAttribute::getServerAddress($request),
             $request->getServantName(),
             $request->getFuncName());
+    }
+
+    /**
+     * @return mixed|string
+     */
+    protected function getReferer(RequestInterface $request)
+    {
+        if ($request instanceof ClientRequestInterface) {
+            $serverRequest = ServerRequestHolder::getRequest();
+
+            return $serverRequest ? $this->getReferer($serverRequest) : '';
+        }
+
+        return $request->getContext()[AddRequestReferer::CONTEXT_KEY] ?? '';
     }
 }

@@ -32,6 +32,7 @@ use wenbinye\tars\rpc\message\RequestIdGenerator;
 use wenbinye\tars\rpc\message\RequestIdGeneratorInterface;
 use wenbinye\tars\rpc\message\ResponseFactory;
 use wenbinye\tars\rpc\message\ResponseFactoryInterface;
+use wenbinye\tars\rpc\middleware\ErrorHandler;
 use wenbinye\tars\rpc\middleware\RequestLog;
 use wenbinye\tars\rpc\middleware\Retry;
 use wenbinye\tars\rpc\route\ChainRouteResolver;
@@ -146,8 +147,8 @@ class ClientConfiguration implements DefinitionConfiguration
         $requestLog->setLogger($logger);
         $retry = new Retry(null);
         $retry->setLogger($logger);
-        $middlewares = [$retry, $requestLog];
-        $client = new TarsClient($connectionFactory, $requestFactory, $responseFactory, $logger, $errorHandler, $middlewares);
+        $middlewares = [new ErrorHandler($errorHandler), $requestLog, $retry];
+        $client = new TarsClient($connectionFactory, $requestFactory, $responseFactory, $logger, $middlewares);
 
         return new TarsClientFactory($client, $servantProxyGenerator);
     }

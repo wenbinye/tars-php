@@ -12,11 +12,11 @@ class ServerRequestHolder
 
     public static function setRequest(ServerRequestInterface $request): void
     {
-        Coroutine::getContext()->offsetSet(self::REQUEST_CONTEXT_KEY, $request);
+        Coroutine::getContext()[self::REQUEST_CONTEXT_KEY] = $request;
     }
 
     public static function getRequest(): ?ServerRequestInterface
     {
-        return Coroutine::getContext()->offsetGet(self::REQUEST_CONTEXT_KEY);
+        return Coroutine::getContext()[self::REQUEST_CONTEXT_KEY] ?? null;
     }
 }

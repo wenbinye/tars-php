@@ -11,6 +11,9 @@ class DefaultErrorHandler implements ErrorHandlerInterface
 {
     public function handle(ResponseInterface $response)
     {
+        if (ErrorCode::INVALID_ARGUMENT === $response->getReturnCode()) {
+            throw new \InvalidArgumentException($response->getMessage());
+        }
         throw new ServerException($response);
     }
 }
