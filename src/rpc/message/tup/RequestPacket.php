@@ -8,6 +8,9 @@ use wenbinye\tars\rpc\message\RequestInterface;
 
 /**
  * Class RequestPacket.
+ *
+ * context, status 区别：context 是两个服务之间用的，status 是从调用链的开始传到结束。
+ * {@see https://github.com/TarsCloud/Tars/issues/729}
  */
 class RequestPacket
 {

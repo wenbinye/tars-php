@@ -18,7 +18,7 @@ class ConfigServantTest extends FunctionalTestCase
         $container = $this->getContainer();
         /** @var TarsClient $tarsClient */
         $tarsClient = $container->get(TarsClientInterface::class);
-        $tarsClient->addMiddleware($container->make(RequestLog::class, ['template' => RequestLog::DEBUG]));
+        $tarsClient->addMiddleware($container->make(RequestLog::class, ['template' => RequestLog::MAIN]));
         $config = $container->get(ConfigServant::class);
         $serverProp = $container->get(ServerProperties::class);
         $config->loadConfig($serverProp->getApp(), $serverProp->getServer(), 'mysql', $mysqlConfig);

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc\middleware;
 
+use wenbinye\tars\rpc\message\ResponseInterface;
+use wenbinye\tars\rpc\message\ServerRequestInterface;
+
 /**
  * Formats log messages using variable substitutions for requests, responses,
  * and other transactional data.
@@ -20,6 +23,10 @@ namespace wenbinye\tars\rpc\middleware;
  * - $servant:         Servant name
  * - $method:          Method name
  */
-class ServerRequestLog extends RequestLog
+class ServerRequestLog extends AbstractRequestLog implements ServerMiddlewareInterface
 {
+    public function __invoke(ServerRequestInterface $request, callable $next): ResponseInterface
+    {
+        return $this->handle($request, $next);
+    }
 }

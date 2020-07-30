@@ -9,13 +9,16 @@ use Monolog\Test\TestCase;
 use Psr\Container\ContainerInterface;
 use wenbinye\tars\protocol\Packer;
 use wenbinye\tars\rpc\ErrorCode;
+use wenbinye\tars\rpc\exception\RequestException;
+use wenbinye\tars\rpc\message\ClientRequestFactory;
 use wenbinye\tars\rpc\message\MethodMetadataFactory;
-use wenbinye\tars\rpc\message\RequestFactory;
 use wenbinye\tars\rpc\message\RequestIdGenerator;
 use wenbinye\tars\rpc\message\ResponseFactory;
 use wenbinye\tars\rpc\message\ServerRequestFactory;
+use wenbinye\tars\rpc\message\tup\RequestPacket;
 use wenbinye\tars\rpc\ServantProxyGenerator;
 use wenbinye\tars\rpc\ServantProxyGeneratorInterface;
+use wenbinye\tars\rpc\server\DefaultErrorHandler;
 use wenbinye\tars\rpc\server\TarsRequestHandler;
 use wenbinye\tars\rpc\TarsClientInterface;
 use wenbinye\tars\server\Config;
@@ -26,7 +29,7 @@ use wenbinye\tars\server\fixtures\HelloService;
 class TarsRequestHandlerTest extends TestCase
 {
     /**
-     * @var RequestFactory
+     * @var ClientRequestFactory
      */
     private $requestFactory;
     /**
@@ -67,10 +70,10 @@ class TarsRequestHandlerTest extends TestCase
         $methodMetadataFactory = new MethodMetadataFactory($annotationReader);
         $this->proxyGenerator = new ServantProxyGenerator($annotationReader);
         $this->tarsClient = \Mockery::mock(TarsClientInterface::class);
-        $this->requestFactory = new RequestFactory($methodMetadataFactory, $packer, new RequestIdGenerator());
+        $this->requestFactory = new ClientRequestFactory($methodMetadataFactory, $packer, new RequestIdGenerator());
         $this->serverRequestFactory = new ServerRequestFactory($container, $packer, $methodMetadataFactory);
         $this->responseFactory = new ResponseFactory($packer);
-        $this->tarsRequestHandler = new TarsRequestHandler($packer, null);
+        $this->tarsRequestHandler = new TarsRequestHandler($packer, new DefaultErrorHandler(), null);
         $this->serverRequestFactory->register('PHPTest.PHPTcpServer.obj', HelloServant::class);
     }
 
@@ -89,17 +92,25 @@ class TarsRequestHandlerTest extends TestCase
         $this->assertEquals('hello '.$message, $clientResponse->getReturnValues()[0]->getData());
     }
 
-    public function testNoServant()
+    public function testNoServant1()
     {
+        $this->expectException(RequestException::class);
         $message = 'world';
         $servantClass = $this->proxyGenerator->generate(AnotherHelloServant::class);
         $request = $this->requestFactory->createRequest(new $servantClass($this->tarsClient), 'hello', [$message]);
 
         $response = $this->tarsRequestHandler->handle($this->serverRequestFactory->create($request->getBody()));
-        // var_export($response);
-        $this->assertFalse($response->isSuccess());
+    }
 
-        $clientResponse = $this->responseFactory->create($response->getBody(), $request);
+    public function testNoServant()
+    {
+        $message = 'world';
+        $servantClass = $this->proxyGenerator->generate(AnotherHelloServant::class);
+        $request = $this->requestFactory->createRequest(new $servantClass($this->tarsClient), 'hello', [$message]);
+        $requestException = new RequestException(RequestPacket::builder()->build(),
+        ErrorCode::SERVER_NO_SERVANT_ERR()->message, ErrorCode::SERVER_NO_SERVANT_ERR);
+
+        $clientResponse = $this->responseFactory->create($requestException->toResponseBody(), $request);
         // var_export($clientResponse);
         $this->assertEquals(ErrorCode::SERVER_NO_SERVANT_ERR, $clientResponse->getReturnCode());
         // $this->assertEquals('hello '.$message, $clientResponse->getReturnValues()[0]->getData());

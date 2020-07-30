@@ -7,7 +7,7 @@ namespace wenbinye\tars\rpc\message;
 use wenbinye\tars\rpc\message\tup\RequestPacket;
 use wenbinye\tars\rpc\message\tup\RequestPacketBuilder;
 
-class Request extends AbstractRequest
+class Request extends AbstractRequest implements ClientRequestInterface
 {
     /**
      * @var RequestPacketBuilder
@@ -131,5 +131,29 @@ class Request extends AbstractRequest
     public function getRequestPacketBuilder(): RequestPacketBuilder
     {
         return $this->requestPacketBuilder;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function withContext(array $context)
+    {
+        $new = clone $this;
+        $new->requestPacketBuilder = clone $this->requestPacketBuilder;
+        $new->requestPacketBuilder->setContext($context);
+
+        return $new;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function withStatus(array $status)
+    {
+        $new = clone $this;
+        $new->requestPacketBuilder = clone $this->requestPacketBuilder;
+        $new->requestPacketBuilder->setStatus($status);
+
+        return $new;
     }
 }

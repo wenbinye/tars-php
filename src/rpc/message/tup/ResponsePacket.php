@@ -84,10 +84,10 @@ class ResponsePacket
     {
         if (Tup::VERSION === $version) {
             $parsedBody = \TUPAPI::decodeReqPacket($response);
-            $status = isset($parsedBody['status']) && is_array($parsedBody['status']) ? $parsedBody['status'] : [];
-            $returnCode = (int) ($status[self::RESULT_CODE] ?? ErrorCode::SERVER_SUCCESS);
-            $resultDesc = $status[self::RESULT_DESC] ?? '';
-            unset($status[self::RESULT_DESC], $status[self::RESULT_CODE]);
+            $context = isset($parsedBody['context']) && is_array($parsedBody['context']) ? $parsedBody['context'] : [];
+            $returnCode = (int) ($context[self::RESULT_CODE] ?? ErrorCode::SERVER_SUCCESS);
+            $resultDesc = $context[self::RESULT_DESC] ?? '';
+            unset($context[self::RESULT_DESC], $context[self::RESULT_CODE]);
 
             return new self(
                 $parsedBody['iVersion'] ?? Tup::VERSION,
@@ -97,8 +97,8 @@ class ResponsePacket
                 $returnCode,
                 $parsedBody['sBuffer'] ?? '',
                 $resultDesc,
-                $parsedBody['context'] ?? [],
-                $status
+                $context,
+                $parsedBody['status'] ?? []
             );
         } else {
             $parsedBody = \TUPAPI::decode($response, $version);
@@ -128,11 +128,11 @@ class ResponsePacket
                 $this->getPacketType(),
                 $this->getMessageType(),
                 0,
-                $this->context,
-                array_merge($this->status, [
+                array_merge($this->context, [
                     self::RESULT_CODE => $this->getResultCode(),
                     self::RESULT_DESC => $this->getResultDesc(),
                 ]),
+                $this->status,
                 $buffers);
         } else {
             return \TUPAPI::encodeRspPacket(

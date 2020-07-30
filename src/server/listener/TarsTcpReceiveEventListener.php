@@ -12,6 +12,7 @@ use wenbinye\tars\rpc\ErrorCode;
 use wenbinye\tars\rpc\exception\RequestException;
 use wenbinye\tars\rpc\message\RequestAttribute;
 use wenbinye\tars\rpc\message\ServerRequestFactoryInterface;
+use wenbinye\tars\rpc\message\ServerRequestHolder;
 use wenbinye\tars\rpc\message\tup\RequestPacket;
 use wenbinye\tars\rpc\server\RequestHandlerInterface;
 use wenbinye\tars\server\ServerProperties;
@@ -70,6 +71,7 @@ class TarsTcpReceiveEventListener implements EventListenerInterface, LoggerAware
             }
             $request = $request->withAttribute(RequestAttribute::CLIENT_IP, $connectionInfo->getRemoteIp());
 
+            ServerRequestHolder::setRequest($request);
             $response = $this->requestHandler->handle($request);
             $server->send($event->getClientId(), $response->getBody());
         } catch (RequestException $e) {

@@ -49,8 +49,6 @@ interface RequestInterface extends MessageInterface
 
     /**
      * Return an instance with the specified derived request attribute.
-     *
-     * @return static
      */
     public function withAttribute(string $attribute, $value);
 }

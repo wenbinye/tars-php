@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace wenbinye\tars\functional;
 
 use wenbinye\tars\client\LogServant;
+use wenbinye\tars\rpc\message\ClientRequestFactoryInterface;
 use wenbinye\tars\rpc\message\RequestAttribute;
-use wenbinye\tars\rpc\message\RequestFactoryInterface;
 use wenbinye\tars\rpc\message\ResponseFactoryInterface;
 use wenbinye\tars\rpc\message\ServerResponse;
 use wenbinye\tars\rpc\route\RouteResolverInterface;
@@ -22,7 +22,7 @@ class StatTest extends FunctionalTestCase
         $log = $container->get(LogServant::class);
         $servantName = 'tars.tarslog.LogObj';
 
-        $request = $container->get(RequestFactoryInterface::class)->createRequest($log, 'logger', []);
+        $request = $container->get(ClientRequestFactoryInterface::class)->createRequest($log, 'logger', []);
         $stat = $container->get(StatInterface::class);
 
         foreach (range(300, 600) as $time) {

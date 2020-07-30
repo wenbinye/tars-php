@@ -26,8 +26,8 @@ use wenbinye\tars\rpc\DefaultErrorHandler;
 use wenbinye\tars\rpc\ErrorHandlerInterface;
 use wenbinye\tars\rpc\lb\Algorithm;
 use wenbinye\tars\rpc\lb\RoundRobin;
-use wenbinye\tars\rpc\message\RequestFactory;
-use wenbinye\tars\rpc\message\RequestFactoryInterface;
+use wenbinye\tars\rpc\message\ClientRequestFactory;
+use wenbinye\tars\rpc\message\ClientRequestFactoryInterface;
 use wenbinye\tars\rpc\message\RequestIdGenerator;
 use wenbinye\tars\rpc\message\RequestIdGeneratorInterface;
 use wenbinye\tars\rpc\message\ResponseFactory;
@@ -87,7 +87,7 @@ class ClientConfiguration implements DefinitionConfiguration
             TarsClientFactoryInterface::class => autowire(TarsClientFactory::class),
             TarsClientInterface::class => autowire(TarsClient::class),
 
-            RequestFactoryInterface::class => autowire(RequestFactory::class),
+            ClientRequestFactoryInterface::class => autowire(ClientRequestFactory::class),
             ResponseFactoryInterface::class => autowire(ResponseFactory::class),
             RequestIdGeneratorInterface::class => autowire(RequestIdGenerator::class),
         ];
@@ -132,7 +132,7 @@ class ClientConfiguration implements DefinitionConfiguration
     public function inMemoryRouteTarsClientFactory(
         PoolFactoryInterface $poolFactory,
         InMemoryRouteResolver $inMemoryRouteResolver,
-        RequestFactoryInterface $requestFactory,
+        ClientRequestFactoryInterface $requestFactory,
         ResponseFactoryInterface $responseFactory,
         ErrorHandlerInterface $errorHandler,
         LoggerFactoryInterface $loggerFactory,

@@ -16,10 +16,10 @@ use wenbinye\tars\protocol\Packer;
 use wenbinye\tars\protocol\PackerInterface;
 use wenbinye\tars\rpc\connection\ConnectionFactory;
 use wenbinye\tars\rpc\connection\ConnectionFactoryInterface;
+use wenbinye\tars\rpc\message\ClientRequestFactory;
+use wenbinye\tars\rpc\message\ClientRequestFactoryInterface;
 use wenbinye\tars\rpc\message\MethodMetadataFactory;
 use wenbinye\tars\rpc\message\MethodMetadataFactoryInterface;
-use wenbinye\tars\rpc\message\RequestFactory;
-use wenbinye\tars\rpc\message\RequestFactoryInterface;
 use wenbinye\tars\rpc\message\RequestIdGenerator;
 use wenbinye\tars\rpc\message\RequestIdGeneratorInterface;
 use wenbinye\tars\rpc\message\ResponseFactory;
@@ -88,7 +88,7 @@ class TarsClientBuilder implements LoggerAwareInterface
     private $connectionFactory;
 
     /**
-     * @var RequestFactoryInterface
+     * @var ClientRequestFactoryInterface
      */
     private $requestFactory;
 
@@ -303,10 +303,10 @@ class TarsClientBuilder implements LoggerAwareInterface
         return $this;
     }
 
-    public function getRequestFactory(): RequestFactoryInterface
+    public function getRequestFactory(): ClientRequestFactoryInterface
     {
         if (!$this->requestFactory) {
-            $this->requestFactory = new RequestFactory(
+            $this->requestFactory = new ClientRequestFactory(
                 $this->getMethodMetadataFactory(),
                 $this->getPacker(),
                 $this->getRequestIdGenerator()
@@ -316,7 +316,7 @@ class TarsClientBuilder implements LoggerAwareInterface
         return $this->requestFactory;
     }
 
-    public function setRequestFactory(RequestFactoryInterface $requestFactory): TarsClientBuilder
+    public function setRequestFactory(ClientRequestFactoryInterface $requestFactory): TarsClientBuilder
     {
         $this->requestFactory = $requestFactory;
 

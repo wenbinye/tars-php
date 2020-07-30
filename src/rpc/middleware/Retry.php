@@ -7,11 +7,12 @@ namespace wenbinye\tars\rpc\middleware;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use wenbinye\tars\rpc\exception\RetryableException;
+use wenbinye\tars\rpc\message\ClientRequestInterface;
 use wenbinye\tars\rpc\message\RequestInterface;
 use wenbinye\tars\rpc\message\ResponseInterface;
 use wenbinye\tars\rpc\route\RegistryRouteResolver;
 
-class Retry implements MiddlewareInterface, LoggerAwareInterface
+class Retry implements ClientMiddlewareInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
@@ -45,7 +46,7 @@ class Retry implements MiddlewareInterface, LoggerAwareInterface
         $this->initialInterval = $initialInterval * 1000;
     }
 
-    public function __invoke(RequestInterface $request, callable $next): ResponseInterface
+    public function __invoke(ClientRequestInterface $request, callable $next): ResponseInterface
     {
         $retries = $this->retries;
         while ($retries > 0) {

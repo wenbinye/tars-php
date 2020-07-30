@@ -20,7 +20,7 @@ class LogTest extends FunctionalTestCase
         $containerFactory = $container->get(ConnectionFactoryInterface::class);
         /** @var TarsClient $tarsClient */
         $tarsClient = $container->get(TarsClientInterface::class);
-        $tarsClient->addMiddleware($container->make(RequestLog::class, ['template' => RequestLog::DEBUG]));
+        $tarsClient->addMiddleware($container->make(RequestLog::class, ['template' => RequestLog::MAIN]));
         $handler = $container->get(TarsLogHandler::class);
         $logger->pushHandler($handler);
 

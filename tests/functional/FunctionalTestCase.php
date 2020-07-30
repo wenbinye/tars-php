@@ -11,6 +11,8 @@ use Psr\Container\ContainerInterface;
 use wenbinye\tars\rpc\route\LocalDevRouteResolver;
 use wenbinye\tars\rpc\route\RouteResolverInterface;
 use wenbinye\tars\server\Config;
+use wenbinye\tars\server\framework\ClientConfiguration;
+use wenbinye\tars\server\framework\FoundationConfiguration;
 use wenbinye\tars\server\framework\ServerConfiguration;
 
 abstract class FunctionalTestCase extends TestCase
@@ -23,6 +25,8 @@ abstract class FunctionalTestCase extends TestCase
     public function getContainer(): ContainerInterface
     {
         $containerBuilder = new ContainerBuilder();
+        $containerBuilder->addConfiguration(new FoundationConfiguration());
+        $containerBuilder->addConfiguration(new ClientConfiguration());
         $containerBuilder->addConfiguration(new ServerConfiguration());
         $containerBuilder->addDefinitions([
             RouteResolverInterface::class => decorate(function ($resolver) {

@@ -26,8 +26,14 @@ interface MessageInterface
      */
     public function getRequestId(): int;
 
+    /**
+     * Retrieve the request status info.
+     */
     public function getStatus(): array;
 
+    /**
+     * Retrieve the request context info.
+     */
     public function getContext(): array;
 
     /**

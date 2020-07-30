@@ -9,9 +9,9 @@ use PHPUnit\Framework\TestCase;
 use wenbinye\tars\protocol\Packer;
 use wenbinye\tars\rpc\exception\RequestException;
 use wenbinye\tars\rpc\fixtures\HelloServiceClient;
+use wenbinye\tars\rpc\message\ClientRequestFactory;
 use wenbinye\tars\rpc\message\MethodMetadataFactory;
 use wenbinye\tars\rpc\message\Request;
-use wenbinye\tars\rpc\message\RequestFactory;
 use wenbinye\tars\rpc\message\RequestIdGenerator;
 use wenbinye\tars\rpc\message\ResponseFactory;
 use wenbinye\tars\rpc\message\ServerResponse;
@@ -30,7 +30,7 @@ class ResponseFactoryTest extends TestCase
         $client = new HelloServiceClient();
         $methodMetadataFactory = new MethodMetadataFactory($reader);
 
-        $factory = new RequestFactory($methodMetadataFactory, $packer, new RequestIdGenerator());
+        $factory = new ClientRequestFactory($methodMetadataFactory, $packer, new RequestIdGenerator());
         $payload = ['hello'];
         /** @var Request $request */
         $request = $factory->createRequest($client, 'hello', $payload);
@@ -53,7 +53,7 @@ class ResponseFactoryTest extends TestCase
         $client = new HelloServiceClient();
         $methodMetadataFactory = new MethodMetadataFactory($reader);
 
-        $factory = new RequestFactory($methodMetadataFactory, $packer, new RequestIdGenerator());
+        $factory = new ClientRequestFactory($methodMetadataFactory, $packer, new RequestIdGenerator());
         $payload = ['hello'];
         /** @var Request $request */
         $request = $factory->createRequest($client, 'hello', $payload);

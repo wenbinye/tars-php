@@ -12,7 +12,7 @@ class ConfigTest extends TestCase
 {
     public function testParse()
     {
-        $result = Config::parse('<app>
+        Config::parse('<app>
 <server>
 foo=1
 </server>
@@ -23,7 +23,7 @@ bar=2
         $this->assertEquals(['app' => [
             'server' => ['foo' => '1'],
             'client' => ['bar' => '2'],
-        ]], $result->toArray());
+        ]], Config::getInstance()->toArray());
     }
 
     public function testParseFile()
@@ -48,16 +48,5 @@ bar=2
         $this->assertNotNull($clientProperties->getLocator());
         // var_export([$clientProperties, $serverProperties]);
         // var_export($result->toArray());
-    }
-
-    public function testGet()
-    {
-        $config = Config::fromArray(['foo' => [
-            'bar' => 1,
-        ]]);
-
-        $this->assertTrue($config->has('foo.bar'));
-        $this->assertFalse($config->has('foo.baz'));
-        $this->assertEquals(1, $config->get('foo.bar'));
     }
 }

@@ -18,6 +18,7 @@ use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Symfony\Component\Validator\Validation;
 use wenbinye\tars\client\ConfigServant;
+use wenbinye\tars\rpc\middleware\AddRequestReferer;
 use wenbinye\tars\rpc\middleware\RequestLog;
 use wenbinye\tars\rpc\middleware\Retry;
 use wenbinye\tars\rpc\middleware\SendStat;
@@ -116,6 +117,7 @@ class ConfigLoader implements ConfigLoaderInterface
                     'middleware' => [
                         'client' => [
                             RequestLog::class,
+                            AddRequestReferer::class,
                             SendStat::class,
                             Retry::class,
                         ],

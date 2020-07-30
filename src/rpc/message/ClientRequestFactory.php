@@ -8,7 +8,7 @@ use wenbinye\tars\protocol\PackerInterface;
 use wenbinye\tars\rpc\message\tup\Tup;
 use wenbinye\tars\rpc\TarsRpcPacker;
 
-class RequestFactory implements RequestFactoryInterface
+class ClientRequestFactory implements ClientRequestFactoryInterface
 {
     /**
      * @var MethodMetadataFactoryInterface
@@ -77,7 +77,7 @@ class RequestFactory implements RequestFactoryInterface
         return $this->timeout;
     }
 
-    public function createRequest($servant, string $method, array $parameters): RequestInterface
+    public function createRequest($servant, string $method, array $parameters): ClientRequestInterface
     {
         $methodMetadata = $this->methodMetadataFactory->create($servant, $method);
         $parameters = $this->tarsRpcPacker->packRequest($methodMetadata, $parameters, $this->version);

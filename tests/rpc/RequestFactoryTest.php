@@ -10,9 +10,9 @@ use Psr\Container\ContainerInterface;
 use wenbinye\tars\protocol\Packer;
 use wenbinye\tars\rpc\fixtures\HelloServiceClient;
 use wenbinye\tars\rpc\fixtures\HelloServiceServant;
+use wenbinye\tars\rpc\message\ClientRequestFactory;
 use wenbinye\tars\rpc\message\MethodMetadataFactory;
 use wenbinye\tars\rpc\message\Request;
-use wenbinye\tars\rpc\message\RequestFactory;
 use wenbinye\tars\rpc\message\RequestIdGenerator;
 use wenbinye\tars\rpc\message\ServerRequestFactory;
 
@@ -29,7 +29,7 @@ class RequestFactoryTest extends TestCase
         $client = new HelloServiceClient();
         $methodMetadataFactory = new MethodMetadataFactory($reader);
 
-        $factory = new RequestFactory($methodMetadataFactory, $packer, new RequestIdGenerator());
+        $factory = new ClientRequestFactory($methodMetadataFactory, $packer, new RequestIdGenerator());
         $payload = ['hello'];
         /** @var Request $request */
         $request = $factory->createRequest($client, 'hello', $payload);
