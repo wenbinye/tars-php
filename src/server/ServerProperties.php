@@ -79,13 +79,13 @@ class ServerProperties
     private $logSize;
 
     /**
-     * @ConfigItem(factory="wenbinye\tars\rpc\route\Route::fromString")
+     * @ConfigItem(factory={Route::class, "fromString"})
      *
      * @var ?Route
      */
     private $node;
     /**
-     * @ConfigItem(factory="wenbinye\tars\rpc\route\ServerAddress::fromString")
+     * @ConfigItem(factory={ServerAddress::class, "fromString"})
      *
      * @var ServerAddress
      */

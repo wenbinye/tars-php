@@ -45,7 +45,7 @@ class LogRotateProcessor implements ProcessorInterface, LoggerAwareInterface
     public function process(Task $task)
     {
         $server = $task->getServer();
-        $server->tick(60000, function () use ($server) {
+        $callback = function () use ($server) {
             try {
                 if ($this->tryRotateLog()) {
                     $this->logger->info(static::TAG.'reload server since log rotated');
@@ -54,7 +54,9 @@ class LogRotateProcessor implements ProcessorInterface, LoggerAwareInterface
             } catch (\Throwable $e) {
                 $this->logger->error(static::TAG.'fail to rotate log: '.$e);
             }
-        });
+        };
+        $server->tick(60000, $callback);
+        $callback();
     }
 
     private function tryRotateLog(): bool

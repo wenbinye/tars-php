@@ -17,7 +17,7 @@ class ClientProperties
      */
     private $asyncThread;
     /**
-     * @ConfigItem(factory="wenbinye\tars\rpc\route\Route::fromString")
+     * @ConfigItem(factory={Route::class, "fromString"})
      *
      * @var ?Route
      */

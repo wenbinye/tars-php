@@ -140,11 +140,15 @@ class PropertyLoader
                 $reflectionClass->getMethod($stringSetter)->invoke($properties, $value);
             } else {
                 if ($configItem->factory) {
-                    if (false !== strpos($configItem->factory, '::')) {
-                        $value = call_user_func(explode('::', $configItem->factory, 2), $value);
-                    } elseif (method_exists(get_class($properties), $configItem->factory)) {
-                        $value = call_user_func([get_class($properties), $configItem->factory], $value);
-                    } else {
+                    if (is_string($configItem->factory)) {
+                        if (false !== strpos($configItem->factory, '::')) {
+                            $value = call_user_func(explode('::', $configItem->factory, 2), $value);
+                        } elseif (method_exists(get_class($properties), $configItem->factory)) {
+                            $value = call_user_func([get_class($properties), $configItem->factory], $value);
+                        } else {
+                            $value = call_user_func($configItem->factory, $value);
+                        }
+                    } elseif (is_array($configItem->factory)) {
                         $value = call_user_func($configItem->factory, $value);
                     }
                 } else {

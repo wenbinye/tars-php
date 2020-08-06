@@ -101,6 +101,7 @@ class ConfigLoader implements ConfigLoaderInterface
                 'name' => $serverProperties->getServerName(),
                 'env_file' => $config->get('tars.application.server.env_file'),
                 'enable_php_server' => $enablePhpServer,
+                'base-path' => $serverProperties->getBasePath(),
                 'listeners' => [
                     StartEventListener::class,
                     ManagerStartEventListener::class,
