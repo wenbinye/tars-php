@@ -8,9 +8,11 @@ use kuiper\di\annotation\Command;
 use kuiper\di\ComponentCollection;
 use kuiper\di\ContainerBuilder;
 use Psr\Container\ContainerInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\CommandLoader\FactoryCommandLoader;
 use wenbinye\tars\deploy\PackageCommand;
+use wenbinye\tars\server\event\BootstrapEvent;
 
 class ServerApplication
 {
@@ -57,12 +59,14 @@ class ServerApplication
         if (!isset($configOptions[0])) {
             Config::createDummyConfig();
         }
+        $app = new Application(Config::getInstance()->getString('application.name', self::APP_NAME));
+
         $container = $this->createContainer();
         $commandLoader = new FactoryCommandLoader($this->getCommandMap($container));
-
-        $app = new Application(self::APP_NAME);
         $app->setCommandLoader($commandLoader);
         $app->setDefaultCommand(ServerStartCommand::COMMAND_NAME);
+
+        $container->get(EventDispatcherInterface::class)->dispatch(new BootstrapEvent($app));
 
         return $app;
     }

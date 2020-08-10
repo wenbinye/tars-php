@@ -46,8 +46,12 @@ class ConfigLoader implements ConfigLoaderInterface
      */
     public function __construct(?PropertyLoader $propertyLoader = null)
     {
-        $this->propertyLoader = $propertyLoader ?? new PropertyLoader(AnnotationReader::getInstance(),
-                Validation::createValidatorBuilder()->getValidator());
+        $this->propertyLoader = $propertyLoader ?? new PropertyLoader(
+                AnnotationReader::getInstance(),
+                Validation::createValidatorBuilder()
+                    ->enableAnnotationMapping(AnnotationReader::getInstance())
+                    ->getValidator()
+            );
     }
 
     /**

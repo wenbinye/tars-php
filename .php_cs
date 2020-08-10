@@ -13,6 +13,7 @@ return PhpCsFixer\Config::create()
         'declare_strict_types' => true,
         'array_syntax' => array('syntax' => 'short'),
         'ordered_imports' => true,
+        'no_superfluous_phpdoc_tags' => false,
         'no_unused_imports' => true,
         'no_alias_functions' => false,
     ]);

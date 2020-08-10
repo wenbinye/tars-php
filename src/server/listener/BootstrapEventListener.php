@@ -8,16 +8,12 @@ use kuiper\di\ComponentCollection;
 use kuiper\event\annotation\EventListener;
 use kuiper\event\EventListenerInterface;
 use kuiper\swoole\constants\ServerType;
-use kuiper\swoole\coroutine\Coroutine;
-use kuiper\swoole\event\BootstrapEvent;
 use kuiper\swoole\event\ReceiveEvent;
 use kuiper\swoole\event\RequestEvent;
 use kuiper\swoole\listener\HttpRequestEventListener;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
-use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use wenbinye\tars\protocol\annotation\TarsServant;
 use wenbinye\tars\rpc\message\ServerRequestFactory as TarsServerRequestFactory;
@@ -25,6 +21,7 @@ use wenbinye\tars\rpc\message\ServerRequestFactoryInterface as TarsServerRequest
 use wenbinye\tars\rpc\server\RequestHandlerInterface;
 use wenbinye\tars\rpc\TarsClientInterface;
 use wenbinye\tars\server\Config;
+use wenbinye\tars\server\event\BootstrapEvent;
 use wenbinye\tars\server\Protocol;
 use wenbinye\tars\server\ServerProperties;
 
@@ -44,10 +41,9 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
      */
     private $eventDispatcher;
 
-    public function __construct(ContainerInterface $container, ?LoggerInterface $logger)
+    public function __construct(ContainerInterface $container)
     {
         $this->container = $container;
-        $this->setLogger($logger ?? new NullLogger());
     }
 
     /**
@@ -56,9 +52,6 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
     public function __invoke($event): void
     {
         $config = Config::getInstance();
-        if (!$config->getBool('application.enable_php_server', false)) {
-            Coroutine::enable();
-        }
         $this->addTarsClientMiddleware($config->get('application.tars.middleware.client', []));
         $this->registerServants($config->get('application.tars.servants', []));
         $this->addTarsServantMiddleware($config->get('application.tars.middleware.servant', []));
@@ -159,7 +152,11 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
     }
 
     /**
-     * @param string $eventName
+     * @param BootstrapEvent $event
+     * @param string         $listenerId
+     * @param string         $eventName
+     *
+     * @return string
      */
     private function attach(BootstrapEvent $event, string $listenerId, ?string $eventName = null): string
     {
@@ -171,7 +168,7 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
         }
         if (is_string($eventName)) {
             if (BootstrapEvent::class === $eventName) {
-                call_user_func($listener, $event);
+                $listener($event);
             } else {
                 $this->eventDispatcher->addListener($eventName, $listener);
             }
