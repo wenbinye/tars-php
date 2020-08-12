@@ -53,10 +53,9 @@ class ServerApplication
     public function createApp(): Application
     {
         $configOptions = $this->parseArgv();
-        if ($configOptions[0]) {
+        if (isset($configOptions[0])) {
             $this->getConfigLoader()->load(...$configOptions);
-        }
-        if (!isset($configOptions[0])) {
+        } else {
             Config::createDummyConfig();
         }
         $app = new Application(Config::getInstance()->getString('application.name', self::APP_NAME));
