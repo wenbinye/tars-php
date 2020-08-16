@@ -104,7 +104,7 @@ class ClientConfiguration implements DefinitionConfiguration
 
     /**
      * @Bean
-     * @Inject({"routeList" = "application.tars.route_list"})
+     * @Inject({"routeList" = "application.tars.routes"})
      */
     public function inMemoryRouteResolver(
         ClientProperties $clientProperties,

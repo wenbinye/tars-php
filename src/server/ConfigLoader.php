@@ -89,6 +89,12 @@ class ConfigLoader implements ConfigLoaderInterface
 
     private function addCommandLineOptions(Properties $config, array $properties): void
     {
+        foreach ($properties as $i => $value) {
+            if (!strpos($value, 'application.')) {
+                $value = 'application.'.$value;
+                $properties[$i] = $value;
+            }
+        }
         $define = parse_ini_string(implode("\n", $properties));
         if (is_array($define)) {
             foreach ($define as $key => $value) {
@@ -99,13 +105,13 @@ class ConfigLoader implements ConfigLoaderInterface
 
     private function addDefaultConfig(Properties $config, ServerProperties $serverProperties): void
     {
-        $enablePhpServer = $config->getBool('tars.application.server.enable_php_server', false);
         $config->merge([
             'application' => [
                 'name' => $serverProperties->getServerName(),
-                'env_file' => $config->get('tars.application.server.env_file'),
-                'enable_php_server' => $enablePhpServer,
                 'base-path' => $serverProperties->getBasePath(),
+                'server' => [
+                    'enable-php-server' => $config->getBool('tars.application.server.enable_php_server', false),
+                ],
                 'listeners' => [
                     StartEventListener::class,
                     ManagerStartEventListener::class,
@@ -120,6 +126,7 @@ class ConfigLoader implements ConfigLoaderInterface
                     ],
                 ],
                 'tars' => [
+                    'config-file' => $config->get('tars.application.server.env_file'),
                     'middleware' => [
                         'client' => [
                             ErrorHandler::class,
@@ -157,8 +164,8 @@ class ConfigLoader implements ConfigLoaderInterface
             return;
         }
         $envFiles = ['.env'];
-        $env = $config->getString('application.env_file');
-        if ($env) {
+        $env = $config->getString('application.tars.config-file');
+        if ('' !== $env) {
             $localFile = $serverProperties->getBasePath().'/'.$env;
             /** @var ConfigServant $configServant */
             $configServant = TarsClient::builder()

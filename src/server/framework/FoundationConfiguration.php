@@ -156,11 +156,11 @@ class FoundationConfiguration implements DefinitionConfiguration
         ?array $options): LogRotateProcessor
     {
         $options = ($options ?? []) + [
-            'log_path' => [$serverProperties->getAppLogPath()],
+            'log-path' => [$serverProperties->getAppLogPath()],
             'suffix' => '-Ymd',
         ];
 
-        $logRotateProcessor = new LogRotateProcessor((array) $options['log_path'], $options['suffix']);
+        $logRotateProcessor = new LogRotateProcessor((array) $options['log-path'], $options['suffix']);
         $logRotateProcessor->setLogger($loggerFactory->create(LogRotateProcessor::class));
 
         return $logRotateProcessor;

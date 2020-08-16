@@ -67,7 +67,7 @@ class ServerConfiguration implements DefinitionConfiguration
         $config = Config::getInstance();
         $serverFactory = new ServerFactory($loggerFactory->create(ServerFactory::class));
         $serverFactory->setEventDispatcher($eventDispatcher);
-        $serverFactory->enablePhpServer($config->getBool('application.enable_php_server'));
+        $serverFactory->enablePhpServer($config->getBool('application.server.enable-php-server'));
         if ($serverConfig->getPort()->isHttpProtocol()) {
             $serverFactory->setHttpMessageFactoryHolder($container->get(HttpMessageFactoryHolder::class));
             $serverFactory->setSwooleRequestBridge($container->get(SwooleRequestBridgeInterface::class));

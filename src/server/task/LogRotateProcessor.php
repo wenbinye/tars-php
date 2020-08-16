@@ -23,7 +23,7 @@ class LogRotateProcessor implements ProcessorInterface, LoggerAwareInterface
     /**
      * @var array
      */
-    private $logPath;
+    private $logPaths;
 
     /**
      * @var string
@@ -33,9 +33,9 @@ class LogRotateProcessor implements ProcessorInterface, LoggerAwareInterface
     /**
      * LogRotateProcessor constructor.
      */
-    public function __construct(array $logPath, string $suffixDateFormat)
+    public function __construct(array $logPaths, string $suffixDateFormat)
     {
-        $this->logPath = $logPath;
+        $this->logPaths = $logPaths;
         $this->suffixDateFormat = $suffixDateFormat;
     }
 
@@ -63,7 +63,7 @@ class LogRotateProcessor implements ProcessorInterface, LoggerAwareInterface
     {
         $suffixDateFormat = $this->suffixDateFormat;
         $rotateFiles = [];
-        foreach ($this->logPath as $logPath) {
+        foreach ($this->logPaths as $logPath) {
             $oldStatus = $status = $this->readStatus($logPath);
             $now = time();
             foreach (glob($logPath.'/*.log') as $logFile) {
