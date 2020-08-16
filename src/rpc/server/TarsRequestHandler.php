@@ -51,8 +51,9 @@ class TarsRequestHandler implements RequestHandlerInterface, LoggerAwareInterfac
 
             return new ServerResponse(
                 $request,
-                $this->tarsRpcPacker->packResponse($request->getMethod(), $parameters, $request->getVersion()));
-        } catch (\Exception $e) {
+                $this->tarsRpcPacker->packResponse($request->getMethod(), $parameters, $request->getVersion())
+            );
+        } catch (\Throwable $e) {
             return $this->errorHandler->handle($request, $e);
         }
     }

@@ -144,7 +144,7 @@ class ConfigLoader implements ConfigLoaderInterface
                     ],
                     'level' => [
                         'wenbinye\\tars' => 'info',
-                        'kuiper' => 'info',
+                        'kuiper\\swoole' => 'info',
                     ],
                 ],
             ],
