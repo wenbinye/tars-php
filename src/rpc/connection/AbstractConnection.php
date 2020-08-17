@@ -13,6 +13,7 @@ use wenbinye\tars\rpc\exception\CommunicationException;
 use wenbinye\tars\rpc\exception\ConnectFailedException;
 use wenbinye\tars\rpc\exception\ConnectionClosedException;
 use wenbinye\tars\rpc\exception\ConnectionException;
+use wenbinye\tars\rpc\exception\ResolveAddressFailedException;
 use wenbinye\tars\rpc\message\RequestInterface;
 use wenbinye\tars\rpc\route\RefreshableServerAddressHolderInterface;
 use wenbinye\tars\rpc\route\ServerAddress;
@@ -27,6 +28,7 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
     private const ERROR_EXCEPTIONS = [
         ErrorCode::TARS_SOCKET_CLOSED => ConnectionClosedException::class,
         ErrorCode::TARS_SOCKET_CONNECT_FAILED => ConnectFailedException::class,
+        ErrorCode::ROUTE_FAIL => ResolveAddressFailedException::class,
     ];
 
     /**
@@ -122,7 +124,11 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
      */
     public function getAddress(): ServerAddress
     {
-        return $this->serverAddressHolder->get();
+        try {
+            return $this->serverAddressHolder->get();
+        } catch (\Exception $e) {
+            $this->onConnectionError(ErrorCode::fromValue(ErrorCode::ROUTE_FAIL), $e->getMessage());
+        }
     }
 
     public function getServerAddressHolder(): ServerAddressHolderInterface
