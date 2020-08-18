@@ -8,6 +8,7 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use wenbinye\tars\rpc\connection\ConnectionFactoryInterface;
+use wenbinye\tars\rpc\exception\ServerException;
 use wenbinye\tars\rpc\message\ClientRequestFactoryInterface;
 use wenbinye\tars\rpc\message\ClientRequestInterface;
 use wenbinye\tars\rpc\message\RequestAttribute;
@@ -68,6 +69,9 @@ class TarsClient implements TarsClientInterface, LoggerAwareInterface
 
             return $this->responseFactory->create($rawContent, $request);
         })->__invoke($request);
+        if (!$response->isSuccess()) {
+            throw new ServerException($response);
+        }
 
         return array_map(static function (ReturnValueInterface $value) {
             return $value->getData();
