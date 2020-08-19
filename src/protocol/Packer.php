@@ -6,6 +6,7 @@ namespace wenbinye\tars\protocol;
 
 use InvalidArgumentException;
 use kuiper\annotations\AnnotationReaderInterface;
+use kuiper\reflection\ReflectionType;
 use RuntimeException;
 use TUPAPI;
 use Webmozart\Assert\Assert;
@@ -129,15 +130,13 @@ class Packer implements PackerInterface, TypeParserInterface, TypeConverterInter
         if ($type->isEnum()) {
             return $type->asEnumType()->getEnumValue($data);
         }
-        if (!isset($data)) {
-            $data = [];
-        }
         if ($type->isVector()) {
-            Assert::isArray($data);
             $vector = $this->getTarsType($type);
-
-            foreach ($data as $item) {
-                $vector->pushBack($this->toTarsType($item, $type->asVectorType()->getSubType()));
+            if (isset($data)) {
+                Assert::isArray($data);
+                foreach ($data as $item) {
+                    $vector->pushBack($this->toTarsType($item, $type->asVectorType()->getSubType()));
+                }
             }
 
             return $vector;
@@ -145,37 +144,41 @@ class Packer implements PackerInterface, TypeParserInterface, TypeConverterInter
         if ($type->isMap()) {
             /** @var MapType $type */
             $map = $this->getTarsType($type);
-            $mapType = $type->asMapType();
-            if ($type->getKeyType()->isPrimitive()) {
-                Assert::isArray($data);
-                foreach ($data as $key => $value) {
-                    $map->pushBack([
-                        $this->toTarsType($key, $mapType->getKeyType()) => $this->toTarsType($value, $mapType->getValueType()),
-                    ]);
-                }
-            } else {
-                Assert::isInstanceOf($data, StructMap::class);
-                /** @var StructMapEntry $entry */
-                foreach ($data as $entry) {
-                    $map->pushBack([
-                        'key' => $this->toTarsType($entry->getKey(), $mapType->getKeyType()),
-                        'value' => $this->toTarsType($entry->getValue(), $mapType->getValueType()),
-                    ]);
+            if (isset($data)) {
+                $mapType = $type->asMapType();
+                if ($type->getKeyType()->isPrimitive()) {
+                    Assert::isArray($data);
+                    foreach ($data as $key => $value) {
+                        $map->pushBack([
+                            $this->toTarsType($key, $mapType->getKeyType()) => $this->toTarsType($value, $mapType->getValueType()),
+                        ]);
+                    }
+                } else {
+                    Assert::isInstanceOf($data, StructMap::class);
+                    /** @var StructMapEntry $entry */
+                    foreach ($data as $entry) {
+                        $map->pushBack([
+                            'key' => $this->toTarsType($entry->getKey(), $mapType->getKeyType()),
+                            'value' => $this->toTarsType($entry->getValue(), $mapType->getValueType()),
+                        ]);
+                    }
                 }
             }
 
             return $map;
         }
         if ($type->isStruct()) {
-            Assert::isInstanceOf($data, $type->asStructType()->getClassName());
             $struct = $this->getTarsType($type);
-            foreach ($struct->getFields() as $field) {
-                $struct->{$field['name']} = $this->toTarsType($data->{$field['name']} ?? null, $field['typeObj']);
+            if (isset($data)) {
+                Assert::isInstanceOf($data, $type->asStructType()->getClassName());
+                foreach ($struct->getFields() as $field) {
+                    $struct->{$field['name']} = $this->toTarsType($data->{$field['name']} ?? null, $field['typeObj']);
+                }
             }
 
             return $struct;
         }
-        throw new InvalidArgumentException('unknown type to convert: '.get_class($type));
+        throw new InvalidArgumentException('unknown type to convert: '.ReflectionType::describe($type));
     }
 
     /**

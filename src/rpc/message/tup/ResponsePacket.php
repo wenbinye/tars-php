@@ -86,32 +86,32 @@ class ResponsePacket
             $parsedBody = \TUPAPI::decodeReqPacket($response);
             $context = isset($parsedBody['context']) && is_array($parsedBody['context']) ? $parsedBody['context'] : [];
             $returnCode = (int) ($context[self::RESULT_CODE] ?? ErrorCode::SERVER_SUCCESS);
-            $resultDesc = $context[self::RESULT_DESC] ?? '';
+            $resultDesc = (string) ($context[self::RESULT_DESC] ?? '');
             unset($context[self::RESULT_DESC], $context[self::RESULT_CODE]);
 
             return new self(
-                $parsedBody['iVersion'] ?? Tup::VERSION,
-                $parsedBody['iPacketType'] ?? Tup::PACKET_TYPE,
-                $parsedBody['iRequestId'] ?? -1,
-                $parsedBody['cMessageType'] ?? Tup::MESSAGE_TYPE,
+                (int) ($parsedBody['iVersion'] ?? Tup::VERSION),
+                (int) ($parsedBody['iPacketType'] ?? Tup::PACKET_TYPE),
+                (int) ($parsedBody['iRequestId'] ?? -1),
+                (int) ($parsedBody['cMessageType'] ?? Tup::MESSAGE_TYPE),
                 $returnCode,
-                $parsedBody['sBuffer'] ?? '',
+                (string) ($parsedBody['sBuffer'] ?? ''),
                 $resultDesc,
                 $context,
-                $parsedBody['status'] ?? []
+                isset($parsedBody['status']) && is_array($parsedBody['status']) ? $parsedBody['status'] : []
             );
         } else {
             $parsedBody = \TUPAPI::decode($response, $version);
 
             return new self(
-                $parsedBody['iVersion'] ?? Tup::VERSION,
-                $parsedBody['iPacketType'] ?? Tup::PACKET_TYPE,
-                $parsedBody['iRequestId'] ?? -1,
-                $parsedBody['cMessageType'] ?? Tup::MESSAGE_TYPE,
-                $parsedBody['iRet'] ?? ErrorCode::UNKNOWN,
-                $parsedBody['sBuffer'] ?? '',
-                $parsedBody['sResultDesc'] ?? '',
-                $parsedBody['context'] ?? [],
+                (int) ($parsedBody['iVersion'] ?? Tup::VERSION),
+                (int) ($parsedBody['iPacketType'] ?? Tup::PACKET_TYPE),
+                (int) ($parsedBody['iRequestId'] ?? -1),
+                (int) ($parsedBody['cMessageType'] ?? Tup::MESSAGE_TYPE),
+                (int) ($parsedBody['iRet'] ?? ErrorCode::UNKNOWN),
+                (string) ($parsedBody['sBuffer'] ?? ''),
+                (string) ($parsedBody['sResultDesc'] ?? ''),
+                isset($parsedBody['context']) && is_array($parsedBody['context']) ? $parsedBody['context'] : [],
                 isset($parsedBody['status']) && is_array($parsedBody['status']) ? $parsedBody['status'] : []
             );
         }

@@ -87,16 +87,16 @@ class RequestPacket
         $unpackResult = \TUPAPI::decodeReqPacket($requestBody);
 
         return new self(
-            $unpackResult['iVersion'] ?? Tup::VERSION,
-            $unpackResult['cPacketType'] ?? Tup::PACKET_TYPE,
-            $unpackResult['cMessageType'] ?? Tup::MESSAGE_TYPE,
-            $unpackResult['iRequestId'] ?? -1,
-            $unpackResult['sServantName'] ?? '',
-            $unpackResult['sFuncName'] ?? '',
-            $unpackResult['sBuffer'] ?? '',
-            $unpackResult['iTimeout'] ?? Tup::TIMEOUT,
-            $unpackResult['context'] ?? [],
-            $unpackResult['status'] ?? []
+            (int) ($unpackResult['iVersion'] ?? Tup::VERSION),
+            (int) ($unpackResult['cPacketType'] ?? Tup::PACKET_TYPE),
+            (int) ($unpackResult['cMessageType'] ?? Tup::MESSAGE_TYPE),
+            (int) ($unpackResult['iRequestId'] ?? -1),
+            (string) ($unpackResult['sServantName'] ?? ''),
+            (string) ($unpackResult['sFuncName'] ?? ''),
+            (string) ($unpackResult['sBuffer'] ?? ''),
+            (int) ($unpackResult['iTimeout'] ?? Tup::TIMEOUT),
+            isset($unpackResult['context']) && is_array($unpackResult['context']) ? $unpackResult['context'] : [],
+            isset($unpackResult['status']) && is_array($unpackResult['status']) ? $unpackResult['status'] : []
         );
     }
 
