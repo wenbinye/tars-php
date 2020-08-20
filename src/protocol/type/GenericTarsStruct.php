@@ -14,6 +14,9 @@ class GenericTarsStruct extends \TARS_Struct
     public function __construct(string $className, array $fields)
     {
         parent::__construct($className, $fields);
+        foreach ($fields as $field) {
+            $this->{$field['name']} = null;
+        }
 
         $this->_fields = $fields;
     }
