@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc\message\tup;
 
-use kuiper\helper\Arrays;
 use wenbinye\tars\rpc\message\RequestInterface;
 
 /**
@@ -88,14 +87,14 @@ class RequestPacket
         $unpackResult = \TUPAPI::decodeReqPacket($requestBody);
 
         return new self(
-            (int) Arrays::fetch($unpackResult, 'iVersion', Tup::VERSION),
-            (int) Arrays::fetch($unpackResult, 'cPacketType', Tup::PACKET_TYPE),
-            (int) Arrays::fetch($unpackResult, 'cMessageType', Tup::MESSAGE_TYPE),
-            (int) Arrays::fetch($unpackResult, 'iRequestId', -1),
-            (string) Arrays::fetch($unpackResult, 'sServantName', ''),
-            (string) Arrays::fetch($unpackResult, 'sFuncName', ''),
-            (string) Arrays::fetch($unpackResult, 'sBuffer', ''),
-            (int) Arrays::fetch($unpackResult, 'iTimeout', Tup::TIMEOUT),
+            (int) ($unpackResult['iVersion'] ?? Tup::VERSION),
+            (int) ($unpackResult['cPacketType'] ?? Tup::PACKET_TYPE),
+            (int) ($unpackResult['cMessageType'] ?? Tup::MESSAGE_TYPE),
+            (int) ($unpackResult['iRequestId'] ?? -1),
+            (string) ($unpackResult['sServantName'] ?? ''),
+            (string) ($unpackResult['sFuncName'] ?? ''),
+            (string) ($unpackResult['sBuffer'] ?? ''),
+            (int) ($unpackResult['iTimeout'] ?? Tup::TIMEOUT),
             isset($unpackResult['context']) && is_array($unpackResult['context']) ? $unpackResult['context'] : [],
             isset($unpackResult['status']) && is_array($unpackResult['status']) ? $unpackResult['status'] : []
         );
