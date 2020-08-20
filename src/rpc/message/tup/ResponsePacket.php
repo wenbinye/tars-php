@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc\message\tup;
 
+use kuiper\helper\Arrays;
 use wenbinye\tars\rpc\ErrorCode;
 
 /**
@@ -104,13 +105,13 @@ class ResponsePacket
             $parsedBody = \TUPAPI::decode($response, $version);
 
             return new self(
-                (int) ($parsedBody['iVersion'] ?? Tup::VERSION),
-                (int) ($parsedBody['iPacketType'] ?? Tup::PACKET_TYPE),
-                (int) ($parsedBody['iRequestId'] ?? -1),
-                (int) ($parsedBody['cMessageType'] ?? Tup::MESSAGE_TYPE),
-                (int) ($parsedBody['iRet'] ?? ErrorCode::UNKNOWN),
-                (string) ($parsedBody['sBuffer'] ?? ''),
-                (string) ($parsedBody['sResultDesc'] ?? ''),
+                (int) Arrays::fetch($parsedBody, 'iVersion', Tup::VERSION),
+                (int) Arrays::fetch($parsedBody, 'iPacketType', Tup::PACKET_TYPE),
+                (int) Arrays::fetch($parsedBody, 'iRequestId', -1),
+                (int) Arrays::fetch($parsedBody, 'cMessageType', Tup::MESSAGE_TYPE),
+                (int) Arrays::fetch($parsedBody, 'iRet', ErrorCode::UNKNOWN),
+                (string) Arrays::fetch($parsedBody, 'sBuffer', ''),
+                (string) Arrays::fetch($parsedBody, 'sResultDesc', ''),
                 isset($parsedBody['context']) && is_array($parsedBody['context']) ? $parsedBody['context'] : [],
                 isset($parsedBody['status']) && is_array($parsedBody['status']) ? $parsedBody['status'] : []
             );
