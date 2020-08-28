@@ -68,6 +68,25 @@ class PackerTest extends TestCase
         $this->assertEquals($expect, $result);
     }
 
+    public function testUnpackStruct(): void
+    {
+        $namespace = __NAMESPACE__.'\\fixtures';
+        $struct = new \TARS_Struct('StringStruct', [[
+            'name' => 'name',
+            'required' => true,
+            'type' => \TARS::STRING,
+        ]]);
+        $struct->name = null;
+        $buffer = Packer::toPayload(self::ARG_NAME, \TUPAPI::putStruct(self::ARG_NAME, $struct));
+        $type = $this->packer->parse('StringStruct', $namespace);
+        $result = $this->packer->unpack($type, self::ARG_NAME, $buffer, self::VERSION);
+        $packer = new Packer(AnnotationReader::getInstance(), false);
+        $hasEmptyString = $packer->unpack($type, self::ARG_NAME, $buffer, self::VERSION);
+        // var_export([$result, $hasEmptyString]);
+        $this->assertNull($result->name);
+        $this->assertSame('', $hasEmptyString->name);
+    }
+
     public function packData(): array
     {
         return [

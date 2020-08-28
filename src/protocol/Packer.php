@@ -27,11 +27,11 @@ class Packer implements PackerInterface, TypeParserInterface, TypeConverterInter
      */
     private $converter;
 
-    public function __construct(AnnotationReaderInterface $annotationReader)
+    public function __construct(AnnotationReaderInterface $annotationReader, bool $ignoreEmptyString = true)
     {
         self::check();
         $this->parser = new TypeParser();
-        $this->converter = new TypeConverter($annotationReader, $this->parser);
+        $this->converter = new TypeConverter($annotationReader, $this->parser, $ignoreEmptyString);
     }
 
     public static function check(): void

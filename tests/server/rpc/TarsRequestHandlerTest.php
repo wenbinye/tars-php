@@ -30,6 +30,10 @@ use wenbinye\tars\server\fixtures\HelloService;
 class TarsRequestHandlerTest extends TestCase
 {
     /**
+     * @var ContainerInterface
+     */
+    private $container;
+    /**
      * @var ClientRequestFactory
      */
     private $requestFactory;
@@ -57,19 +61,12 @@ class TarsRequestHandlerTest extends TestCase
     protected function setUp(): void
     {
         Config::parseFile(__DIR__.'/../fixtures/PHPTest.PHPHttpServer.config.conf');
-        $servant = new HelloService();
         /** @var ContainerInterface|MockInterface $container */
         $container = \Mockery::mock(ContainerInterface::class);
-        $container->shouldReceive('has')
-            ->withArgs([HelloServant::class])
-            ->andReturn(true);
-        $container->shouldReceive('get')
-            ->withArgs([HelloServant::class])
-            ->andReturn($servant);
-
         $annotationReader = AnnotationReader::getInstance();
         $packer = new Packer($annotationReader);
         $methodMetadataFactory = new MethodMetadataFactory($annotationReader);
+        $this->container = $container;
         $this->proxyGenerator = new ServantProxyGenerator($annotationReader);
         $this->tarsClient = \Mockery::mock(TarsClientInterface::class);
         $this->requestFactory = new ClientRequestFactory($methodMetadataFactory, $packer, new RequestIdGenerator());
@@ -81,6 +78,12 @@ class TarsRequestHandlerTest extends TestCase
 
     public function testName()
     {
+        $this->container->shouldReceive('has')
+            ->with(HelloServant::class)
+            ->andReturn(true);
+        $this->container->shouldReceive('get')
+            ->with(HelloServant::class)
+            ->andReturn(new HelloService());
         $message = 'world';
         $servantClass = $this->proxyGenerator->generate(HelloServant::class);
         $request = $this->requestFactory->createRequest(new $servantClass($this->tarsClient), 'hello', [$message]);
@@ -94,19 +97,43 @@ class TarsRequestHandlerTest extends TestCase
         $this->assertEquals('hello '.$message, $clientResponse->getReturnValues()[0]->getData());
     }
 
-    public function testNoServant1()
+    public function testNullReturnValue()
     {
-        $this->expectException(RequestException::class);
+        $this->container->shouldReceive('has')
+            ->with(HelloServant::class)
+            ->andReturn(true);
+        $this->container->shouldReceive('get')
+            ->with(HelloServant::class)
+            ->andReturn(new class() implements HelloServant {
+                public function hello($message)
+                {
+                    return null;
+                }
+            });
         $message = 'world';
-        $servantClass = $this->proxyGenerator->generate(AnotherHelloServant::class);
+        $servantClass = $this->proxyGenerator->generate(HelloServant::class);
         $request = $this->requestFactory->createRequest(new $servantClass($this->tarsClient), 'hello', [$message]);
 
         $response = $this->tarsRequestHandler->handle($this->serverRequestFactory->create($request->getBody()));
-        $this->assertFalse($response->isSuccess());
+        // var_export($response);
+        $this->assertTrue($response->isSuccess());
 
         $clientResponse = $this->responseFactory->create($response->getBody(), $request);
-        // var_export($clientResponse);
-        //$this->assertEquals('hello '.$message, $clientResponse->getReturnValues()[0]->getData());
+        var_export($clientResponse);
+        $this->assertEquals('hello '.$message, $clientResponse->getReturnValues()[0]->getData());
+    }
+
+    public function testNoServant1()
+    {
+        $this->container->shouldReceive('has')
+            ->with(HelloServant::class)
+            ->andReturn(false);
+        $this->expectException(RequestException::class);
+        $message = 'world';
+        $servantClass = $this->proxyGenerator->generate(HelloServant::class);
+        $request = $this->requestFactory->createRequest(new $servantClass($this->tarsClient), 'hello', [$message]);
+
+        $this->tarsRequestHandler->handle($this->serverRequestFactory->create($request->getBody()));
     }
 
     public function testNoServant()
@@ -115,7 +142,7 @@ class TarsRequestHandlerTest extends TestCase
         $servantClass = $this->proxyGenerator->generate(AnotherHelloServant::class);
         $request = $this->requestFactory->createRequest(new $servantClass($this->tarsClient), 'hello', [$message]);
         $requestException = new RequestException(RequestPacket::builder()->build(),
-        ErrorCode::SERVER_NO_SERVANT_ERR()->message, ErrorCode::SERVER_NO_SERVANT_ERR);
+            ErrorCode::SERVER_NO_SERVANT_ERR()->message, ErrorCode::SERVER_NO_SERVANT_ERR);
 
         $clientResponse = $this->responseFactory->create($requestException->toResponseBody(), $request);
         // var_export($clientResponse);

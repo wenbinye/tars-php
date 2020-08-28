@@ -25,6 +25,11 @@ class TypeConverter implements TypeConverterInterface
     private $typeParser;
 
     /**
+     * @var bool
+     */
+    private $ignoreEmptyString;
+
+    /**
      * @var array
      */
     private static $STRUCT_FIELDS = [];
@@ -32,10 +37,11 @@ class TypeConverter implements TypeConverterInterface
     /**
      * TypeConverter constructor.
      */
-    public function __construct(AnnotationReaderInterface $annotationReader, TypeParserInterface $typeParser)
+    public function __construct(AnnotationReaderInterface $annotationReader, TypeParserInterface $typeParser, bool $ignoreEmptyString = true)
     {
         $this->annotationReader = $annotationReader;
         $this->typeParser = $typeParser;
+        $this->ignoreEmptyString = $ignoreEmptyString;
     }
 
     /**
@@ -84,7 +90,8 @@ class TypeConverter implements TypeConverterInterface
             $obj = new $className();
             $struct = $this->getTarsType($type);
             foreach ($struct->getFields() as $field) {
-                if (isset($data[$field['name']])) {
+                if (isset($data[$field['name']])
+                && $this->acceptEmptyString($data[$field['name']], $field)) {
                     $obj->{$field['name']} = $this->convert($data[$field['name']], $field['typeObj']);
                 }
             }
@@ -161,5 +168,14 @@ class TypeConverter implements TypeConverterInterface
         }
 
         return $struct;
+    }
+
+    private function acceptEmptyString($value, $field): bool
+    {
+        if ($this->ignoreEmptyString && \TARS::STRING === $field['type'] && '' === $value) {
+            return false;
+        }
+
+        return true;
     }
 }
