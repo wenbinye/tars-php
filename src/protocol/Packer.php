@@ -125,7 +125,7 @@ class Packer implements PackerInterface, TypeParserInterface, TypeConverterInter
     private function toTarsType($data, Type $type)
     {
         if ($type->isPrimitive()) {
-            return $data;
+            return $type->asPrimitiveType()->getValue($data);
         }
         if ($type->isEnum()) {
             return $type->asEnumType()->getEnumValue($data);

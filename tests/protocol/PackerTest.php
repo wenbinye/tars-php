@@ -13,6 +13,7 @@ use wenbinye\tars\protocol\fixtures\NestedStruct;
 use wenbinye\tars\protocol\fixtures\NestedStructOld;
 use wenbinye\tars\protocol\fixtures\SimpleStruct;
 use wenbinye\tars\protocol\fixtures\SimpleStructOld;
+use wenbinye\tars\protocol\fixtures\StringStruct;
 use wenbinye\tars\protocol\type\StructMap;
 use wenbinye\tars\protocol\type\StructMapEntry;
 
@@ -85,6 +86,20 @@ class PackerTest extends TestCase
         // var_export([$result, $hasEmptyString]);
         $this->assertNull($result->name);
         $this->assertSame('', $hasEmptyString->name);
+    }
+
+    public function testPackerInvalidDataType(): void
+    {
+        $namespace = __NAMESPACE__.'\\fixtures';
+        $struct = new StringStruct();
+        $struct->name = new \DateTime();
+        $type = $this->packer->parse('StringStruct', $namespace);
+        try {
+            $data = $this->packer->pack($type, self::ARG_NAME, $struct, self::VERSION);
+        } catch (\Throwable $e) {
+            //error_log($e->getMessage());
+            $this->assertTrue(true);
+        }
     }
 
     public function packData(): array
