@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server\task;
 
+use kuiper\helper\Text;
 use kuiper\swoole\task\ProcessorInterface;
 use kuiper\swoole\task\Task;
 use Psr\Log\LoggerAwareInterface;
@@ -44,6 +45,9 @@ class LogRotateProcessor implements ProcessorInterface, LoggerAwareInterface
      */
     public function process(Task $task)
     {
+        if (Text::isEmpty($this->suffixDateFormat)) {
+            return;
+        }
         $server = $task->getServer();
         $callback = function () use ($server) {
             try {

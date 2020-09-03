@@ -157,7 +157,7 @@ class FoundationConfiguration implements DefinitionConfiguration
     {
         $options = ($options ?? []) + [
             'log-path' => [$serverProperties->getAppLogPath()],
-            'suffix' => '-Ymd',
+            'suffix' => '',
         ];
 
         $logRotateProcessor = new LogRotateProcessor((array) $options['log-path'], $options['suffix']);
