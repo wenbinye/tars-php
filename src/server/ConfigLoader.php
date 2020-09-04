@@ -202,9 +202,6 @@ class ConfigLoader implements ConfigLoaderInterface
 
     protected function addDefaultLoggers(Properties $config, ServerProperties $serverProperties): void
     {
-        if ($config->has('application.logging.loggers')) {
-            return;
-        }
         $loggerLevelName = strtoupper($serverProperties->getLogLevel());
 
         $loggerLevel = constant(Logger::class.'::'.$loggerLevelName);
@@ -238,7 +235,7 @@ class ConfigLoader implements ConfigLoaderInterface
                 ],
             ],
         ];
-        $config->set('application.logging.loggers', [
+        $config->set('application.logging.loggers', array_merge([
             'root' => [
                 'name' => $serverProperties->getServer(),
                 'handlers' => $handlers,
@@ -249,7 +246,7 @@ class ConfigLoader implements ConfigLoaderInterface
             'WebAccessLogger' => $this->createAccessLogger($serverProperties->getAppLogPath().'/access.log'),
             'TarsServerAccessLogger' => $this->createAccessLogger($serverProperties->getAppLogPath().'/tars-server.log'),
             'TarsClientAccessLogger' => $this->createAccessLogger($serverProperties->getAppLogPath().'/tars-client.log'),
-        ]);
+        ], $config->get('application.logging.loggers', [])));
     }
 
     private function createAccessLogger(string $logFileName): array
