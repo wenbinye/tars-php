@@ -146,8 +146,9 @@ class ConfigLoader implements ConfigLoaderInterface
                 'logging' => [
                     'path' => $serverProperties->getAppLogPath(),
                     'config' => [
-                        ServerRequestLog::class => 'AccessLogger',
-                        AccessLog::class => 'AccessLogger',
+                        ServerRequestLog::class => 'TarsServerAccessLogger',
+                        RequestLog::class => 'TarsClientAccessLogger',
+                        AccessLog::class => 'WebAccessLogger',
                     ],
                     'level' => [
                         'wenbinye\\tars' => 'info',
@@ -245,27 +246,34 @@ class ConfigLoader implements ConfigLoaderInterface
                     CoroutineIdProcessor::class,
                 ],
             ],
-            'AccessLogger' => [
-                'handlers' => [
-                    [
-                        'handler' => [
-                            'class' => StreamHandler::class,
-                            'constructor' => [
-                                'stream' => $serverProperties->getAppLogPath().'/access.log',
-                            ],
+            'WebAccessLogger' => $this->createAccessLogger($serverProperties->getAppLogPath().'/access.log'),
+            'TarsServerAccessLogger' => $this->createAccessLogger($serverProperties->getAppLogPath().'/tars-server.log'),
+            'TarsClientAccessLogger' => $this->createAccessLogger($serverProperties->getAppLogPath().'/tars-client.log'),
+        ]);
+    }
+
+    private function createAccessLogger(string $logFileName): array
+    {
+        return [
+            'handlers' => [
+                [
+                    'handler' => [
+                        'class' => StreamHandler::class,
+                        'constructor' => [
+                            'stream' => $logFileName,
                         ],
-                        'formatter' => [
-                            'class' => LineFormatter::class,
-                            'constructor' => [
-                                'format' => "%message% %context% %extra%\n",
-                            ],
+                    ],
+                    'formatter' => [
+                        'class' => LineFormatter::class,
+                        'constructor' => [
+                            'format' => "%message% %context% %extra%\n",
                         ],
                     ],
                 ],
-                'processors' => [
-                    CoroutineIdProcessor::class,
-                ],
             ],
-        ]);
+            'processors' => [
+                CoroutineIdProcessor::class,
+            ],
+        ];
     }
 }
