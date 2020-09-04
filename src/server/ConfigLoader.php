@@ -145,7 +145,7 @@ class ConfigLoader implements ConfigLoaderInterface
                 ],
                 'logging' => [
                     'path' => $serverProperties->getAppLogPath(),
-                    'config' => [
+                    'logger' => [
                         ServerRequestLog::class => 'TarsServerAccessLogger',
                         RequestLog::class => 'TarsClientAccessLogger',
                         AccessLog::class => 'WebAccessLogger',
@@ -202,6 +202,47 @@ class ConfigLoader implements ConfigLoaderInterface
 
     protected function addDefaultLoggers(Properties $config, ServerProperties $serverProperties): void
     {
+        $config->set('application.logging.loggers', array_merge([
+            'root' => $this->createRootLogger($config, $serverProperties),
+            'WebAccessLogger' => $this->createAccessLogger($serverProperties->getAppLogPath().'/access.log'),
+            'TarsServerAccessLogger' => $this->createAccessLogger($serverProperties->getAppLogPath().'/tars-server.log'),
+            'TarsClientAccessLogger' => $this->createAccessLogger($serverProperties->getAppLogPath().'/tars-client.log'),
+        ], $config->get('application.logging.loggers', [])));
+    }
+
+    private function createAccessLogger(string $logFileName): array
+    {
+        return [
+            'handlers' => [
+                [
+                    'handler' => [
+                        'class' => StreamHandler::class,
+                        'constructor' => [
+                            'stream' => $logFileName,
+                        ],
+                    ],
+                    'formatter' => [
+                        'class' => LineFormatter::class,
+                        'constructor' => [
+                            'format' => "%message% %context% %extra%\n",
+                        ],
+                    ],
+                ],
+            ],
+            'processors' => [
+                CoroutineIdProcessor::class,
+            ],
+        ];
+    }
+
+    /**
+     * @param Properties       $config
+     * @param ServerProperties $serverProperties
+     *
+     * @return array
+     */
+    protected function createRootLogger(Properties $config, ServerProperties $serverProperties): array
+    {
         $loggerLevelName = strtoupper($serverProperties->getLogLevel());
 
         $loggerLevel = constant(Logger::class.'::'.$loggerLevelName);
@@ -235,39 +276,10 @@ class ConfigLoader implements ConfigLoaderInterface
                 ],
             ],
         ];
-        $config->set('application.logging.loggers', array_merge([
-            'root' => [
-                'name' => $serverProperties->getServer(),
-                'handlers' => $handlers,
-                'processors' => [
-                    CoroutineIdProcessor::class,
-                ],
-            ],
-            'WebAccessLogger' => $this->createAccessLogger($serverProperties->getAppLogPath().'/access.log'),
-            'TarsServerAccessLogger' => $this->createAccessLogger($serverProperties->getAppLogPath().'/tars-server.log'),
-            'TarsClientAccessLogger' => $this->createAccessLogger($serverProperties->getAppLogPath().'/tars-client.log'),
-        ], $config->get('application.logging.loggers', [])));
-    }
 
-    private function createAccessLogger(string $logFileName): array
-    {
         return [
-            'handlers' => [
-                [
-                    'handler' => [
-                        'class' => StreamHandler::class,
-                        'constructor' => [
-                            'stream' => $logFileName,
-                        ],
-                    ],
-                    'formatter' => [
-                        'class' => LineFormatter::class,
-                        'constructor' => [
-                            'format' => "%message% %context% %extra%\n",
-                        ],
-                    ],
-                ],
-            ],
+            'name' => $serverProperties->getServer(),
+            'handlers' => $handlers,
             'processors' => [
                 CoroutineIdProcessor::class,
             ],
