@@ -89,6 +89,11 @@ class Config
                         ],
                     ],
                     'client' => [],
+                    'logging' => [
+                        'root' => [
+                            'console' => true,
+                        ],
+                    ],
                 ],
             ],
         ]));
