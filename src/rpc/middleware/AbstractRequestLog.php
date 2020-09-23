@@ -54,7 +54,7 @@ abstract class AbstractRequestLog implements LoggerAwareInterface
     /**
      * RequestLogMiddleware constructor.
      */
-    public function __construct(string $template = self::MAIN, array $extra = [], int $maxBodySize = 4096)
+    public function __construct(string $template = self::MAIN, array $extra = ['params'], int $maxBodySize = 4096)
     {
         $this->format = $template;
         $this->extra = $extra;
@@ -98,7 +98,7 @@ abstract class AbstractRequestLog implements LoggerAwareInterface
             if ('params' === $name) {
                 $param = json_encode($this->getParameters($request));
                 $extra['params'] = strlen($param) > $this->maxBodySize
-                    ? sprintf('%s...%d more bytes', substr($param, 0, $this->maxBodySize), strlen($param) - $this->maxBodySize)
+                    ? sprintf('%s...%d more', substr($param, 0, $this->maxBodySize), strlen($param) - $this->maxBodySize)
                     : $param;
             }
         }
@@ -124,10 +124,11 @@ abstract class AbstractRequestLog implements LoggerAwareInterface
 
     private function formatRequest(RequestInterface $request)
     {
-        return sprintf('%s/%s#%s',
+        return sprintf('TCP %s/%s#%s %d',
             RequestAttribute::getServerAddress($request),
             $request->getServantName(),
-            $request->getFuncName());
+            $request->getFuncName(),
+            $request->getVersion());
     }
 
     /**

@@ -149,11 +149,11 @@ class FoundationConfiguration implements DefinitionConfiguration
      */
     public function loggerFactory(ContainerInterface $container, ?array $loggingConfig): LoggerFactoryInterface
     {
-        return new LoggerFactory($container, $loggingConfig ?? [
-                'loggers' => [
-                    'root' => ['console' => true],
-                ],
-            ]);
+        if (!isset($loggingConfig['loggers']['root'])) {
+            $loggingConfig['loggers']['root'] = ['console' => true];
+        }
+
+        return new LoggerFactory($container, $loggingConfig);
     }
 
     /**
@@ -167,7 +167,7 @@ class FoundationConfiguration implements DefinitionConfiguration
     {
         $options = ($options ?? []) + [
             'log-path' => [$serverProperties->getAppLogPath()],
-            'suffix' => '-Ymd',
+            'suffix' => '',
         ];
 
         $logRotateProcessor = new LogRotateProcessor((array) $options['log-path'], $options['suffix']);

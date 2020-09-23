@@ -89,4 +89,31 @@ class PrimitiveType extends AbstractType
     {
         return self::$TYPES[$this->tarsType];
     }
+
+    public function getValue($data)
+    {
+        if (null === $data) {
+            return null;
+        }
+        switch ($this->tarsType) {
+            case \TARS::BOOL:
+                return (bool) $data;
+            case \TARS::UINT8:
+            case \TARS::SHORT:
+            case \TARS::UINT16:
+            case \TARS::INT32:
+            case \TARS::UINT32:
+            case \TARS::INT64:
+                return (int) $data;
+            case \TARS::FLOAT:
+                return (float) $data;
+            case \TARS::DOUBLE:
+                return (float) $data;
+            case \TARS::CHAR:
+            case \TARS::STRING:
+                return (string) $data;
+            default:
+                throw new \InvalidArgumentException('unknown tars type');
+        }
+    }
 }

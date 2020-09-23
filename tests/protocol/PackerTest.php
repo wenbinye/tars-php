@@ -13,6 +13,7 @@ use wenbinye\tars\protocol\fixtures\NestedStruct;
 use wenbinye\tars\protocol\fixtures\NestedStructOld;
 use wenbinye\tars\protocol\fixtures\SimpleStruct;
 use wenbinye\tars\protocol\fixtures\SimpleStructOld;
+use wenbinye\tars\protocol\fixtures\StringStruct;
 use wenbinye\tars\protocol\type\StructMap;
 use wenbinye\tars\protocol\type\StructMapEntry;
 
@@ -66,6 +67,39 @@ class PackerTest extends TestCase
         $buffer = Packer::toPayload(self::ARG_NAME, $payload);
         $result = $this->packer->unpack($this->packer->parse($type, $namespace), self::ARG_NAME, $buffer, self::VERSION);
         $this->assertEquals($expect, $result);
+    }
+
+    public function testUnpackStruct(): void
+    {
+        $namespace = __NAMESPACE__.'\\fixtures';
+        $struct = new \TARS_Struct('StringStruct', [[
+            'name' => 'name',
+            'required' => true,
+            'type' => \TARS::STRING,
+        ]]);
+        $struct->name = null;
+        $buffer = Packer::toPayload(self::ARG_NAME, \TUPAPI::putStruct(self::ARG_NAME, $struct));
+        $type = $this->packer->parse('StringStruct', $namespace);
+        $result = $this->packer->unpack($type, self::ARG_NAME, $buffer, self::VERSION);
+        $packer = new Packer(AnnotationReader::getInstance(), false);
+        $hasEmptyString = $packer->unpack($type, self::ARG_NAME, $buffer, self::VERSION);
+        // var_export([$result, $hasEmptyString]);
+        $this->assertNull($result->name);
+        $this->assertSame('', $hasEmptyString->name);
+    }
+
+    public function testPackerInvalidDataType(): void
+    {
+        $namespace = __NAMESPACE__.'\\fixtures';
+        $struct = new StringStruct();
+        $struct->name = new \DateTime();
+        $type = $this->packer->parse('StringStruct', $namespace);
+        try {
+            $data = $this->packer->pack($type, self::ARG_NAME, $struct, self::VERSION);
+        } catch (\Throwable $e) {
+            //error_log($e->getMessage());
+            $this->assertTrue(true);
+        }
     }
 
     public function packData(): array
