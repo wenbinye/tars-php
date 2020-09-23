@@ -6,7 +6,6 @@ namespace wenbinye\tars\server;
 
 use kuiper\di\ContainerAwareInterface;
 use kuiper\di\ContainerAwareTrait;
-use kuiper\swoole\server\ServerInterface;
 use kuiper\swoole\ServerManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -26,7 +25,7 @@ class ServerStopCommand extends Command implements ContainerAwareInterface
     /**
      * ServerStartCommand constructor.
      *
-     * @param ServerInterface $serverManager
+     * @param ServerManager $serverManager
      */
     public function __construct(ServerManager $serverManager)
     {

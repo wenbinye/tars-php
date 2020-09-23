@@ -26,11 +26,13 @@ class ServerStartCommand extends Command implements ContainerAwareInterface
 
     /**
      * ServerStartCommand constructor.
+     *
+     * @param ServerInterface $server
      */
-    public function __construct(ServerInterface $serverManager)
+    public function __construct(ServerInterface $server)
     {
         parent::__construct(self::COMMAND_NAME);
-        $this->server = $serverManager;
+        $this->server = $server;
     }
 
     protected function configure(): void

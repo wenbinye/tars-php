@@ -24,13 +24,30 @@ class ServerApplication
     private $containerFactory;
 
     /**
+     * @var ContainerInterface
+     */
+    private $container;
+
+    /**
      * @var ConfigLoaderInterface
      */
     private $configLoader;
 
+    private static $INSTANCE;
+
+    public static function getInstance(): ServerApplication
+    {
+        if (null === self::$INSTANCE) {
+            throw new \InvalidArgumentException('Call create first');
+        }
+
+        return self::$INSTANCE;
+    }
+
     public static function create($containerFactory = null): ServerApplication
     {
         $serverApplication = new self();
+        self::$INSTANCE = $serverApplication;
         $serverApplication->containerFactory = $containerFactory;
 
         return $serverApplication;
@@ -50,6 +67,11 @@ class ServerApplication
         return $app->run();
     }
 
+    public function getContainer(): ContainerInterface
+    {
+        return $this->container;
+    }
+
     public function createApp(): Application
     {
         $configOptions = $this->parseArgv();
@@ -66,6 +88,7 @@ class ServerApplication
         $app->setDefaultCommand(ServerStartCommand::COMMAND_NAME);
 
         $container->get(EventDispatcherInterface::class)->dispatch(new BootstrapEvent($app));
+        $this->container = $container;
 
         return $app;
     }

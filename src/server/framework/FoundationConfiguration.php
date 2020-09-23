@@ -86,6 +86,16 @@ class FoundationConfiguration implements DefinitionConfiguration
     }
 
     /**
+     * @Bean("coroutineEnabled")
+     *
+     * @return bool
+     */
+    public function coroutineEnabled(): bool
+    {
+        return !Config::getInstance()->getBool('application.server.enable-php-server', false);
+    }
+
+    /**
      * @Bean()
      */
     public function validator(AnnotationReaderInterface $annotationReader): ValidatorInterface
@@ -180,7 +190,7 @@ class FoundationConfiguration implements DefinitionConfiguration
      */
     public function poolFactory(?array $poolConfig, LoggerFactoryInterface $loggerFactory, EventDispatcherInterface $eventDispatcher): PoolFactoryInterface
     {
-        return new PoolFactory(
+        return new PoolFactory($this->coroutineEnabled(),
             $poolConfig ?? [], $loggerFactory->create(PoolFactory::class), $eventDispatcher);
     }
 }

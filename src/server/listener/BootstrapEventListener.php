@@ -55,6 +55,7 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
         $this->addTarsClientMiddleware($config->get('application.tars.middleware.client', []));
         $this->registerServants($config->get('application.tars.servants', []));
         $this->addTarsServantMiddleware($config->get('application.tars.middleware.servant', []));
+        /* @var BootstrapEvent $event */
         $this->addEventListeners($event);
     }
 
