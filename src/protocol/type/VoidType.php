@@ -11,7 +11,7 @@ class VoidType extends AbstractType
         return true;
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return 'void';
     }

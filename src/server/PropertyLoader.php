@@ -119,9 +119,9 @@ class PropertyLoader
             if (!$reflectionClass->hasMethod($getter)) {
                 continue;
             }
-            /** @var ConfigItem $configItem */
+            /** @var ConfigItem|null $configItem */
             $configItem = $this->annotationReader->getPropertyAnnotation($property, ConfigItem::class);
-            if (!$configItem) {
+            if (null === $configItem) {
                 continue;
             }
             $value = $this->readConfigValue($config, $configItem, $property);
@@ -134,12 +134,13 @@ class PropertyLoader
             // 3. method setFoo
             $stringSetter = sprintf('set%sFromString', $property->getName());
             if ($reflectionClass->hasMethod($stringSetter)) {
-                if ($configItem->factory) {
-                    trigger_error(sprintf("Property '%s' of '%s' setter '%s' override factory method", get_class($properties), $property->getName(), $stringSetter));
+                if (!empty($configItem->factory)) {
+                    trigger_error(sprintf("Property '%s' of '%s' setter '%s' override factory method",
+                        get_class($properties), $property->getName(), $stringSetter));
                 }
                 $reflectionClass->getMethod($stringSetter)->invoke($properties, $value);
             } else {
-                if ($configItem->factory) {
+                if (!empty($configItem->factory)) {
                     if (is_string($configItem->factory)) {
                         if (false !== strpos($configItem->factory, '::')) {
                             $value = call_user_func(explode('::', $configItem->factory, 2), $value);
@@ -171,7 +172,7 @@ class PropertyLoader
                      Text::snakeCase($property->name, '-'),
                      str_replace('ServantName', '', $property->name),
                  ] as $candidate) {
-            if (isset($candidate, $config[$candidate])) {
+            if (Text::isNotEmpty($candidate) && isset($config[$candidate])) {
                 return $config[$candidate];
             }
         }

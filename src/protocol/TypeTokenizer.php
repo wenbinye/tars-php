@@ -8,36 +8,45 @@ use wenbinye\tars\protocol\exception\SyntaxErrorException;
 
 class TypeTokenizer
 {
-    const LEFT_BRACKET = '<';
-    const RIGHT_BRACKET = '>';
-    const COMMA = ',';
-    const VECTOR = 'vector';
-    const MAP = 'map';
-    const VOID = 'void';
-    const UNSIGNED = 'unsigned';
+    public const LEFT_BRACKET = '<';
+    public const RIGHT_BRACKET = '>';
+    public const COMMA = ',';
+    public const VECTOR = 'vector';
+    public const MAP = 'map';
+    public const VOID = 'void';
+    public const UNSIGNED = 'unsigned';
 
-    const T_VOID = 0;
-    const T_VECTOR = 1;
-    const T_MAP = 2;
-    const T_PRIMITIVE = 3;
-    const T_STRUCT = 4;
+    public const T_VOID = 0;
+    public const T_VECTOR = 1;
+    public const T_MAP = 2;
+    public const T_PRIMITIVE = 3;
+    public const T_STRUCT = 4;
 
-    const T_LEFT_BRACKET = 10;
-    const T_RIGHT_BRACKET = 11;
-    const T_COMMA = 12;
+    public const T_LEFT_BRACKET = 10;
+    public const T_RIGHT_BRACKET = 11;
+    public const T_COMMA = 12;
 
+    /**
+     * @var int[]
+     */
     private static $STOP_CHARS = [
         self::LEFT_BRACKET => self::T_LEFT_BRACKET,
         self::RIGHT_BRACKET => self::T_RIGHT_BRACKET,
         self::COMMA => self::T_COMMA,
     ];
 
+    /**
+     * @var int[]
+     */
     private static $RESERVE_WORDS = [
         self::VOID => self::T_VOID,
         self::VECTOR => self::T_VECTOR,
         self::MAP => self::T_MAP,
     ];
 
+    /**
+     * @var array
+     */
     private static $PRIMITIVES = [
         'bool' => \TARS::BOOL,
         'boolean' => \TARS::BOOL,
@@ -75,7 +84,7 @@ class TypeTokenizer
         $this->pos = 0;
     }
 
-    private function nextChar()
+    private function nextChar(): string
     {
         if ($this->pos >= $this->length) {
             throw new \OutOfBoundsException('no more char');
@@ -91,14 +100,17 @@ class TypeTokenizer
         --$this->pos;
     }
 
+    /**
+     * @param int             $tokenType
+     * @param int|string|null $tokenValue
+     *
+     * @return array
+     */
     private function createToken(int $tokenType, $tokenValue = null): array
     {
         return [$tokenType, $tokenValue];
     }
 
-    /**
-     * @throws SyntaxErrorException
-     */
     public function tokenize(): array
     {
         $tokens = [];
@@ -109,7 +121,7 @@ class TypeTokenizer
         return $tokens;
     }
 
-    private function nextToken()
+    private function nextToken(): ?array
     {
         $this->skipWhitespace();
         if ($this->isEnd()) {
@@ -143,7 +155,7 @@ class TypeTokenizer
         return $this->createToken(self::T_STRUCT, $word);
     }
 
-    private function isWhitespace($char): bool
+    private function isWhitespace(string $char): bool
     {
         return in_array($char, [' ', "\t", "\n"], true);
     }
@@ -185,7 +197,7 @@ class TypeTokenizer
         return $word;
     }
 
-    private function isIdentifier($char): bool
+    private function isIdentifier(string $char): bool
     {
         return (bool) preg_match('/\w/', $char);
     }

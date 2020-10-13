@@ -60,7 +60,7 @@ class ConnectionFactory implements ConnectionFactoryInterface, LoggerAwareInterf
     public function create(string $servantName): ConnectionInterface
     {
         if (!isset($this->pools[$servantName])) {
-            $connectionFactory = function ($connId) use ($servantName) {
+            $connectionFactory = function ($connId) use ($servantName): ConnectionInterface {
                 $connectionClass = Coroutine::isEnabled() ? SwooleCoroutineTcpConnection::class : SwooleTcpConnection::class;
                 $this->logger->info(static::TAG."create connection $servantName#$connId",
                     ['class' => $connectionClass]);

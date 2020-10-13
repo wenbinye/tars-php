@@ -122,6 +122,12 @@ class Packer implements PackerInterface, TypeParserInterface, TypeConverterInter
         throw new InvalidArgumentException('unknown type to unpack: '.get_class($type));
     }
 
+    /**
+     * @param mixed $data
+     * @param Type  $type
+     *
+     * @return mixed
+     */
     private function toTarsType($data, Type $type)
     {
         if ($type->isPrimitive()) {

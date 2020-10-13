@@ -11,7 +11,9 @@ interface StatStoreAdapter
     public function delete(StatEntry $entry): void;
 
     /**
-     * @return StatEntry[]
+     * @param int $maxIndex
+     *
+     * @return \Iterator<StatEntry>
      */
     public function getEntries(int $maxIndex): \Iterator;
 }

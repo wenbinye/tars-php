@@ -19,6 +19,13 @@ class ReturnValue implements ReturnValueInterface
      */
     private $payload;
 
+    /**
+     * ReturnValue constructor.
+     *
+     * @param string|null $name
+     * @param mixed       $data
+     * @param string|null $payload
+     */
     public function __construct(?string $name, $data, ?string $payload)
     {
         $this->name = $name;

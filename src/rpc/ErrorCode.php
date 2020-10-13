@@ -71,6 +71,9 @@ class ErrorCode extends Enum
     public const UNKNOWN = 99999;
     public const INVALID_ARGUMENT = 100000;
 
+    /**
+     * @var array
+     */
     protected static $PROPERTIES = [
         'message' => [
             self::SERVER_SUCCESS => '服务器端处理成功',

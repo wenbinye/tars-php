@@ -6,6 +6,10 @@ namespace wenbinye\tars\protocol\type;
 
 class StructMap extends \ArrayIterator implements \JsonSerializable
 {
+    /**
+     * @param object $key
+     * @param object $value
+     */
     public function put($key, $value): void
     {
         $this->append(new StructMapEntry($key, $value));

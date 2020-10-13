@@ -38,26 +38,26 @@ abstract class AbstractType implements Type
 
     public function asPrimitiveType(): PrimitiveType
     {
-        return null;
+        throw new \BadFunctionCallException('Cannot convert to primitive type');
     }
 
     public function asVectorType(): VectorType
     {
-        return null;
+        throw new \BadFunctionCallException('Cannot convert to vector type');
     }
 
     public function asMapType(): MapType
     {
-        return null;
+        throw new \BadFunctionCallException('Cannot convert to map type');
     }
 
     public function asEnumType(): EnumType
     {
-        return null;
+        throw new \BadFunctionCallException('Cannot convert to enum type');
     }
 
     public function asStructType(): StructType
     {
-        return null;
+        throw new \BadFunctionCallException('Cannot convert to struct type');
     }
 }

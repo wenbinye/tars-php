@@ -19,7 +19,7 @@ class Retry implements ClientMiddlewareInterface, LoggerAwareInterface
     protected const TAG = '['.__CLASS__.'] ';
 
     /**
-     * @var RegistryRouteResolver
+     * @var RegistryRouteResolver|null
      */
     private $routeResolver;
 
@@ -67,7 +67,7 @@ class Retry implements ClientMiddlewareInterface, LoggerAwareInterface
 
     protected function resetAddress(RequestInterface $request): void
     {
-        if ($this->routeResolver) {
+        if (null !== $this->routeResolver) {
             $this->routeResolver->clear($request->getServantName());
         }
     }

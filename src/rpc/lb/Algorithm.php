@@ -15,6 +15,9 @@ class Algorithm extends Enum
 {
     public const ROUND_ROBIN = 'round_robin';
 
+    /**
+     * @var array
+     */
     protected static $PROPERTIES = [
         'implementation' => [
             self::ROUND_ROBIN => RoundRobin::class,

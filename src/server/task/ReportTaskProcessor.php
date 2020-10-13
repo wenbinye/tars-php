@@ -68,8 +68,8 @@ class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
      */
     public function process(Task $task)
     {
-        if (!$this->clientProperties->getLocator()
-            || !$this->serverProperties->getNode()) {
+        if (null === $this->clientProperties->getLocator()
+            || null === $this->serverProperties->getNode()) {
             $this->logger->debug(static::TAG.'healthy check is disabled');
 
             return;
@@ -77,13 +77,13 @@ class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
         $server = $task->getServer();
         $pid = $server->getMasterPid();
         $this->sendServerInfo($pid);
-        $server->tick($this->clientProperties->getKeepAliveInterval(), function () use ($pid) {
+        $server->tick($this->clientProperties->getKeepAliveInterval(), function () use ($pid): void {
             $this->sendServerInfo($pid);
         });
-        $server->tick($this->clientProperties->getReportInterval(), function () {
+        $server->tick($this->clientProperties->getReportInterval(), function (): void {
             $this->sendStat();
         });
-        $server->tick($this->clientProperties->getReportInterval(), function () {
+        $server->tick($this->clientProperties->getReportInterval(), function (): void {
             $this->sendMonitorInfo();
         });
     }

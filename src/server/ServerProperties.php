@@ -158,6 +158,11 @@ class ServerProperties
         return $this->serverSettings;
     }
 
+    /**
+     * @param string $name
+     *
+     * @return mixed|null
+     */
     public function getServerSetting(string $name)
     {
         return $this->serverSettings[$name] ?? null;

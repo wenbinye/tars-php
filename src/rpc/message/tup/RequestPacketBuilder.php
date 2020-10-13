@@ -187,7 +187,7 @@ class RequestPacketBuilder
 
     public static function fromRequest(RequestInterface $request): RequestPacketBuilder
     {
-        $builder = new static();
+        $builder = new self();
         $builder->setVersion($request->getVersion())
             ->setMessageType($request->getMessageType())
             ->setPacketType($request->getPacketType())

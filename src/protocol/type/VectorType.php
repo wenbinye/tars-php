@@ -39,8 +39,8 @@ class VectorType extends AbstractType
         return \TARS::VECTOR;
     }
 
-    public function __toString()
+    public function __toString(): string
     {
-        return sprintf('vector<%s>', $this->subType);
+        return sprintf('vector<%s>', (string) $this->subType);
     }
 }

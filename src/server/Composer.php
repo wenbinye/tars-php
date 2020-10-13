@@ -8,7 +8,7 @@ class Composer
 {
     public static function getJson(string $file = null): array
     {
-        if (!$file) {
+        if (null === $file) {
             $file = self::detect();
         }
         if (!is_readable($file)) {
@@ -24,7 +24,7 @@ class Composer
 
     public static function detect(string $basePath = null): string
     {
-        if (!$basePath) {
+        if (null === $basePath) {
             $basePath = getcwd();
         }
         while (!file_exists($basePath.'/composer.json')) {

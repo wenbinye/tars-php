@@ -18,7 +18,7 @@ class ServerAddressHolderFactory implements ServerAddressHolderFactoryInterface,
      */
     private $routeResolver;
     /**
-     * @var string
+     * @var string|null
      */
     private $loadBalance;
 
@@ -27,7 +27,7 @@ class ServerAddressHolderFactory implements ServerAddressHolderFactoryInterface,
      *
      * @param string $loadBalanceAlgorithm the LoadBalanceInterface concrete class
      */
-    public function __construct(RouteResolverInterface $routeResolver, string $loadBalanceAlgorithm = null, LoggerInterface $logger = null)
+    public function __construct(RouteResolverInterface $routeResolver, ?string $loadBalanceAlgorithm = null, LoggerInterface $logger = null)
     {
         $this->routeResolver = $routeResolver;
         $this->loadBalance = $loadBalanceAlgorithm;
@@ -39,12 +39,12 @@ class ServerAddressHolderFactory implements ServerAddressHolderFactoryInterface,
      */
     public function create(string $servantName): ServerAddressHolderInterface
     {
-        if ($this->loadBalance) {
+        if (null !== $this->loadBalance) {
             return new LoadBalanceServerAddressHolder($this->routeResolver, $this->loadBalance, $servantName, $this->logger);
         }
 
         $servantRoute = $this->routeResolver->resolve($servantName);
-        if (!$servantRoute) {
+        if (null === $servantRoute) {
             throw new \InvalidArgumentException("Cannot resolve route for $servantName");
         }
 

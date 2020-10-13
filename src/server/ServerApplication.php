@@ -7,9 +7,11 @@ namespace wenbinye\tars\server;
 use kuiper\di\annotation\Command;
 use kuiper\di\ComponentCollection;
 use kuiper\di\ContainerBuilder;
+use kuiper\helper\Text;
 use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Command\Command as ConsoleCommand;
 use Symfony\Component\Console\CommandLoader\FactoryCommandLoader;
 use wenbinye\tars\deploy\PackageCommand;
 use wenbinye\tars\server\event\BootstrapEvent;
@@ -19,7 +21,7 @@ class ServerApplication
     public const APP_NAME = 'tars-app';
 
     /**
-     * @var ContainerFactoryInterface|callable
+     * @var ContainerFactoryInterface|callable|null
      */
     private $containerFactory;
 
@@ -33,6 +35,9 @@ class ServerApplication
      */
     private $configLoader;
 
+    /**
+     * @var self
+     */
     private static $INSTANCE;
 
     public static function getInstance(): ServerApplication
@@ -44,6 +49,11 @@ class ServerApplication
         return self::$INSTANCE;
     }
 
+    /**
+     * @param ContainerFactoryInterface|callable|null $containerFactory
+     *
+     * @return ServerApplication
+     */
     public static function create($containerFactory = null): ServerApplication
     {
         $serverApplication = new self();
@@ -53,6 +63,13 @@ class ServerApplication
         return $serverApplication;
     }
 
+    /**
+     * @param ContainerFactoryInterface|callable|null $containerFactory
+     *
+     * @return int
+     *
+     * @throws \Exception
+     */
     public static function run($containerFactory = null): int
     {
         return static::create($containerFactory)->createApp()->run();
@@ -118,7 +135,7 @@ class ServerApplication
 
     protected function createContainer(): ContainerInterface
     {
-        if (!$this->containerFactory) {
+        if (null === $this->containerFactory) {
             return ContainerBuilder::create(defined('APP_PATH') ? APP_PATH : self::detectBasePath())
                 ->build();
         }
@@ -131,7 +148,7 @@ class ServerApplication
 
     protected function getConfigLoader(): ConfigLoaderInterface
     {
-        if (!$this->configLoader) {
+        if (null === $this->configLoader) {
             $this->configLoader = new ConfigLoader();
         }
 
@@ -186,8 +203,7 @@ class ServerApplication
             ServerStartCommand::COMMAND_NAME => $factory(ServerStartCommand::class),
             ServerStopCommand::COMMAND_NAME => $factory(ServerStopCommand::class),
         ];
-        if ($container->has('application.commands')
-            && $container->get('application.commands')) {
+        if ($container->has('application.commands')) {
             $commands = $container->get('application.commands');
             if (!is_array($commands)) {
                 throw new \InvalidArgumentException('application.commands should be an array');
@@ -198,10 +214,10 @@ class ServerApplication
         }
         foreach (ComponentCollection::getAnnotations(Command::class) as $annotation) {
             /* @var Command $annotation */
-            $commandMap[$annotation->name] = function () use ($container, $annotation) {
-                /** @var \Symfony\Component\Console\Command\Command $command */
+            $commandMap[$annotation->name] = static function () use ($container, $annotation): ConsoleCommand {
+                /** @var ConsoleCommand $command */
                 $command = $container->get($annotation->getComponentId());
-                if (!$command->getName()) {
+                if (Text::isEmpty($command->getName())) {
                     $command->setName($annotation->name);
                 }
 

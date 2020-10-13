@@ -29,4 +29,6 @@ interface Type
     public function asStructType(): StructType;
 
     public function asTarsType(): int;
+
+    public function __toString(): string;
 }

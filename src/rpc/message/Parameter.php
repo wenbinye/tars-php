@@ -27,6 +27,15 @@ class Parameter implements ParameterInterface
      */
     private $payload;
 
+    /**
+     * Parameter constructor.
+     *
+     * @param int         $order
+     * @param string      $name
+     * @param bool        $out
+     * @param mixed       $data
+     * @param string|null $payload
+     */
     public function __construct(int $order, string $name, bool $out, $data, ?string $payload)
     {
         $this->order = $order;

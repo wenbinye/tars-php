@@ -26,7 +26,7 @@ abstract class AbstractResponse implements ResponseInterface
 
     public function isCurrentVersion(): bool
     {
-        return $this->getVersion() === Tup::VERSION;
+        return Tup::VERSION === $this->getVersion();
     }
 
     public function isSuccess(): bool

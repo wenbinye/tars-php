@@ -44,7 +44,7 @@ class MethodMetadataFactory implements MethodMetadataFactoryInterface
         try {
             return $this->cache[$key] = $this->getMetadataFromAnnotation($servant, $method);
         } catch (\ReflectionException $e) {
-            throw new InvalidMethodException('read method metadata failed', $e);
+            throw new InvalidMethodException('read method metadata failed', $e->getCode(), $e);
         }
     }
 

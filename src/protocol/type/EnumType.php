@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\protocol\type;
 
+use kuiper\helper\Enum;
+
 class EnumType extends AbstractType
 {
     /**
@@ -34,11 +36,26 @@ class EnumType extends AbstractType
         return true;
     }
 
+    public function __toString(): string
+    {
+        return $this->className;
+    }
+
+    /**
+     * @param mixed $enumObj
+     *
+     * @return int|null
+     */
     public function getEnumValue($enumObj): ?int
     {
         return is_object($enumObj) ? $enumObj->value : $enumObj;
     }
 
+    /**
+     * @param mixed $value
+     *
+     * @return Enum
+     */
     public function createEnum($value)
     {
         return call_user_func([$this->className, 'fromValue'], $value);
@@ -49,11 +66,29 @@ class EnumType extends AbstractType
         return \TARS::UINT8;
     }
 
-    public function pack($name, $data, int $version)
+    /**
+     * @param string   $name
+     * @param Enum|int $data
+     * @param int      $version
+     *
+     * @return string
+     */
+    public function pack($name, $data, int $version): string
     {
-        return \TUPAPI::putUInt8($name, $data->value, $version);
+        if ($data instanceof Enum) {
+            return \TUPAPI::putUInt8($name, $data->value(), $version);
+        } else {
+            return \TUPAPI::putUInt8($name, $data, $version);
+        }
     }
 
+    /**
+     * @param string $name
+     * @param string $payload
+     * @param int    $version
+     *
+     * @return Enum
+     */
     public function unpack($name, string &$payload, int $version)
     {
         return $this->createEnum(\TUPAPI::getUInt8($name, $payload, false, $version));

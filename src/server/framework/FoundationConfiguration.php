@@ -60,11 +60,11 @@ class FoundationConfiguration implements DefinitionConfiguration
         $this->containerBuilder->addAwareInjection(new AwareInjection(
             LoggerAwareInterface::class,
             'setLogger',
-            static function (ObjectDefinition $definition) {
+            static function (ObjectDefinition $definition): array {
                 $name = $definition->getName().'.logger';
                 $class = $definition->getClassName();
                 $loggerDefinition = new FactoryDefinition(
-                    $name, static function (LoggerFactoryInterface $loggerFactory) use ($class) {
+                    $name, static function (LoggerFactoryInterface $loggerFactory) use ($class): LoggerInterface {
                         return $loggerFactory->create($class);
                     });
 

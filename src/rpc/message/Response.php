@@ -107,7 +107,8 @@ class Response extends AbstractResponse
     public function getMessage(): string
     {
         return $this->responsePacket->getResultDesc()
-            ?: ErrorCode::fromValue($this->responsePacket->getResultCode(), ErrorCode::UNKNOWN)->message;
+            ?? ErrorCode::fromValue($this->responsePacket->getResultCode(),
+                ErrorCode::fromValue(ErrorCode::UNKNOWN))->message;
     }
 
     /**

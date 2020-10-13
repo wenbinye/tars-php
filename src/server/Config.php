@@ -15,7 +15,7 @@ class Config
     private static $INSTANCE;
 
     /**
-     * @return mixed
+     * @return Properties
      */
     public static function getInstance(): Properties
     {
@@ -23,7 +23,7 @@ class Config
     }
 
     /**
-     * @param mixed $INSTANCE
+     * @param Properties $instance
      */
     private static function setInstance(Properties $instance): void
     {

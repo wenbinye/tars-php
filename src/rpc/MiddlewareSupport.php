@@ -15,7 +15,7 @@ trait MiddlewareSupport
     private $middlewares;
 
     /**
-     * @var MiddlewareStack
+     * @var MiddlewareStack|null
      */
     private $middlewareStack;
 
@@ -34,7 +34,7 @@ trait MiddlewareSupport
 
     private function buildMiddlewareStack(callable $finalHandler): MiddlewareStack
     {
-        if (!isset($this->middlewareStack)) {
+        if (null === $this->middlewareStack) {
             $this->middlewareStack = new MiddlewareStack($this->middlewares, $finalHandler, $this->logger);
         }
 

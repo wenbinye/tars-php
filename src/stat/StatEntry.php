@@ -133,18 +133,18 @@ class StatEntry
         $request = $response->getRequest();
         $head->slaveName = self::removeObj($request->getServantName());
         $head->interfaceName = $request->getFuncName();
-        /** @var ServerAddress $address */
+        /** @var string|null $address */
         $address = RequestAttribute::getServerAddress($request);
         if (is_string($address)) {
-            $address = ServerAddress::fromAddress($address);
-            $head->slaveIp = $address->getHost();
-            $head->slavePort = $address->getPort();
+            $serverAddress = ServerAddress::fromAddress($address);
+            $head->slaveIp = $serverAddress->getHost();
+            $head->slavePort = $serverAddress->getPort();
         }
         $head->returnValue = $response->getReturnCode();
         $head->slaveSetName = '';
         $head->slaveSetArea = '';
         $head->slaveSetID = '';
-        $head->tarsVersion = $request->getVersion();
+        $head->tarsVersion = (string) $request->getVersion();
         $body = new StatMicMsgBody();
         $body->totalRspTime = $responseTime;
         $body->minRspTime = $responseTime;

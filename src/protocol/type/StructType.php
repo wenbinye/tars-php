@@ -38,4 +38,9 @@ class StructType extends AbstractType
     {
         return \TARS::STRUCT;
     }
+
+    public function __toString(): string
+    {
+        return $this->className;
+    }
 }

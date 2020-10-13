@@ -13,7 +13,7 @@ class AddRequestStatus implements ClientMiddlewareInterface
     public function __invoke(ClientRequestInterface $request, callable $next): ResponseInterface
     {
         $serverRequest = ServerRequestHolder::getRequest();
-        if ($serverRequest) {
+        if (null !== $serverRequest) {
             $request = $request->withStatus(array_merge($serverRequest->getStatus(), $request->getStatus()));
         }
 

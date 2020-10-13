@@ -1,0 +1,162 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Variable method call on Symfony\\\\Component\\\\Finder\\\\Finder\\.$#"
+			count: 1
+			path: src/deploy/PackageConfig.php
+
+		-
+			message: "#^Static method TUPAPI\\:\\:encode\\(\\) invoked with 10 parameters, 0 required\\.$#"
+			count: 1
+			path: src/protocol/Packer.php
+
+		-
+			message: "#^Static method TUPAPI\\:\\:decode\\(\\) invoked with 1 parameter, 0 required\\.$#"
+			count: 1
+			path: src/protocol/Packer.php
+
+		-
+			message: "#^Static method TUPAPI\\:\\:putVector\\(\\) invoked with 3 parameters, 2 required\\.$#"
+			count: 1
+			path: src/protocol/Packer.php
+
+		-
+			message: "#^Static method TUPAPI\\:\\:putMap\\(\\) invoked with 3 parameters, 2 required\\.$#"
+			count: 1
+			path: src/protocol/Packer.php
+
+		-
+			message: "#^Static method TUPAPI\\:\\:putStruct\\(\\) invoked with 3 parameters, 0 required\\.$#"
+			count: 1
+			path: src/protocol/Packer.php
+
+		-
+			message: "#^Static method TUPAPI\\:\\:getVector\\(\\) invoked with 5 parameters, 3 required\\.$#"
+			count: 1
+			path: src/protocol/Packer.php
+
+		-
+			message: "#^Static method TUPAPI\\:\\:getMap\\(\\) invoked with 5 parameters, 3 required\\.$#"
+			count: 1
+			path: src/protocol/Packer.php
+
+		-
+			message: "#^Static method TUPAPI\\:\\:getStruct\\(\\) invoked with 5 parameters, 0 required\\.$#"
+			count: 1
+			path: src/protocol/Packer.php
+
+		-
+			message: "#^Unable to resolve the template type ExpectedType in call to method static method Webmozart\\\\Assert\\\\Assert\\:\\:isInstanceOf\\(\\)$#"
+			count: 1
+			path: src/protocol/Packer.php
+
+		-
+			message: "#^Variable property access on mixed\\.$#"
+			count: 2
+			path: src/protocol/Packer.php
+
+		-
+			message: "#^Variable property access on mixed\\.$#"
+			count: 1
+			path: src/protocol/TypeConverter.php
+
+		-
+			message: "#^Class TARS_Map constructor invoked with 3 parameters, 2 required\\.$#"
+			count: 1
+			path: src/protocol/TypeConverter.php
+
+		-
+			message: "#^Variable property access on wenbinye\\\\tars\\\\protocol\\\\type\\\\GenericTarsStruct\\.$#"
+			count: 1
+			path: src/protocol/TypeConverter.php
+
+		-
+			message: "#^Variable property access on \\$this\\(wenbinye\\\\tars\\\\protocol\\\\type\\\\GenericTarsStruct\\)\\.$#"
+			count: 1
+			path: src/protocol/type/GenericTarsStruct.php
+
+		-
+			message: "#^Variable static method call on TUPAPI\\.$#"
+			count: 2
+			path: src/protocol/type/PrimitiveType.php
+
+		-
+			message: "#^Class wenbinye\\\\tars\\\\protocol\\\\type\\\\StructMap extends generic class ArrayIterator but does not specify its types\\: TKey, TValue$#"
+			count: 1
+			path: src/protocol/type/StructMap.php
+
+		-
+			message: "#^Parameter \\#5 \\$docBlock of method Laminas\\\\Code\\\\Generator\\\\ClassGenerator\\:\\:addMethod\\(\\) expects string\\|null, Laminas\\\\Code\\\\Generator\\\\DocBlockGenerator given\\.$#"
+			count: 1
+			path: src/rpc/ServantProxyGenerator.php
+
+		-
+			message: "#^Method wenbinye\\\\tars\\\\rpc\\\\connection\\\\SwooleCoroutineTcpConnection\\:\\:createSwooleClient\\(\\) should return Swoole\\\\Client but returns Swoole\\\\Coroutine\\\\Client\\.$#"
+			count: 1
+			path: src/rpc/connection/SwooleCoroutineTcpConnection.php
+
+		-
+			message: "#^Method wenbinye\\\\tars\\\\rpc\\\\message\\\\MethodMetadataFactory\\:\\:getTarsServantAnnotation\\(\\) has parameter \\$reflectionClass with generic class ReflectionClass but does not specify its types\\: T$#"
+			count: 1
+			path: src/rpc/message/MethodMetadataFactory.php
+
+		-
+			message: "#^Static method TUPAPI\\:\\:encode\\(\\) invoked with 10 parameters, 0 required\\.$#"
+			count: 1
+			path: src/rpc/message/Request.php
+
+		-
+			message: "#^Static method TUPAPI\\:\\:decodeReqPacket\\(\\) invoked with 1 parameter, 0 required\\.$#"
+			count: 1
+			path: src/rpc/message/tup/RequestPacket.php
+
+		-
+			message: "#^Static method TUPAPI\\:\\:decodeReqPacket\\(\\) invoked with 1 parameter, 0 required\\.$#"
+			count: 1
+			path: src/rpc/message/tup/ResponsePacket.php
+
+		-
+			message: "#^Static method TUPAPI\\:\\:decode\\(\\) invoked with 2 parameters, 0 required\\.$#"
+			count: 1
+			path: src/rpc/message/tup/ResponsePacket.php
+
+		-
+			message: "#^Static method TUPAPI\\:\\:encode\\(\\) invoked with 10 parameters, 0 required\\.$#"
+			count: 1
+			path: src/rpc/message/tup/ResponsePacket.php
+
+		-
+			message: "#^Static method TUPAPI\\:\\:encodeRspPacket\\(\\) invoked with 8 parameters, 0 required\\.$#"
+			count: 1
+			path: src/rpc/message/tup/ResponsePacket.php
+
+		-
+			message: "#^Variable property access on \\$this\\(wenbinye\\\\tars\\\\rpc\\\\route\\\\ServerAddress\\)\\.$#"
+			count: 2
+			path: src/rpc/route/ServerAddress.php
+
+		-
+			message: "#^Call to an undefined method kuiper\\\\di\\\\ContainerBuilderInterface\\:\\:addAwareInjection\\(\\)\\.$#"
+			count: 3
+			path: src/server/framework/FoundationConfiguration.php
+
+		-
+			message: "#^Call to an undefined method kuiper\\\\logger\\\\LoggerFactoryInterface\\:\\:getLoggers\\(\\)\\.$#"
+			count: 1
+			path: src/server/listener/StartLogRotate.php
+
+		-
+			message: "#^Method wenbinye\\\\tars\\\\server\\\\task\\\\LogRotateProcessor\\:\\:process\\(\\) should return mixed but return statement is missing\\.$#"
+			count: 1
+			path: src/server/task/LogRotateProcessor.php
+
+		-
+			message: "#^Method wenbinye\\\\tars\\\\server\\\\task\\\\ReportTaskProcessor\\:\\:process\\(\\) should return mixed but return statement is missing\\.$#"
+			count: 1
+			path: src/server/task/ReportTaskProcessor.php
+
+		-
+			message: "#^Variable property access on wenbinye\\\\tars\\\\client\\\\StatMicMsgBody\\.$#"
+			count: 1
+			path: src/stat/SwooleTableStatStore.php
+

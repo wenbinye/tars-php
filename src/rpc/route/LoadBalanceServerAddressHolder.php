@@ -30,11 +30,11 @@ class LoadBalanceServerAddressHolder implements RefreshableServerAddressHolderIn
      */
     private $servantName;
     /**
-     * @var ServerAddress
+     * @var ServerAddress|null
      */
     private $currentAddress;
     /**
-     * @var LoadBalanceInterface
+     * @var LoadBalanceInterface|null
      */
     private $loadBalance;
     /**
@@ -64,14 +64,14 @@ class LoadBalanceServerAddressHolder implements RefreshableServerAddressHolderIn
                 $this->logger->error(static::TAG."Resolve {$this->servantName} failed: ".get_class($e).': '.$e->getMessage());
                 throw new InvalidArgumentException('Cannot resolve route for servant '.$this->servantName, 0, $e);
             }
-            if (!$route) {
+            if (null === $route) {
                 throw new InvalidArgumentException('Cannot resolve route for servant '.$this->servantName);
             }
             $addresses = $route->getAddressList();
             if (empty($addresses)) {
                 throw new InvalidArgumentException("Servant {$this->servantName} address list is empty");
             }
-            $this->loadBalance = $this->createLoadBalance($addresses, array_map(static function (ServerAddress $route) {
+            $this->loadBalance = $this->createLoadBalance($addresses, array_map(static function (ServerAddress $route): int {
                 return $route->getWeight();
             }, $addresses));
             $this->currentAddress = $this->loadBalance->select();

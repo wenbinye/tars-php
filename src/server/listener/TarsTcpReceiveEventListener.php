@@ -8,6 +8,7 @@ use kuiper\event\EventListenerInterface;
 use kuiper\swoole\event\ReceiveEvent;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
+use Webmozart\Assert\Assert;
 use wenbinye\tars\rpc\ErrorCode;
 use wenbinye\tars\rpc\exception\RequestException;
 use wenbinye\tars\rpc\message\RequestAttribute;
@@ -49,11 +50,13 @@ class TarsTcpReceiveEventListener implements EventListenerInterface, LoggerAware
     }
 
     /**
-     * @param ReceiveEvent $event
+     * {@inheritdoc}
      */
     public function __invoke($event): void
     {
+        Assert::isInstanceOf($event, ReceiveEvent::class);
         // TODO: 会不会有数据包不完整情况？
+        /** @var ReceiveEvent $event */
         $server = $event->getServer();
 
         try {

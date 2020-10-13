@@ -142,9 +142,9 @@ class TypeConverter implements TypeConverterInterface
             $namespace = $reflectionClass->getNamespaceName();
             $fields = [];
             foreach ($reflectionClass->getProperties() as $property) {
-                /** @var TarsProperty $annotation */
+                /** @var TarsProperty|null $annotation */
                 $annotation = $this->annotationReader->getPropertyAnnotation($property, TarsProperty::class);
-                if ($annotation) {
+                if (null !== $annotation) {
                     $type = $this->typeParser->parse($annotation->type, $namespace);
                     $fields[$annotation->order] = [
                         'name' => $property->getName(),
@@ -170,7 +170,13 @@ class TypeConverter implements TypeConverterInterface
         return $struct;
     }
 
-    private function acceptEmptyString($value, $field): bool
+    /**
+     * @param mixed $value
+     * @param array $field
+     *
+     * @return bool
+     */
+    private function acceptEmptyString($value, array $field): bool
     {
         if ($this->ignoreEmptyString && \TARS::STRING === $field['type'] && '' === $value) {
             return false;

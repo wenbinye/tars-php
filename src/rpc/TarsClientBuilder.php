@@ -38,62 +38,62 @@ class TarsClientBuilder implements LoggerAwareInterface
     use LoggerAwareTrait;
 
     /**
-     * @var RouteResolverInterface
+     * @var RouteResolverInterface|null
      */
     private $routeResolver;
 
     /**
-     * @var Route
+     * @var Route|null
      */
     private $locator;
 
     /**
-     * @var QueryFServant
+     * @var QueryFServant|null
      */
     private $queryFClient;
 
     /**
-     * @var CacheInterface
+     * @var CacheInterface|null
      */
     private $cache;
 
     /**
-     * @var PackerInterface
+     * @var PackerInterface|null
      */
     private $packer;
 
     /**
-     * @var PoolFactoryInterface
+     * @var PoolFactoryInterface|null
      */
     private $poolFactory;
 
     /**
-     * @var MethodMetadataFactoryInterface
+     * @var MethodMetadataFactoryInterface|null
      */
     private $methodMetadataFactory;
 
     /**
-     * @var RequestIdGeneratorInterface
+     * @var RequestIdGeneratorInterface|null
      */
     private $requestIdGenerator;
 
     /**
-     * @var ServerAddressHolderFactoryInterface
+     * @var ServerAddressHolderFactoryInterface|null
      */
     private $serverAddressHolderFactory;
 
     /**
-     * @var ConnectionFactoryInterface
+     * @var ConnectionFactoryInterface|null
      */
     private $connectionFactory;
 
     /**
-     * @var ClientRequestFactoryInterface
+     * @var ClientRequestFactoryInterface|null
      */
     private $requestFactory;
 
     /**
-     * @var ResponseFactoryInterface
+     * @var ResponseFactoryInterface|null
      */
     private $responseFactory;
 
@@ -103,7 +103,7 @@ class TarsClientBuilder implements LoggerAwareInterface
     private $middlewares = [];
 
     /**
-     * @var ServantProxyGeneratorInterface
+     * @var ServantProxyGeneratorInterface|null
      */
     private $servantProxyGenerator;
 
@@ -121,8 +121,8 @@ class TarsClientBuilder implements LoggerAwareInterface
 
     public function getQueryFClient(): QueryFServant
     {
-        if (!$this->queryFClient) {
-            if (!$this->locator) {
+        if (null === $this->queryFClient) {
+            if (null === $this->locator) {
                 throw new InvalidArgumentException('locator is required');
             }
             $routeResolver = new InMemoryRouteResolver();
@@ -152,7 +152,7 @@ class TarsClientBuilder implements LoggerAwareInterface
 
     public function getCache(): CacheInterface
     {
-        if (!$this->cache) {
+        if (null === $this->cache) {
             $this->cache = new SwooleTableRegistryCache();
         }
 
@@ -168,7 +168,7 @@ class TarsClientBuilder implements LoggerAwareInterface
 
     public function getPoolFactory(): PoolFactoryInterface
     {
-        if (!$this->poolFactory) {
+        if (null === $this->poolFactory) {
             $this->poolFactory = new PoolFactory();
         }
 
@@ -184,7 +184,7 @@ class TarsClientBuilder implements LoggerAwareInterface
 
     public function getRouteResolver(): RouteResolverInterface
     {
-        if (!$this->routeResolver) {
+        if (null === $this->routeResolver) {
             $this->routeResolver = new RegistryRouteResolver($this->getQueryFClient(), $this->getCache());
         }
 
@@ -203,7 +203,7 @@ class TarsClientBuilder implements LoggerAwareInterface
 
     public function getPacker(): PackerInterface
     {
-        if (!$this->packer) {
+        if (null === $this->packer) {
             $this->packer = new Packer(AnnotationReader::getInstance());
         }
 
@@ -219,7 +219,7 @@ class TarsClientBuilder implements LoggerAwareInterface
 
     public function getMethodMetadataFactory(): MethodMetadataFactoryInterface
     {
-        if (!$this->methodMetadataFactory) {
+        if (null === $this->methodMetadataFactory) {
             $this->methodMetadataFactory = new MethodMetadataFactory(AnnotationReader::getInstance());
         }
 
@@ -235,7 +235,7 @@ class TarsClientBuilder implements LoggerAwareInterface
 
     public function getRequestIdGenerator(): RequestIdGeneratorInterface
     {
-        if (!$this->requestIdGenerator) {
+        if (null === $this->requestIdGenerator) {
             $this->requestIdGenerator = new RequestIdGenerator();
         }
 
@@ -251,7 +251,7 @@ class TarsClientBuilder implements LoggerAwareInterface
 
     public function getServerAddressHolderFactory(): ServerAddressHolderFactoryInterface
     {
-        if (!$this->serverAddressHolderFactory) {
+        if (null === $this->serverAddressHolderFactory) {
             $this->serverAddressHolderFactory = new ServerAddressHolderFactory($this->getRouteResolver(), null, $this->logger);
         }
 
@@ -267,7 +267,7 @@ class TarsClientBuilder implements LoggerAwareInterface
 
     public function getServantProxyGenerator(): ServantProxyGeneratorInterface
     {
-        if (!$this->servantProxyGenerator) {
+        if (null === $this->servantProxyGenerator) {
             $this->servantProxyGenerator = new ServantProxyGenerator(AnnotationReader::getInstance());
         }
 
@@ -283,7 +283,7 @@ class TarsClientBuilder implements LoggerAwareInterface
 
     public function getConnectionFactory(): ConnectionFactoryInterface
     {
-        if (!$this->connectionFactory) {
+        if (null === $this->connectionFactory) {
             $this->connectionFactory = new ConnectionFactory($this->getPoolFactory(), $this->getServerAddressHolderFactory(), $this->logger);
         }
 
@@ -299,7 +299,7 @@ class TarsClientBuilder implements LoggerAwareInterface
 
     public function getRequestFactory(): ClientRequestFactoryInterface
     {
-        if (!$this->requestFactory) {
+        if (null === $this->requestFactory) {
             $this->requestFactory = new ClientRequestFactory(
                 $this->getMethodMetadataFactory(),
                 $this->getPacker(),
@@ -319,7 +319,7 @@ class TarsClientBuilder implements LoggerAwareInterface
 
     public function getResponseFactory(): ResponseFactoryInterface
     {
-        if (!$this->responseFactory) {
+        if (null === $this->responseFactory) {
             $this->responseFactory = new ResponseFactory($this->getPacker());
         }
 
@@ -362,6 +362,12 @@ class TarsClientBuilder implements LoggerAwareInterface
         );
     }
 
+    /**
+     * @param string      $clientClassName
+     * @param string|null $servantName
+     *
+     * @return object
+     */
     public function createProxy(string $clientClassName, ?string $servantName = null)
     {
         $proxyClass = $this->getServantProxyGenerator()->generate($clientClassName, $servantName);

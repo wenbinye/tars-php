@@ -119,8 +119,8 @@ class TarsRequestHandlerTest extends TestCase
         $this->assertTrue($response->isSuccess());
 
         $clientResponse = $this->responseFactory->create($response->getBody(), $request);
-        var_export($clientResponse);
-        $this->assertEquals('hello '.$message, $clientResponse->getReturnValues()[0]->getData());
+        // var_export($clientResponse);
+        $this->assertEquals('', $clientResponse->getReturnValues()[0]->getData());
     }
 
     public function testNoServant1()

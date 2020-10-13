@@ -11,6 +11,9 @@ use wenbinye\tars\server\annotation\ConfigItem;
 
 class AdapterProperties
 {
+    /**
+     * @var array
+     */
     private static $PROTOCOL_ALIAS = [
         'not_tars' => Protocol::HTTP,
     ];
@@ -162,7 +165,7 @@ class AdapterProperties
     public function getServerType(): string
     {
         $protocol = Protocol::fromValue($this->protocol);
-        if ($protocol->serverType) {
+        if (null !== $protocol->serverType) {
             return $protocol->serverType;
         }
         if (ServerType::hasValue($this->endpoint->getProtocol())) {

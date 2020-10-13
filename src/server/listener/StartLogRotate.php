@@ -11,6 +11,7 @@ use kuiper\swoole\task\QueueInterface;
 use Monolog\Logger;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
+use Webmozart\Assert\Assert;
 use wenbinye\tars\server\task\LogRotate;
 
 class StartLogRotate implements EventListenerInterface, LoggerAwareInterface
@@ -39,10 +40,12 @@ class StartLogRotate implements EventListenerInterface, LoggerAwareInterface
     }
 
     /**
-     * @param WorkerStartEvent $event
+     * {@inheritdoc}
      */
     public function __invoke($event): void
     {
+        Assert::isInstanceOf($event, WorkerStartEvent::class);
+        /** @var WorkerStartEvent $event */
         if (0 === $event->getWorkerId()) {
             $this->taskQueue->put(new LogRotate());
         }

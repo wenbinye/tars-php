@@ -30,7 +30,7 @@ class MethodMetadata implements MethodMetadataInterface
      */
     private $parameters;
     /**
-     * @var TarsReturnType
+     * @var TarsReturnType|null
      */
     private $returnType;
 
@@ -81,7 +81,7 @@ class MethodMetadata implements MethodMetadataInterface
         return $this->parameters;
     }
 
-    public function getReturnType(): TarsReturnType
+    public function getReturnType(): ?TarsReturnType
     {
         return $this->returnType;
     }

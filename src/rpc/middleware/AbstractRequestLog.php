@@ -122,7 +122,7 @@ abstract class AbstractRequestLog implements LoggerAwareInterface
         return $params;
     }
 
-    private function formatRequest(RequestInterface $request)
+    private function formatRequest(RequestInterface $request): string
     {
         return sprintf('TCP %s/%s#%s %d',
             RequestAttribute::getServerAddress($request),
@@ -139,7 +139,7 @@ abstract class AbstractRequestLog implements LoggerAwareInterface
         if ($request instanceof ClientRequestInterface) {
             $serverRequest = ServerRequestHolder::getRequest();
 
-            return $serverRequest ? $this->getReferer($serverRequest) : '';
+            return null !== $serverRequest ? $this->getReferer($serverRequest) : '';
         }
 
         return $request->getContext()[AddRequestReferer::CONTEXT_KEY] ?? '';

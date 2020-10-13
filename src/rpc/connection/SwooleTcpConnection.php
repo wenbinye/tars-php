@@ -13,6 +13,9 @@ class SwooleTcpConnection extends AbstractConnection
 {
     protected const TAG = '['.__CLASS__.'] ';
 
+    /**
+     * @var array
+     */
     private $settings = [
         ServerSetting::OPEN_LENGTH_CHECK => 1,
         ServerSetting::PACKAGE_LENGTH_TYPE => 'N',

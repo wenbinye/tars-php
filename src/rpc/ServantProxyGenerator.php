@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace wenbinye\tars\rpc;
 
 use kuiper\annotations\AnnotationReaderInterface;
+use kuiper\helper\Text;
 use Laminas\Code\Generator\ClassGenerator;
 use Laminas\Code\Generator\DocBlockGenerator;
 use Laminas\Code\Generator\MethodGenerator;
@@ -23,7 +24,7 @@ class ServantProxyGenerator implements ServantProxyGeneratorInterface
      */
     private $eval;
 
-    public function __construct(AnnotationReaderInterface $annotationReader, $eval = true)
+    public function __construct(AnnotationReaderInterface $annotationReader, bool $eval = true)
     {
         $this->annotationReader = $annotationReader;
         $this->eval = $eval;
@@ -66,11 +67,11 @@ class ServantProxyGenerator implements ServantProxyGeneratorInterface
         ]);
     }
 
-    private function createBody(\ReflectionMethod $reflectionMethod, $returnType): string
+    private function createBody(\ReflectionMethod $reflectionMethod, ?TarsReturnType $returnType): string
     {
         $parameters = [];
         $outParameters = [];
-        $hasReturnValue = ($returnType && 'void' !== $returnType->type);
+        $hasReturnValue = (null !== $returnType && 'void' !== $returnType->type);
 
         foreach ($reflectionMethod->getParameters() as $parameter) {
             if ($parameter->isPassedByReference()) {
@@ -102,7 +103,7 @@ class ServantProxyGenerator implements ServantProxyGeneratorInterface
 
     private function buildParameters(array $parameters): string
     {
-        return implode(', ', array_map(static function ($name) {
+        return implode(', ', array_map(static function ($name): string {
             return '$'.$name;
         }, $parameters));
     }
@@ -117,13 +118,13 @@ class ServantProxyGenerator implements ServantProxyGeneratorInterface
             throw new \InvalidArgumentException("$clientClassName should be an interface");
         }
         $constructDocBlock = null;
-        if ($servantName) {
+        if (null !== $servantName) {
             $constructDocBlock = DocBlockGenerator::fromReflection(
                 new DocBlockReflection($this->createDocBlock($servantName)));
         }
         $phpClass = new ClassGenerator(
             $class->getShortName().'Client'.md5(uniqid('', true)),
-            $class->getNamespaceName() ?: null,
+            Text::isNotEmpty($class->getNamespaceName()) ? $class->getNamespaceName() : null,
             $flags = null,
             $extends = null,
             $interfaces = [],
@@ -146,10 +147,12 @@ class ServantProxyGenerator implements ServantProxyGeneratorInterface
         );
 
         foreach ($class->getMethods() as $reflectionMethod) {
-            $methodBody = $this->createBody($reflectionMethod, $this->annotationReader->getMethodAnnotation($reflectionMethod, TarsReturnType::class));
+            /** @var TarsReturnType|null $returnType */
+            $returnType = $this->annotationReader->getMethodAnnotation($reflectionMethod, TarsReturnType::class);
+            $methodBody = $this->createBody($reflectionMethod, $returnType);
             $phpClass->addMethod(
                 $reflectionMethod->getName(),
-                array_map(function ($parameter) {
+                array_map(function ($parameter): array {
                     return $this->createParameter($parameter);
                 }, $reflectionMethod->getParameters()),
                 MethodGenerator::FLAG_PUBLIC,

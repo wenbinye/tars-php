@@ -10,7 +10,7 @@ use kuiper\swoole\constants\ServerType;
 /**
  * Class Protocol.
  *
- * @property string $serverType
+ * @property string|null $serverType
  */
 class Protocol extends Enum
 {
@@ -21,6 +21,9 @@ class Protocol extends Enum
     public const JSONRPC = 'jsonrpc';
     public const TARS = 'tars';
 
+    /**
+     * @var array
+     */
     protected static $PROPERTIES = [
         'serverType' => [
             self::HTTP => ServerType::HTTP,
@@ -32,6 +35,7 @@ class Protocol extends Enum
 
     public function isHttpProtocol(): bool
     {
-        return $this->serverType && ServerType::fromValue($this->serverType)->isHttpProtocol();
+        return null !== $this->serverType
+            && ServerType::fromValue($this->serverType)->isHttpProtocol();
     }
 }

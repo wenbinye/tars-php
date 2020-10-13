@@ -44,9 +44,9 @@ class MapType extends AbstractType
         return $this;
     }
 
-    public function __toString()
+    public function __toString(): string
     {
-        return sprintf('map<%s, %s>', $this->keyType, $this->valueType);
+        return sprintf('map<%s, %s>', (string) $this->keyType, (string) $this->valueType);
     }
 
     public function asTarsType(): int

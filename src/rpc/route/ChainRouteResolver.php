@@ -26,7 +26,7 @@ class ChainRouteResolver implements RouteResolverInterface
     {
         foreach ($this->resolvers as $resolver) {
             $route = $resolver->resolve($servantName);
-            if ($route) {
+            if (null !== $route) {
                 return $route;
             }
         }

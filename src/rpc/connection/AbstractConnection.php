@@ -107,6 +107,9 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
         $this->disconnect();
     }
 
+    /**
+     * @return mixed
+     */
     public function getResource()
     {
         if (isset($this->resource)) {
@@ -161,11 +164,11 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
     protected function onConnectionError(ErrorCode $errorCode, string $message = null): void
     {
         $message = static::createExceptionMessage($this, $message ?? $errorCode->message);
-        if (array_key_exists($errorCode->value, self::ERROR_EXCEPTIONS)) {
-            $class = self::ERROR_EXCEPTIONS[$errorCode->value];
-            $exception = new $class($this, $message, $errorCode->value);
+        if (array_key_exists($errorCode->value(), self::ERROR_EXCEPTIONS)) {
+            $class = self::ERROR_EXCEPTIONS[$errorCode->value()];
+            $exception = new $class($this, $message, $errorCode->value());
         } else {
-            $exception = new ConnectionException($this, $message, $errorCode->value);
+            $exception = new ConnectionException($this, $message, $errorCode->value());
         }
         if ($this->serverAddressHolder instanceof RefreshableServerAddressHolderInterface) {
             $this->serverAddressHolder->refresh(true);

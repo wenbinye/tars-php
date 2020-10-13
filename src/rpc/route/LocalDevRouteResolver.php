@@ -27,7 +27,7 @@ class LocalDevRouteResolver implements RouteResolverInterface
     public function resolve(string $servantName): ?Route
     {
         $servantRoute = $this->routeResolver->resolve($servantName);
-        if ($servantRoute) {
+        if (null !== $servantRoute) {
             $addresses = [];
             foreach ($servantRoute->getAddressList() as $i => $address) {
                 if (isset($this->ipMapping[$address->getHost()])) {
@@ -40,6 +40,6 @@ class LocalDevRouteResolver implements RouteResolverInterface
             return new Route($servantName, $addresses);
         }
 
-        return $servantRoute;
+        return null;
     }
 }

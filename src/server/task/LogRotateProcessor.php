@@ -49,7 +49,7 @@ class LogRotateProcessor implements ProcessorInterface, LoggerAwareInterface
             return;
         }
         $server = $task->getServer();
-        $callback = function () use ($server) {
+        $callback = function () use ($server): void {
             try {
                 if ($this->tryRotateLog()) {
                     $this->logger->info(static::TAG.'reload server since log rotated');

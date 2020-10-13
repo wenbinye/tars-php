@@ -13,6 +13,14 @@ class ServerRequest extends AbstractRequest implements ServerRequestInterface
      */
     private $requestPacket;
 
+    /**
+     * ServerRequest constructor.
+     *
+     * @param object                  $servant
+     * @param MethodMetadataInterface $methodMetadata
+     * @param RequestPacket           $requestPacket
+     * @param array                   $parameters
+     */
     public function __construct(
         $servant,
         MethodMetadataInterface $methodMetadata,

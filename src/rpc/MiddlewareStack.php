@@ -53,8 +53,12 @@ class MiddlewareStack implements LoggerAwareInterface
             return call_user_func($this->final, $request);
         }
 
-        return call_user_func($this->middlewares[$index], $request, function (RequestInterface $request) use ($index) {
-            return $this->callNext($request, $index + 1);
-        });
+        return call_user_func(
+            $this->middlewares[$index],
+            $request,
+            function (RequestInterface $request) use ($index): ResponseInterface {
+                return $this->callNext($request, $index + 1);
+            }
+        );
     }
 }

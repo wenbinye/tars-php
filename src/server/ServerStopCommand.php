@@ -33,12 +33,12 @@ class ServerStopCommand extends Command implements ContainerAwareInterface
         $this->serverManager = $serverManager;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this->setDescription('stop php server');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->serverManager->stop();
 

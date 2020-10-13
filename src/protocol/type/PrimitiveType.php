@@ -11,6 +11,9 @@ class PrimitiveType extends AbstractType
      */
     private $tarsType;
 
+    /**
+     * @var string[]
+     */
     private static $PACK_METHODS = [
         \TARS::BOOL => 'Bool',
         \TARS::CHAR => 'Char',
@@ -68,6 +71,13 @@ class PrimitiveType extends AbstractType
         return true;
     }
 
+    /**
+     * @param string|int $name
+     * @param mixed|null $data
+     * @param int        $version
+     *
+     * @return string
+     */
     public function pack($name, $data, int $version)
     {
         if (isset($data) && !is_scalar($data)) {
@@ -78,6 +88,13 @@ class PrimitiveType extends AbstractType
         return \TUPAPI::{$method}((string) $name, $data, $version);
     }
 
+    /**
+     * @param string|int $name
+     * @param string     $payload
+     * @param int        $version
+     *
+     * @return mixed
+     */
     public function unpack($name, string &$payload, int $version)
     {
         $method = 'get'.self::$PACK_METHODS[$this->tarsType];
@@ -85,11 +102,16 @@ class PrimitiveType extends AbstractType
         return \TUPAPI::{$method}((string) $name, $payload, false, $version);
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return self::$TYPES[$this->tarsType];
     }
 
+    /**
+     * @param mixed $data
+     *
+     * @return bool|float|int|string|null
+     */
     public function getValue($data)
     {
         if (null === $data) {
@@ -106,7 +128,6 @@ class PrimitiveType extends AbstractType
             case \TARS::INT64:
                 return (int) $data;
             case \TARS::FLOAT:
-                return (float) $data;
             case \TARS::DOUBLE:
                 return (float) $data;
             case \TARS::CHAR:

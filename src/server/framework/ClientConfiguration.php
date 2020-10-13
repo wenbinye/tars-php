@@ -112,13 +112,13 @@ class ClientConfiguration implements DefinitionConfiguration
         ?array $routeList): InMemoryRouteResolver
     {
         $routeResolver = new InMemoryRouteResolver();
-        if ($clientProperties->getLocator()) {
+        if (null !== $clientProperties->getLocator()) {
             $routeResolver->addRoute($clientProperties->getLocator());
         }
-        if ($serverProperties->getNode()) {
+        if (null !== $serverProperties->getNode()) {
             $routeResolver->addRoute($serverProperties->getNode());
         }
-        if ($routeList) {
+        if (null !== $routeList) {
             foreach ($routeList as $route) {
                 $routeResolver->addRoute(Route::fromString($route));
             }
@@ -137,7 +137,7 @@ class ClientConfiguration implements DefinitionConfiguration
         ResponseFactoryInterface $responseFactory,
         ErrorHandlerInterface $errorHandler,
         LoggerFactoryInterface $loggerFactory,
-        ServantProxyGenerator $servantProxyGenerator)
+        ServantProxyGenerator $servantProxyGenerator): TarsClientFactory
     {
         $lb = Config::getInstance()->getString('tars.application.client.load_balance', Algorithm::ROUND_ROBIN);
         $logger = $loggerFactory->create(QueryFServant::class);

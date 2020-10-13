@@ -42,8 +42,8 @@ class RegistryRouteResolver implements RouteResolverInterface
         $addresses = $this->cache->get($servantName);
         if (null === $addresses) {
             $endpoints = $this->queryFClient->findObjectById($servantName);
-            $addresses = array_map(static function (EndpointF $endpoint) {
-                return new ServerAddress($endpoint->istcp ? 'tcp' : 'udp',
+            $addresses = array_map(static function (EndpointF $endpoint): ServerAddress {
+                return new ServerAddress($endpoint->istcp > 0 ? 'tcp' : 'udp',
                     $endpoint->host, $endpoint->port, $endpoint->timeout, $endpoint->weight ?? 100);
             }, $endpoints);
 

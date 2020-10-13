@@ -45,6 +45,9 @@ final class ServerAddress
      */
     private $encrypted;
 
+    /**
+     * @var string[]
+     */
     private static $SHORT_OPTIONS = [
         'host' => 'h',
         'port' => 'p',
@@ -157,7 +160,7 @@ final class ServerAddress
     {
         $str = '';
 
-        return $str.$this->protocol.' '.implode(' ', array_filter(array_map(function ($name) {
+        return $str.$this->protocol.' '.implode(' ', array_filter(array_map(function ($name): ?string {
             if ('encrypted' === $name) {
                 return $this->encrypted ? '-e' : '';
             }

@@ -14,12 +14,12 @@ class PackageCommand extends Command
 {
     public const COMMAND_NAME = 'package';
 
-    protected function configure()
+    protected function configure(): void
     {
         $this->setName(self::COMMAND_NAME);
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $composerJson = Composer::detect();
         $basePath = dirname($composerJson);
@@ -60,9 +60,11 @@ class PackageCommand extends Command
         $filesystem->remove($tempFile);
 
         $output->writeln("<info>create package $tgzFile</info>");
+
+        return 0;
     }
 
-    private function loadConfig($composerJson): PackageConfig
+    private function loadConfig(string $composerJson): PackageConfig
     {
         $json = Composer::getJson($composerJson);
 

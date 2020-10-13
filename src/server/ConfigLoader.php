@@ -59,9 +59,6 @@ class ConfigLoader implements ConfigLoaderInterface
      */
     public function load(string $configFile, array $properties = []): void
     {
-        if (!$configFile) {
-            throw new \InvalidArgumentException('config file is required');
-        }
         if (!is_readable($configFile)) {
             throw new \InvalidArgumentException("config file '$configFile' is not readable");
         }

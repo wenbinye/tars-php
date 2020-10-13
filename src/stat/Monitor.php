@@ -48,7 +48,7 @@ class Monitor implements MonitorInterface, LoggerAwareInterface
         $msg = new StructMap();
         foreach ($this->collectors as $collector) {
             foreach ($collector->getValues() as $name => $value) {
-                $msg->put($this->createHead($name), $this->createBody($collector->getPolicy(), $value));
+                $msg->put($this->createHead($name), $this->createBody($collector->getPolicy(), (string) $value));
             }
         }
         $this->logger->debug(static::TAG.'send properties', ['msg' => $msg]);
@@ -66,7 +66,13 @@ class Monitor implements MonitorInterface, LoggerAwareInterface
         return $propMsgHead;
     }
 
-    private function createBody(string $policy, $value): StatPropMsgBody
+    /**
+     * @param string $policy
+     * @param string $value
+     *
+     * @return StatPropMsgBody
+     */
+    private function createBody(string $policy, string $value): StatPropMsgBody
     {
         $propMsgBody = new StatPropMsgBody();
         $propInfo = new StatPropInfo();

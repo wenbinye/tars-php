@@ -1,0 +1,12 @@
+# -*- mode: yaml -*-
+
+includes:
+  - phpstan-baseline.neon
+
+parameters:
+  level: 6
+  paths:
+    - src
+  checkMissingIterableValueType: false
+  ignoreErrors:
+    - '#Construct empty\(\) is not allowed#'

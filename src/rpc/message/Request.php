@@ -14,6 +14,14 @@ class Request extends AbstractRequest implements ClientRequestInterface
      */
     private $requestPacketBuilder;
 
+    /**
+     * Request constructor.
+     *
+     * @param int                     $requestId
+     * @param object                  $servant
+     * @param MethodMetadataInterface $methodMetadata
+     * @param array                   $parameters
+     */
     public function __construct(
         int $requestId,
         $servant,

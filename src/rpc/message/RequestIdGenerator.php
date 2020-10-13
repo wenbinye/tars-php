@@ -11,7 +11,7 @@ class RequestIdGenerator implements RequestIdGeneratorInterface
      */
     private $id;
 
-    public function __construct($start = 1)
+    public function __construct(int $start = 1)
     {
         $this->id = $start;
     }

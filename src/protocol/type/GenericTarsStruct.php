@@ -6,6 +6,9 @@ namespace wenbinye\tars\protocol\type;
 
 class GenericTarsStruct extends \TARS_Struct
 {
+    /**
+     * @var array
+     */
     private $_fields;
 
     /**

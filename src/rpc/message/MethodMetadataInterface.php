@@ -22,5 +22,5 @@ interface MethodMetadataInterface
      */
     public function getParameters(): array;
 
-    public function getReturnType(): TarsReturnType;
+    public function getReturnType(): ?TarsReturnType;
 }

@@ -15,11 +15,11 @@ class PackageConfig
      */
     private $serverName;
     /**
-     * @var Finder[]
+     * @var array
      */
     private $finders;
     /**
-     * @var string[]
+     * @var array<string,bool>
      */
     private $files;
     /**
@@ -27,6 +27,9 @@ class PackageConfig
      */
     private $basePath;
 
+    /**
+     * @var array
+     */
     private static $DEFAULTS = [
         'src' => [],
         'resources' => [],
@@ -45,7 +48,7 @@ class PackageConfig
 
     public function __construct(string $basePath, array $options)
     {
-        $options = Arrays::mapKeys($options, static function ($key) {
+        $options = Arrays::mapKeys($options, static function ($key): string {
             return Text::snakeCase($key, '-');
         });
         $this->basePath = rtrim($basePath, '/');
@@ -81,7 +84,7 @@ class PackageConfig
     }
 
     /**
-     * @return Finder[]
+     * @return array<\Iterator<\SplFileInfo>>
      */
     public function getFinders(): array
     {
@@ -95,7 +98,7 @@ class PackageConfig
             ->ignoreVCS(true);
 
         if (isset($methods['in'])) {
-            $methods['in'] = array_map(function ($path) {
+            $methods['in'] = array_map(function (string $path): string {
                 return $this->getCanonicalPath($path);
             }, (array) $methods['in']);
         }
@@ -115,7 +118,12 @@ class PackageConfig
         return $finder;
     }
 
-    private function getCanonicalPath($path): string
+    /**
+     * @param string $path
+     *
+     * @return string
+     */
+    private function getCanonicalPath(string $path): string
     {
         return $this->basePath.'/'.ltrim($path, '/');
     }
