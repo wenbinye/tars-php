@@ -203,8 +203,8 @@ class ServerApplication
             ServerStartCommand::COMMAND_NAME => $factory(ServerStartCommand::class),
             ServerStopCommand::COMMAND_NAME => $factory(ServerStopCommand::class),
         ];
-        if ($container->has('application.commands')) {
-            $commands = $container->get('application.commands');
+        $commands = $container->get('application.commands');
+        if (null !== $commands) {
             if (!is_array($commands)) {
                 throw new \InvalidArgumentException('application.commands should be an array');
             }
