@@ -72,7 +72,9 @@ class ServerApplication
      */
     public static function run($containerFactory = null): int
     {
-        return static::create($containerFactory)->createApp()->run();
+        $self = static::create($containerFactory);
+
+        return $self->createApp(...$self->parseArgv())->run();
     }
 
     public static function package(): int
@@ -89,11 +91,10 @@ class ServerApplication
         return $this->container;
     }
 
-    public function createApp(): Application
+    public function createApp(?string $configFile = null, array $properties = []): Application
     {
-        $configOptions = $this->parseArgv();
-        if (isset($configOptions[0])) {
-            $this->getConfigLoader()->load(...$configOptions);
+        if (null !== $configFile) {
+            $this->getConfigLoader()->load($configFile, $properties);
         } else {
             Config::createDummyConfig();
         }
