@@ -59,6 +59,16 @@ class Packer implements PackerInterface, TypeParserInterface, TypeConverterInter
         return $decodeRet['sBuffer'];
     }
 
+    public function newInstance(string $class)
+    {
+        $refl = new \ReflectionClass($class);
+        $type = $this->parse($refl->getShortName(), $refl->getNamespaceName());
+        $data = $this->pack($type, '', $refl->newInstance());
+        $buffer = self::toPayload('arg', $data);
+
+        return $this->unpack($type, 'arg', $buffer);
+    }
+
     /**
      * {@inheritdoc}
      */
