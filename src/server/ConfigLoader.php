@@ -40,11 +40,17 @@ class ConfigLoader implements ConfigLoaderInterface
     private $propertyLoader;
 
     /**
+     * @var ?string
+     */
+    private $envFilePath;
+
+    /**
      * ConfigLoader constructor.
      *
-     * @param PropertyLoader $propertyLoader
+     * @param PropertyLoader|null $propertyLoader
+     * @param string|null         $envFile
      */
-    public function __construct(?PropertyLoader $propertyLoader = null)
+    public function __construct(?PropertyLoader $propertyLoader = null, string $envFile = null)
     {
         $this->propertyLoader = $propertyLoader ?? new PropertyLoader(
                 AnnotationReader::getInstance(),
@@ -52,6 +58,7 @@ class ConfigLoader implements ConfigLoaderInterface
                     ->enableAnnotationMapping(AnnotationReader::getInstance())
                     ->getValidator()
             );
+        $this->envFilePath = $envFile;
     }
 
     /**
@@ -177,7 +184,7 @@ class ConfigLoader implements ConfigLoaderInterface
                 array_unshift($envFiles, $env);
             }
         }
-        Dotenv::createImmutable($serverProperties->getBasePath(), $envFiles, false)
+        Dotenv::createImmutable($this->envFilePath ?? $serverProperties->getBasePath(), $envFiles, false)
             ->safeLoad();
     }
 
