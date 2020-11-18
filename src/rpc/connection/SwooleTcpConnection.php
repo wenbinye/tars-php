@@ -66,7 +66,7 @@ class SwooleTcpConnection extends AbstractConnection
     protected function doSend(RequestInterface $request): string
     {
         /** @var Client $client */
-        $client = $this->getResource();
+        $client = $this->createResource();
         if (!$client->send($request->getBody())) {
             $this->onConnectionError(ErrorCode::fromValue(ErrorCode::TARS_SOCKET_SEND_FAILED));
         }
@@ -80,7 +80,7 @@ class SwooleTcpConnection extends AbstractConnection
             $this->onConnectionError(ErrorCode::fromValue(ErrorCode::TARS_SOCKET_RECEIVE_FAILED),
                 socket_strerror($client->errCode));
         }
-        $this->disconnect();
+        $client->close();
 
         return $response;
     }
