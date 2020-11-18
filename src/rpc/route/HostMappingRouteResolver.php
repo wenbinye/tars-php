@@ -4,7 +4,12 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc\route;
 
-class LocalDevRouteResolver implements RouteResolverInterface
+/**
+ * Class LocalDevRouteResolver
+ * @package wenbinye\tars\rpc\route
+ * 用于替换解析后 ip 地址
+ */
+class HostMappingRouteResolver implements RouteResolverInterface
 {
     /**
      * @var RouteResolverInterface

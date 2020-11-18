@@ -28,6 +28,7 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
     private const ERROR_EXCEPTIONS = [
         ErrorCode::TARS_SOCKET_CLOSED => ConnectionClosedException::class,
         ErrorCode::TARS_SOCKET_CONNECT_FAILED => ConnectFailedException::class,
+        ErrorCode::TARS_SOCKET_RECEIVE_FAILED => ConnectFailedException::class,
     ];
 
     /**

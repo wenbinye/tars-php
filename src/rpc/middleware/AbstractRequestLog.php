@@ -124,10 +124,11 @@ abstract class AbstractRequestLog implements LoggerAwareInterface
 
     private function formatRequest(RequestInterface $request): string
     {
-        return sprintf('TCP %s/%s#%s %d',
+        return sprintf('TCP %s/%s#%s?id=%d %d',
             RequestAttribute::getServerAddress($request),
             $request->getServantName(),
             $request->getFuncName(),
+            $request->getRequestId(),
             $request->getVersion());
     }
 

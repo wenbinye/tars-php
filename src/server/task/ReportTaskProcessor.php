@@ -91,6 +91,7 @@ class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
     public function sendServerInfo(int $pid): void
     {
         try {
+            // TODO 健康检查
             $serverInfo = new ServerInfo();
             $serverInfo->serverName = $this->serverProperties->getServer();
             $serverInfo->application = $this->serverProperties->getApp();

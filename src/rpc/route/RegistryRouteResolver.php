@@ -40,8 +40,11 @@ class RegistryRouteResolver implements RouteResolverInterface
     public function resolve(string $servantName): ?Route
     {
         $addresses = $this->cache->get($servantName);
-        if (null === $addresses) {
+        if (null === $addresses || !is_array($addresses)) {
             $endpoints = $this->queryFClient->findObjectById($servantName);
+            if (empty($endpoints)) {
+                return null;
+            }
             $addresses = array_map(static function (EndpointF $endpoint): ServerAddress {
                 return new ServerAddress($endpoint->istcp > 0 ? 'tcp' : 'udp',
                     $endpoint->host, $endpoint->port, $endpoint->timeout, $endpoint->weight ?? 100);
