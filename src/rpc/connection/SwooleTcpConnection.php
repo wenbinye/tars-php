@@ -32,7 +32,7 @@ class SwooleTcpConnection extends AbstractConnection
      */
     protected function createSwooleClient()
     {
-        return new Client(SWOOLE_SOCK_TCP);
+        return new Client(SWOOLE_SOCK_TCP | SWOOLE_KEEP);
     }
 
     /**
@@ -80,6 +80,7 @@ class SwooleTcpConnection extends AbstractConnection
             $this->onConnectionError(ErrorCode::fromValue(ErrorCode::TARS_SOCKET_RECEIVE_FAILED),
                 socket_strerror($client->errCode));
         }
+        $this->disconnect();
 
         return $response;
     }

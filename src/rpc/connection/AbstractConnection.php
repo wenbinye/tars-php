@@ -88,7 +88,7 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
     {
         if (!$this->isConnected()) {
             $this->resource = $this->createResource();
-            $this->logger->info(static::TAG.'connect to '.$this->getAddress());
+            // $this->logger->info(static::TAG.'connect to '.$this->getAddress());
         }
     }
 
@@ -112,7 +112,7 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
     /**
      * @return mixed
      */
-    public function getResource()
+    protected function getResource()
     {
         if (isset($this->resource)) {
             return $this->resource;
