@@ -97,6 +97,7 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
      */
     public function disconnect(): void
     {
+        $this->destroyResource();
         unset($this->resource);
     }
 
@@ -164,6 +165,7 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
      */
     protected function onConnectionError(ErrorCode $errorCode, string $message = null): void
     {
+        $this->disconnect();
         $message = static::createExceptionMessage($this, $message ?? $errorCode->message);
         if (array_key_exists($errorCode->value(), self::ERROR_EXCEPTIONS)) {
             $class = self::ERROR_EXCEPTIONS[$errorCode->value()];
