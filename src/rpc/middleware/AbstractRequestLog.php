@@ -85,7 +85,7 @@ abstract class AbstractRequestLog implements LoggerAwareInterface
             '$remote_addr' => RequestAttribute::getRemoteAddress($request) ?? '-',
             '$time_local' => strftime('%d/%b/%Y:%H:%M:%S %z'),
             '$referer' => $this->getReferer($request),
-            '$request' => $this->formatRequest(isset($response) ? $response->getRequest() : $request),
+            '$request' => $this->formatRequest($request, $response),
             '$request_id' => $request->getRequestId(),
             '$servant' => $request->getServantName(),
             '$method' => $request->getFuncName(),
@@ -122,13 +122,14 @@ abstract class AbstractRequestLog implements LoggerAwareInterface
         return $params;
     }
 
-    private function formatRequest(RequestInterface $request): string
+    private function formatRequest(RequestInterface $request, ?ResponseInterface $response): string
     {
-        return sprintf('TCP %s/%s#%s?id=%d %d',
-            RequestAttribute::getServerAddress($request),
+        $req = null !== $response ? $response->getRequest() : $request;
+
+        return sprintf('TCP %s/%s#%s %d',
+            RequestAttribute::getServerAddress($req),
             $request->getServantName(),
             $request->getFuncName(),
-            $request->getRequestId(),
             $request->getVersion());
     }
 

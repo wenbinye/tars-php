@@ -32,7 +32,7 @@ class SwooleTcpConnection extends AbstractConnection
      */
     protected function createSwooleClient()
     {
-        return new Client(SWOOLE_SOCK_TCP | SWOOLE_KEEP);
+        return new Client(SWOOLE_SOCK_TCP);
     }
 
     /**
