@@ -32,7 +32,7 @@ class SwooleTcpConnection extends AbstractConnection
      */
     protected function createSwooleClient()
     {
-        return new Client(SWOOLE_SOCK_TCP | SWOOLE_KEEP);
+        return new Client(SWOOLE_SOCK_TCP);
     }
 
     /**
@@ -55,9 +55,15 @@ class SwooleTcpConnection extends AbstractConnection
      */
     protected function destroyResource(): void
     {
-        /** @var Client $client */
         $client = $this->getResource();
-        $client->close();
+        if (null !== $client) {
+            $client->close();
+        }
+    }
+
+    protected function afterSend(): void
+    {
+        $this->destroyResource();
     }
 
     /**
@@ -66,21 +72,14 @@ class SwooleTcpConnection extends AbstractConnection
     protected function doSend(RequestInterface $request): string
     {
         /** @var Client $client */
-        $client = $this->createResource();
-        if (!$client->send($request->getBody())) {
-            $this->onConnectionError(ErrorCode::fromValue(ErrorCode::TARS_SOCKET_SEND_FAILED));
-        }
-        //读取最多32M的数据
+        $client = $this->getResource();
+        $client->send($request->getBody());
         $response = $client->recv();
-
-        if ('' === $response) {
-            // 已经断开连接
-            $this->onConnectionError(ErrorCode::fromValue(ErrorCode::TARS_SOCKET_CLOSED));
-        } elseif (false === $response) {
+        $errCode = $client->errCode;
+        if ('' === $response || false === $response) {
             $this->onConnectionError(ErrorCode::fromValue(ErrorCode::TARS_SOCKET_RECEIVE_FAILED),
-                socket_strerror($client->errCode));
+                isset($errCode) ? socket_strerror($errCode) : null);
         }
-        $client->close();
 
         return $response;
     }

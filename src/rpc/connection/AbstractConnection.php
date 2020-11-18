@@ -97,8 +97,10 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
      */
     public function disconnect(): void
     {
-        $this->destroyResource();
-        unset($this->resource);
+        if (isset($this->resource)) {
+            $this->destroyResource();
+            unset($this->resource);
+        }
     }
 
     /**
@@ -114,12 +116,6 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
      */
     protected function getResource()
     {
-        if (isset($this->resource)) {
-            return $this->resource;
-        }
-
-        $this->connect();
-
         return $this->resource;
     }
 
@@ -145,6 +141,10 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
      */
     public function send(RequestInterface $request): string
     {
+        if ($this->serverAddressHolder instanceof RefreshableServerAddressHolderInterface) {
+            $this->serverAddressHolder->refresh();
+        }
+        $this->connect();
         $this->beforeSend();
         try {
             return $this->doSend($request);
@@ -185,13 +185,16 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
         return $message.'(address='.$connection->getAddress().')';
     }
 
+    /**
+     * callback before send data.
+     */
     protected function beforeSend(): void
     {
-        if ($this->serverAddressHolder instanceof RefreshableServerAddressHolderInterface) {
-            $this->serverAddressHolder->refresh();
-        }
     }
 
+    /**
+     * callback after send data.
+     */
     protected function afterSend(): void
     {
     }
