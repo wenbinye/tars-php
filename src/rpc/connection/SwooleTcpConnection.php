@@ -50,11 +50,9 @@ class SwooleTcpConnection extends AbstractConnection
         return $client;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function destroyResource(): void
     {
+        /** @var Client|null $client */
         $client = $this->getResource();
         if (null !== $client) {
             $client->close();
@@ -63,17 +61,16 @@ class SwooleTcpConnection extends AbstractConnection
 
     protected function afterSend(): void
     {
-        $this->destroyResource();
+        $this->disconnect();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function doSend(RequestInterface $request): string
     {
         /** @var Client $client */
         $client = $this->getResource();
-        $client->send($request->getBody());
+        if (!$client->send($request->getBody())) {
+            $this->onConnectionError(ErrorCode::fromValue(ErrorCode::TARS_SOCKET_CONNECT_FAILED));
+        }
         $response = $client->recv();
         $errCode = $client->errCode;
         if ('' === $response || false === $response) {

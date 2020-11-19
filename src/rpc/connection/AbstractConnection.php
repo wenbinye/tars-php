@@ -60,20 +60,6 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
     }
 
     /**
-     * Creates the underlying resource used to communicate with server.
-     *
-     * @return mixed
-     *
-     * @throws CommunicationException
-     */
-    abstract protected function createResource();
-
-    /**
-     * Destroy the underlying resource.
-     */
-    abstract protected function destroyResource(): void;
-
-    /**
      * {@inheritdoc}
      */
     public function isConnected(): bool
@@ -88,7 +74,6 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
     {
         if (!$this->isConnected()) {
             $this->resource = $this->createResource();
-            // $this->logger->info(static::TAG.'connect to '.$this->getAddress());
         }
     }
 
@@ -99,7 +84,7 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
     {
         if (isset($this->resource)) {
             $this->destroyResource();
-            unset($this->resource);
+            $this->resource = null;
         }
     }
 
@@ -141,9 +126,7 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
      */
     public function send(RequestInterface $request): string
     {
-        if ($this->serverAddressHolder instanceof RefreshableServerAddressHolderInterface) {
-            $this->serverAddressHolder->refresh();
-        }
+        $this->refreshAddress();
         $this->connect();
         $this->beforeSend();
         try {
@@ -153,10 +136,12 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
         }
     }
 
-    /**
-     * @throws CommunicationException
-     */
-    abstract protected function doSend(RequestInterface $request): string;
+    protected function refreshAddress(): void
+    {
+        if ($this->serverAddressHolder instanceof RefreshableServerAddressHolderInterface) {
+            $this->serverAddressHolder->refresh();
+        }
+    }
 
     /**
      * Helper method to handle connection errors.
@@ -165,25 +150,50 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
      */
     protected function onConnectionError(ErrorCode $errorCode, string $message = null): void
     {
+        $exception = $this->createException($errorCode, $message);
         $this->disconnect();
-        $message = static::createExceptionMessage($this, $message ?? $errorCode->message);
+        $this->refreshAddress();
+
+        CommunicationException::throwError($exception);
+    }
+
+    /**
+     * @param ErrorCode   $errorCode
+     * @param string|null $message
+     *
+     * @return mixed|ConnectionException
+     */
+    protected function createException(ErrorCode $errorCode, ?string $message)
+    {
+        $message = ($message ?? $errorCode->message).'(address='.$this->getAddress().')';
         if (array_key_exists($errorCode->value(), self::ERROR_EXCEPTIONS)) {
             $class = self::ERROR_EXCEPTIONS[$errorCode->value()];
             $exception = new $class($this, $message, $errorCode->value());
         } else {
             $exception = new ConnectionException($this, $message, $errorCode->value());
         }
-        if ($this->serverAddressHolder instanceof RefreshableServerAddressHolderInterface) {
-            $this->serverAddressHolder->refresh(true);
-        }
 
-        CommunicationException::handle($exception);
+        return $exception;
     }
 
-    protected static function createExceptionMessage(ConnectionInterface $connection, string $message): string
-    {
-        return $message.'(address='.$connection->getAddress().')';
-    }
+    /**
+     * Creates the underlying resource used to communicate with server.
+     *
+     * @return mixed
+     *
+     * @throws CommunicationException
+     */
+    abstract protected function createResource();
+
+    /**
+     * Destroy the underlying resource.
+     */
+    abstract protected function destroyResource(): void;
+
+    /**
+     * @throws CommunicationException
+     */
+    abstract protected function doSend(RequestInterface $request): string;
 
     /**
      * callback before send data.

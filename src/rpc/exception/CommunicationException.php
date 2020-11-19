@@ -46,7 +46,7 @@ abstract class CommunicationException extends \Exception
      *
      * @throws CommunicationException
      */
-    public static function handle(CommunicationException $exception): void
+    public static function throwError(CommunicationException $exception): void
     {
         if ($exception->shouldResetConnection()) {
             $connection = $exception->getConnection();
