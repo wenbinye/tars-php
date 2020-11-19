@@ -15,8 +15,8 @@ abstract class CommunicationException extends \Exception
 
     public function __construct(
         ConnectionInterface $connection,
-        $message = null,
-        $code = null,
+        string $message = null,
+        int $code = null,
         \Exception $cause = null)
     {
         parent::__construct($message, $code, $cause);

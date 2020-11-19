@@ -82,16 +82,18 @@ class MethodMetadataFactory implements MethodMetadataFactoryInterface
 
     private function getTarsServantAnnotation(\ReflectionClass $reflectionClass): TarsServant
     {
+        /** @var TarsServant|null $annotation */
         $annotation = $this->annotationReader->getClassAnnotation($reflectionClass, TarsServant::class);
-        if ($annotation) {
+        if (null !== $annotation) {
             return $annotation;
         }
         if (false !== ($parent = $reflectionClass->getParentClass())) {
             return $this->getTarsServantAnnotation($parent);
         }
         foreach ($reflectionClass->getInterfaces() as $interface) {
+            /** @var TarsServant|null $annotation */
             $annotation = $this->annotationReader->getClassAnnotation($interface, TarsServant::class);
-            if ($annotation) {
+            if (null !== $annotation) {
                 return $annotation;
             }
         }

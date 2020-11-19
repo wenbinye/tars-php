@@ -59,6 +59,14 @@ class Packer implements PackerInterface, TypeParserInterface, TypeConverterInter
         return $decodeRet['sBuffer'];
     }
 
+    /**
+     * @param string $class
+     *
+     * @return mixed
+     *
+     * @throws \ReflectionException
+     * @throws exception\SyntaxErrorException
+     */
     public function newInstance(string $class)
     {
         $refl = new \ReflectionClass($class);

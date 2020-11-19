@@ -1,3 +1,4 @@
+
 parameters:
 	ignoreErrors:
 		-
@@ -134,11 +135,6 @@ parameters:
 			message: "#^Variable property access on \\$this\\(wenbinye\\\\tars\\\\rpc\\\\route\\\\ServerAddress\\)\\.$#"
 			count: 2
 			path: src/rpc/route/ServerAddress.php
-
-		-
-			message: "#^Call to an undefined method kuiper\\\\di\\\\ContainerBuilderInterface\\:\\:addAwareInjection\\(\\)\\.$#"
-			count: 3
-			path: src/server/framework/FoundationConfiguration.php
 
 		-
 			message: "#^Call to an undefined method kuiper\\\\logger\\\\LoggerFactoryInterface\\:\\:getLoggers\\(\\)\\.$#"

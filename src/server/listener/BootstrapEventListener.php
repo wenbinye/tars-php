@@ -7,6 +7,7 @@ namespace wenbinye\tars\server\listener;
 use kuiper\di\ComponentCollection;
 use kuiper\event\annotation\EventListener;
 use kuiper\event\EventListenerInterface;
+use kuiper\event\EventSubscriberInterface;
 use kuiper\swoole\constants\ServerType;
 use kuiper\swoole\event\ReceiveEvent;
 use kuiper\swoole\event\RequestEvent;
@@ -131,10 +132,15 @@ class BootstrapEventListener implements EventListenerInterface, LoggerAwareInter
         /** @var EventListener $annotation */
         foreach (ComponentCollection::getAnnotations(EventListener::class) as $annotation) {
             $listener = $this->container->get($annotation->getComponentId());
-            if (!($listener instanceof EventListenerInterface)) {
+            if ($listener instanceof EventListenerInterface) {
+                $events[] = $this->attach($event, $annotation->getComponentId(), $annotation->value);
+            } elseif ($listener instanceof EventSubscriberInterface) {
+                foreach ($listener->getSubscribedEvents() as $eventName) {
+                    $events[] = $this->attach($event, $annotation->getComponentId(), $eventName);
+                }
+            } else {
                 throw new \InvalidArgumentException($annotation->getTarget()->getName().' should implements '.EventListenerInterface::class);
             }
-            $events[] = $this->attach($event, $annotation->getComponentId(), $annotation->value);
         }
 
         $serverProperties = $this->container->get(ServerProperties::class);
