@@ -14,6 +14,7 @@ use kuiper\di\ContainerBuilderAwareTrait;
 use kuiper\di\DefinitionConfiguration;
 use kuiper\logger\LoggerFactoryInterface;
 use kuiper\swoole\pool\PoolFactoryInterface;
+use Psr\SimpleCache\CacheInterface;
 use wenbinye\tars\client\ConfigServant;
 use wenbinye\tars\client\LogServant;
 use wenbinye\tars\client\PropertyFServant;
@@ -35,6 +36,9 @@ use wenbinye\tars\rpc\message\ResponseFactoryInterface;
 use wenbinye\tars\rpc\middleware\ErrorHandler;
 use wenbinye\tars\rpc\middleware\RequestLog;
 use wenbinye\tars\rpc\middleware\Retry;
+use wenbinye\tars\rpc\route\cache\ArrayCache;
+use wenbinye\tars\rpc\route\cache\ChainCache;
+use wenbinye\tars\rpc\route\cache\SwooleTableRegistryCache;
 use wenbinye\tars\rpc\route\ChainRouteResolver;
 use wenbinye\tars\rpc\route\InMemoryRouteResolver;
 use wenbinye\tars\rpc\route\RegistryRouteResolver;
@@ -42,7 +46,6 @@ use wenbinye\tars\rpc\route\Route;
 use wenbinye\tars\rpc\route\RouteResolverInterface;
 use wenbinye\tars\rpc\route\ServerAddressHolderFactory;
 use wenbinye\tars\rpc\route\ServerAddressHolderFactoryInterface;
-use wenbinye\tars\rpc\route\SwooleTableRegistryCache;
 use wenbinye\tars\rpc\ServantProxyGenerator;
 use wenbinye\tars\rpc\ServantProxyGeneratorInterface;
 use wenbinye\tars\rpc\TarsClient;
@@ -71,7 +74,6 @@ class ClientConfiguration implements DefinitionConfiguration
     public function getDefinitions(): array
     {
         $definitions = [
-            'tarsRegistryCache' => autowire(SwooleTableRegistryCache::class),
             RouteResolverInterface::class => autowire(ChainRouteResolver::class)
                 ->constructor([
                     get(InMemoryRouteResolver::class),
@@ -151,6 +153,22 @@ class ClientConfiguration implements DefinitionConfiguration
         $client = new TarsClient($connectionFactory, $requestFactory, $responseFactory, $logger, $middlewares);
 
         return new TarsClientFactory($client, $servantProxyGenerator);
+    }
+
+    /**
+     * @Bean("tarsRegistryCache")
+     * @Inject({"options": "application.tars.registry-cache"})
+     */
+    public function tarsRegistryCache(?array $options): CacheInterface
+    {
+        $ttl = $options['ttl'] ?? 60;
+        $capacity = $options['capacity'] ?? 256;
+        $registryCache = new SwooleTableRegistryCache($ttl, $capacity, $options['size'] ?? 2048);
+
+        return new ChainCache([
+            new ArrayCache($options['memory-ttl'] ?? 1, $capacity),
+            $registryCache,
+        ]);
     }
 
     /**

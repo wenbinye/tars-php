@@ -2,11 +2,19 @@
 
 declare(strict_types=1);
 
-namespace wenbinye\tars\rpc\route;
+namespace wenbinye\tars\rpc\route\cache;
 
 use Psr\SimpleCache\CacheInterface;
 use Swoole\Table;
+use wenbinye\tars\rpc\route\ServerAddress;
 
+/**
+ * 存储服务地址
+ *  - routes 里记录的数据为 "tcp -h 172.16.0.1 -t 20000 -p 10204 -e 0\ntcp -h 172.16.0.2 -t 20000 -p 10204 -e 0"
+ *
+ * Class SwooleTableRegistryCache
+ * @package wenbinye\tars\rpc\route
+ */
 class SwooleTableRegistryCache implements CacheInterface
 {
     public const KEY_ROUTES = 'routes';
@@ -25,13 +33,13 @@ class SwooleTableRegistryCache implements CacheInterface
      * SwooleTableRegistryCache constructor.
      *
      * @param int $ttl
-     * @param int $size
+     * @param int $capacity number of address to save
+     * @param int $size size for the address 每个服务长度大约50个字符，默认2046长度可以存储最多40台服务器的地址
      */
-    public function __construct(int $ttl = 60, int $size = 256)
+    public function __construct(int $ttl = 60, int $capacity = 256, int $size = 2046)
     {
-        //100个服务,每个长度1000 需要100000个字节,这里申请200行,对应200个服务
-        $this->table = new Table($size);
-        $this->table->column(self::KEY_ROUTES, Table::TYPE_STRING, 1000);
+        $this->table = new Table($capacity);
+        $this->table->column(self::KEY_ROUTES, Table::TYPE_STRING, $size);
         $this->table->column(self::KEY_EXPIRES, Table::TYPE_INT, 4);
         $this->table->create();
         $this->ttl = $ttl;
@@ -44,7 +52,7 @@ class SwooleTableRegistryCache implements CacheInterface
     {
         $result = $this->table->get($key);
         if ($result && time() < $result[self::KEY_EXPIRES]) {
-            return \unserialize($result[self::KEY_ROUTES], ['allowed_classes' => [ServerAddress::class]]);
+            return $this->decode($result[self::KEY_ROUTES]);
         }
 
         return $default;
@@ -55,11 +63,30 @@ class SwooleTableRegistryCache implements CacheInterface
      */
     public function set($key, $value, $ttl = null)
     {
-        $data = \serialize($value);
         $this->table->set($key,
-            [self::KEY_ROUTES => $data, self::KEY_EXPIRES => time() + ($ttl ?? $this->ttl)]);
+            [self::KEY_ROUTES => $this->encode($value), self::KEY_EXPIRES => time() + ($ttl ?? $this->ttl)]);
 
         return true;
+    }
+
+    private function encode(array $addresses): string
+    {
+        return implode("\n", $addresses);
+    }
+
+    private function decode(string $data): array
+    {
+        $addresses = [];
+        foreach (explode("\n", $data) as $one) {
+            if (!empty($one)) {
+                try {
+                    $addresses[] = ServerAddress::fromString($one);
+                } catch (\InvalidArgumentException $e) {
+                    // pass
+                }
+            }
+        }
+        return $addresses;
     }
 
     /**
@@ -128,6 +155,7 @@ class SwooleTableRegistryCache implements CacheInterface
      */
     public function has($key)
     {
-        return $this->table->exist($key);
+        $expire = $this->table->get($key, self::KEY_EXPIRES);
+        return isset($expire) && time() < $expire;
     }
 }

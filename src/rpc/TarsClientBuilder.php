@@ -25,13 +25,13 @@ use wenbinye\tars\rpc\message\RequestIdGeneratorInterface;
 use wenbinye\tars\rpc\message\ResponseFactory;
 use wenbinye\tars\rpc\message\ResponseFactoryInterface;
 use wenbinye\tars\rpc\middleware\MiddlewareInterface;
+use wenbinye\tars\rpc\route\cache\SwooleTableRegistryCache;
 use wenbinye\tars\rpc\route\InMemoryRouteResolver;
 use wenbinye\tars\rpc\route\RegistryRouteResolver;
 use wenbinye\tars\rpc\route\Route;
 use wenbinye\tars\rpc\route\RouteResolverInterface;
 use wenbinye\tars\rpc\route\ServerAddressHolderFactory;
 use wenbinye\tars\rpc\route\ServerAddressHolderFactoryInterface;
-use wenbinye\tars\rpc\route\SwooleTableRegistryCache;
 
 class TarsClientBuilder implements LoggerAwareInterface
 {

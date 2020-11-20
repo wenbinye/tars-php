@@ -45,11 +45,12 @@
         "copyrenzhe/tars-ide-helper": "dev-master",
         "mockery/mockery": "^1.3",
         "phpstan/extension-installer": "^1.0",
-        "phpstan/phpstan-strict-rules": "^0.12",
         "phpstan/phpstan": "^0.12",
+        "phpstan/phpstan-strict-rules": "^0.12",
         "phpunit/phpunit": "^7.0",
         "slim/slim": "^4.3",
         "swoft/swoole-ide-helper": "^4.4",
+        "symfony/cache": "^5.1",
         "vlucas/phpdotenv": "^4.1",
         "wenbinye/tars-gen": "^0.1",
         "winwin/composer-phpcs-plugin": "^0.2"

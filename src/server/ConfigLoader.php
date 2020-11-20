@@ -177,7 +177,7 @@ class ConfigLoader implements ConfigLoaderInterface
                 ->setLocator(Route::fromString($config->getString('tars.application.client.locator')))
                 ->createProxy(ConfigServant::class);
             $ret = $configServant->loadConfig($serverProperties->getApp(), $serverProperties->getServer(), $env, $content);
-            if (0 === $ret) {
+            if (0 === $ret && !empty($content)) {
                 file_put_contents($localFile, $content);
             }
             if (is_readable($localFile)) {

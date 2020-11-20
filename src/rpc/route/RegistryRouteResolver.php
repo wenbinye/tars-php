@@ -19,6 +19,7 @@ class RegistryRouteResolver implements RouteResolverInterface
      * @var CacheInterface
      */
     private $cache;
+
     /**
      * @var int
      */
@@ -40,17 +41,20 @@ class RegistryRouteResolver implements RouteResolverInterface
     public function resolve(string $servantName): ?Route
     {
         $addresses = $this->cache->get($servantName);
-        if (null === $addresses || !is_array($addresses)) {
+        if (!is_array($addresses)) {
             $endpoints = $this->queryFClient->findObjectById($servantName);
             if (empty($endpoints)) {
                 return null;
             }
+
             $addresses = array_map(static function (EndpointF $endpoint): ServerAddress {
                 return new ServerAddress($endpoint->istcp > 0 ? 'tcp' : 'udp',
                     $endpoint->host, $endpoint->port, $endpoint->timeout, $endpoint->weight ?? 100);
             }, $endpoints);
-
             $this->cache->set($servantName, $addresses, $this->ttl);
+        }
+        if (empty($addresses)) {
+            return null;
         }
 
         return new Route($servantName, $addresses);
