@@ -36,6 +36,11 @@ class ServerApplication
     private $configLoader;
 
     /**
+     * @var string|null
+     */
+    private $configFile;
+
+    /**
      * @var self
      */
     private static $INSTANCE;
@@ -91,9 +96,18 @@ class ServerApplication
         return $this->container;
     }
 
+    /**
+     * @return string|null
+     */
+    public function getConfigFile(): ?string
+    {
+        return $this->configFile;
+    }
+
     public function createApp(?string $configFile = null, array $properties = []): Application
     {
         if (null !== $configFile) {
+            $this->configFile = $configFile;
             $this->getConfigLoader()->load($configFile, $properties);
         } else {
             Config::createDummyConfig();

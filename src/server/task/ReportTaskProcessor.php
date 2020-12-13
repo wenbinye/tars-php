@@ -75,7 +75,14 @@ class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
             return;
         }
         $server = $task->getServer();
-        $pid = $server->getMasterPid();
+        if ($this->serverProperties->isExternalMode()) {
+            if (!file_exists($this->serverProperties->getServerPidFile())) {
+                return;
+            }
+            $pid = (int) file_get_contents($this->serverProperties->getServerPidFile());
+        } else {
+            $pid = $server->getMasterPid();
+        }
         $this->sendServerInfo($pid);
         $server->tick($this->clientProperties->getKeepAliveInterval(), function () use ($pid): void {
             $this->sendServerInfo($pid);

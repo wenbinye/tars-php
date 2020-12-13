@@ -21,7 +21,7 @@ class AdapterProperties
     /**
      * @Assert\NotBlank()
      *
-     * @var string
+     * @var string|null
      */
     private $name;
 
@@ -29,7 +29,7 @@ class AdapterProperties
      * @ConfigItem(factory={ServerAddress::class, "fromString"})
      * @Assert\NotNull()
      *
-     * @var ServerAddress
+     * @var ServerAddress|null
      */
     private $endpoint;
     /**
@@ -37,13 +37,13 @@ class AdapterProperties
      *
      * @var int
      */
-    private $maxConnections;
+    private $maxConnections = 10000;
     /**
      * @ConfigItem()
      * @Assert\Choice(callback="protocols")
      * @Assert\NotBlank()
      *
-     * @var string
+     * @var string|null
      *
      * @see Protocol
      */
@@ -53,18 +53,18 @@ class AdapterProperties
      *
      * @var int
      */
-    private $queueCapacity;
+    private $queueCapacity = 50000;
     /**
      * @ConfigItem()
      *
      * @var int
      */
-    private $queueTimeout;
+    private $queueTimeout = 20000;
     /**
      * @ConfigItem(name="servant")
      * @Assert\NotBlank()
      *
-     * @var string
+     * @var string|null
      */
     private $servantName;
     /**
@@ -72,39 +72,124 @@ class AdapterProperties
      *
      * @var int
      */
-    private $threads;
+    private $threads = 1;
 
-    public function getName(): string
+    /**
+     * @return string|null
+     */
+    public function getName(): ?string
     {
         return $this->name;
     }
 
-    public function setName(string $name): void
+    /**
+     * @param string|null $name
+     */
+    public function setName(?string $name): void
     {
         $this->name = $name;
     }
 
-    public function getEndpoint(): ServerAddress
+    /**
+     * @return ServerAddress|null
+     */
+    public function getEndpoint(): ?ServerAddress
     {
         return $this->endpoint;
     }
 
-    public function setEndpoint(ServerAddress $endpoint): void
+    /**
+     * @param ServerAddress|null $endpoint
+     */
+    public function setEndpoint(?ServerAddress $endpoint): void
     {
         $this->endpoint = $endpoint;
     }
 
+    /**
+     * @return int
+     */
     public function getMaxConnections(): int
     {
         return $this->maxConnections;
     }
 
+    /**
+     * @param int $maxConnections
+     */
     public function setMaxConnections(int $maxConnections): void
     {
         $this->maxConnections = $maxConnections;
     }
 
-    public function getProtocol(): string
+    /**
+     * @return int
+     */
+    public function getQueueCapacity(): int
+    {
+        return $this->queueCapacity;
+    }
+
+    /**
+     * @param int $queueCapacity
+     */
+    public function setQueueCapacity(int $queueCapacity): void
+    {
+        $this->queueCapacity = $queueCapacity;
+    }
+
+    /**
+     * @return int
+     */
+    public function getQueueTimeout(): int
+    {
+        return $this->queueTimeout;
+    }
+
+    /**
+     * @param int $queueTimeout
+     */
+    public function setQueueTimeout(int $queueTimeout): void
+    {
+        $this->queueTimeout = $queueTimeout;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getServantName(): ?string
+    {
+        return $this->servantName;
+    }
+
+    /**
+     * @param string|null $servantName
+     */
+    public function setServantName(?string $servantName): void
+    {
+        $this->servantName = $servantName;
+    }
+
+    /**
+     * @return int
+     */
+    public function getThreads(): int
+    {
+        return $this->threads;
+    }
+
+    /**
+     * @param int $threads
+     */
+    public function setThreads(int $threads): void
+    {
+        $this->threads = $threads;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getProtocol(): ?string
     {
         return $this->protocol;
     }
@@ -117,49 +202,9 @@ class AdapterProperties
         $this->protocol = $protocol;
     }
 
-    public function getQueueCapacity(): int
-    {
-        return $this->queueCapacity;
-    }
-
-    public function setQueueCapacity(int $queueCapacity): void
-    {
-        $this->queueCapacity = $queueCapacity;
-    }
-
-    public function getQueueTimeout(): int
-    {
-        return $this->queueTimeout;
-    }
-
-    public function setQueueTimeout(int $queueTimeout): void
-    {
-        $this->queueTimeout = $queueTimeout;
-    }
-
-    public function getServantName(): string
-    {
-        return $this->servantName;
-    }
-
-    public function setServantName(string $servantName): void
-    {
-        $this->servantName = $servantName;
-    }
-
     public function getAdapterName(): string
     {
         return $this->servantName.'Adapter';
-    }
-
-    public function getThreads(): int
-    {
-        return $this->threads;
-    }
-
-    public function setThreads(int $threads): void
-    {
-        $this->threads = $threads;
     }
 
     public function getServerType(): string

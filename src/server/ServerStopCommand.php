@@ -23,14 +23,21 @@ class ServerStopCommand extends Command implements ContainerAwareInterface
     private $serverManager;
 
     /**
+     * @var ServerProperties
+     */
+    private $serverProperties;
+
+    /**
      * ServerStartCommand constructor.
      *
-     * @param ServerManager $serverManager
+     * @param ServerManager    $serverManager
+     * @param ServerProperties $serverProperties
      */
-    public function __construct(ServerManager $serverManager)
+    public function __construct(ServerManager $serverManager, ServerProperties $serverProperties)
     {
         parent::__construct(self::COMMAND_NAME);
         $this->serverManager = $serverManager;
+        $this->serverProperties = $serverProperties;
     }
 
     protected function configure(): void
@@ -40,6 +47,16 @@ class ServerStopCommand extends Command implements ContainerAwareInterface
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        if ($this->serverProperties->isExternalMode()
+            && file_exists($this->serverProperties->getServerPidFile())) {
+            $pid = (int) file_get_contents($this->serverProperties->getServerPidFile());
+            if (function_exists('posix_kill')) {
+                posix_kill($pid, SIGTERM);
+            } else {
+                exec("kill -TERM $pid");
+            }
+            unlink($this->serverProperties->getServerPidFile());
+        }
         $this->serverManager->stop();
 
         return 0;

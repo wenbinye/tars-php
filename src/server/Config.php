@@ -81,6 +81,7 @@ class Config
                         'server' => 'dummy',
                         'basepath' => '.',
                         'datapath' => '.',
+                        'logpath' => '.',
                         'dummy.dummy.objAdapter' => [
                             'endpoint' => 'tcp -h 127.0.0.1 -p 18080 -t 60000',
                             'protocol' => 'tars',
@@ -88,7 +89,9 @@ class Config
                             'servant' => 'dummy.dummy.obj',
                         ],
                     ],
-                    'client' => [],
+                    'client' => [
+                        'modulename' => 'dummy',
+                    ],
                     'logging' => [
                         'root' => [
                             'console' => true,

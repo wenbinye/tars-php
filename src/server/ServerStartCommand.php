@@ -11,6 +11,7 @@ use kuiper\swoole\server\ServerInterface;
 use kuiper\swoole\server\SwooleServer;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class ServerStartCommand extends Command implements ContainerAwareInterface
@@ -25,28 +26,71 @@ class ServerStartCommand extends Command implements ContainerAwareInterface
     private $server;
 
     /**
+     * @var ServerProperties
+     */
+    private $serverProperties;
+
+    /**
      * ServerStartCommand constructor.
      *
-     * @param ServerInterface $server
+     * @param ServerInterface  $server
+     * @param ServerProperties $serverProperties
      */
-    public function __construct(ServerInterface $server)
+    public function __construct(ServerInterface $server, ServerProperties $serverProperties)
     {
         parent::__construct(self::COMMAND_NAME);
         $this->server = $server;
+        $this->serverProperties = $serverProperties;
     }
 
     protected function configure(): void
     {
         $this->setDescription('start php server');
+        $this->addOption('server', null, InputOption::VALUE_NONE);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        if ($this->server instanceof SwooleServer) {
-            Coroutine::enable();
+        if (!$this->serverProperties->isExternalMode() || $input->getOption('server')) {
+            if ($this->server instanceof SwooleServer) {
+                Coroutine::enable();
+            }
+            $this->server->start();
+        } else {
+            $this->writePidFile();
+            $this->startService($input);
         }
-        $this->server->start();
 
         return 0;
+    }
+
+    private function writePidFile(): void
+    {
+        file_put_contents($this->serverProperties->getServerPidFile(), getmypid());
+    }
+
+    private function startService(InputInterface $input): void
+    {
+        $confPath = $this->serverProperties->getSupervisorConfPath();
+        if (null === $confPath || !is_dir($confPath)) {
+            throw new \RuntimeException('tars.application.server.supervisor_conf_path cannot be empty when start_mode is external');
+        }
+        $serviceName = $this->serverProperties->getServerName();
+        $configFile = $confPath.'/'.$serviceName.$this->serverProperties->getSupervisorConfExtension();
+        $configContent = strtr('[program:{server_name}]
+command={php} {script_file} --config={conf_file} start --server', [
+            '{server_name}' => $serviceName,
+            '{php}' => PHP_BINARY,
+            '{script_file}' => $_SERVER['SCRIPT_FILENAME'],
+            '{conf_file}' => ServerApplication::getInstance()->getConfigFile(),
+        ]);
+        $supervisorctl = $this->serverProperties->getSupervisorctl() ?? 'supervisorctl';
+        if (!file_exists($configFile) || file_get_contents($configFile) !== $configContent) {
+            file_put_contents($configFile, $configContent);
+            system("$supervisorctl update");
+        }
+        system("$supervisorctl start ".$serviceName);
+        @cli_set_process_title($serviceName.' server process');
+        pcntl_exec('/bin/sleep', ['2147483647']);
     }
 }
