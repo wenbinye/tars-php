@@ -67,3 +67,22 @@ ServerApplication::run();
 
 服务启动过程中，最重要的两个步骤是配置文件的解析和DI容器配置。
 
+
+## 使用 supervisord 启动
+
+tarsnode 重启并不会让子进程停止，在运行过程中出现 master 进程退出，manager, worker 进程没有退出的情况，
+而且 tarsnode 启动的进程调用 system 函数退出状态获取不到。这些问题目前没有找到方法解决，可选的方案是使用
+supervisord 代替 tarsnode 管理服务进程。通过在模板中配置以下值可实现使用 supervisord 启动服务进程：
+
+```
+start-mode=external
+supervisor-conf-path=/local/service/supervisor/conf
+supervisor-conf-extension=.ini
+supervisorctl=/usr/local/bin/deploy-supervisorctl
+```
+
+> 注意 配置项使用 `-` 分隔，不能使用 `_` 分隔。
+
+需要确保 `supervisor-conf-path` 对于 tarsnode 进程启动用户有可写权限。程序会自动在这个目录中创建
+`{server}.ini` 配置文件，文件名与 tars 服务名一致。
+
