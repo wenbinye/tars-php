@@ -31,43 +31,49 @@ class ChainCache implements CacheInterface
         return $default;
     }
 
-    public function set($key, $value, $ttl = null)
+    public function set($key, $value, $ttl = null): bool
     {
         foreach ($this->cacheList as $cache) {
             $cache->set($key, $value, $ttl);
         }
+
+        return true;
     }
 
-    public function delete($key)
+    public function delete($key): bool
     {
         foreach ($this->cacheList as $cache) {
             $cache->delete($key);
         }
+
+        return true;
     }
 
-    public function clear()
+    public function clear(): bool
     {
         foreach ($this->cacheList as $cache) {
             $cache->clear();
         }
+
+        return true;
     }
 
-    public function getMultiple($keys, $default = null)
+    public function getMultiple($keys, $default = null): iterable
     {
         throw new BadMethodCallException('not implement');
     }
 
-    public function setMultiple($values, $ttl = null)
+    public function setMultiple($values, $ttl = null): bool
     {
         throw new BadMethodCallException('not implement');
     }
 
-    public function deleteMultiple($keys)
+    public function deleteMultiple($keys): bool
     {
         throw new BadMethodCallException('not implement');
     }
 
-    public function has($key)
+    public function has($key): bool
     {
         foreach ($this->cacheList as $cache) {
             if ($cache->has($key)) {
