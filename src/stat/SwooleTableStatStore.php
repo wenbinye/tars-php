@@ -101,6 +101,6 @@ class SwooleTableStatStore implements StatStoreAdapter
 
     private function getEntry(string $key): string
     {
-        return $this->keyTable->get($key, self::KEY_ENTRY);
+        return (string) $this->keyTable->get($key, self::KEY_ENTRY);
     }
 }
