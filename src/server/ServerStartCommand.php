@@ -78,7 +78,8 @@ class ServerStartCommand extends Command implements ContainerAwareInterface
         $serviceName = $this->serverProperties->getServerName();
         $configFile = $confPath.'/'.$serviceName.$this->serverProperties->getSupervisorConfExtension();
         $configContent = strtr('[program:{server_name}]
-command={php} {script_file} --config={conf_file} start --server', [
+command={php} {script_file} --config={conf_file} start --server
+startsecs=10', [
             '{server_name}' => $serviceName,
             '{php}' => PHP_BINARY,
             '{script_file}' => $_SERVER['SCRIPT_FILENAME'],
