@@ -44,6 +44,7 @@ class ServantProxyGenerator implements ServantProxyGeneratorInterface
     private function load(ClassGenerator $phpClass): void
     {
         $code = $phpClass->generate();
+        // echo $code;
         if ($this->eval) {
             eval($code);
         } else {
@@ -150,7 +151,7 @@ class ServantProxyGenerator implements ServantProxyGeneratorInterface
             /** @var TarsReturnType|null $returnType */
             $returnType = $this->annotationReader->getMethodAnnotation($reflectionMethod, TarsReturnType::class);
             $methodBody = $this->createBody($reflectionMethod, $returnType);
-            $phpClass->addMethod(
+            $methodGenerator = new MethodGenerator(
                 $reflectionMethod->getName(),
                 array_map(function ($parameter): array {
                     return $this->createParameter($parameter);
@@ -159,6 +160,8 @@ class ServantProxyGenerator implements ServantProxyGeneratorInterface
                 $methodBody,
                 DocBlockGenerator::fromReflection(new DocBlockReflection('/** @inheritdoc */'))
             );
+            $methodGenerator->setReturnType($reflectionMethod->getReturnType());
+            $phpClass->addMethodFromGenerator($methodGenerator);
         }
 
         return $phpClass;
