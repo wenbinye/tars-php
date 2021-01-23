@@ -54,7 +54,7 @@ class ServerRequestFactory implements ServerRequestFactoryInterface
         if (!isset($servantComponentId)) {
             throw new RequestException($requestPacket, 'Unknown servant '.$requestPacket->getServantName(), ErrorCode::SERVER_NO_SERVANT_ERR);
         }
-        if ($this->container->has($servantComponentId)) {
+        if (!$this->container->has($servantComponentId)) {
             throw new RequestException($requestPacket, 'Cannot find implementation for '.$servantComponentId, ErrorCode::SERVER_NO_SERVANT_ERR);
         }
         $servant = $this->container->get($servantComponentId);
