@@ -1,6 +1,9 @@
 {
     "client": {
         "tars_path": "tars",
+        "namespace": "wenbinye\\tars\\client",
+        "flat": true,
+        "output": "src/client",
         "servants": {
             "StatF": "tars.tarsstat.StatObj",
             "PropertyF": "tars.tarsproperty.PropertyObj",

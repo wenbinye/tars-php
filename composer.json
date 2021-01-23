@@ -52,11 +52,12 @@
         "swoft/swoole-ide-helper": "^4.4",
         "symfony/cache": "^5.1",
         "vlucas/phpdotenv": "^4.1",
-        "wenbinye/tars-gen": "^0.1",
+        "wenbinye/tars-gen": "^0.3",
         "winwin/composer-phpcs-plugin": "^0.2"
     },
     "scripts": {
-        "gen": "./vendor/bin/tars-gen"
+        "gen": "./vendor/bin/tars-gen",
+        "lint": "./vendor/bin/phpstan analyze --error-format=raw"
     },
     "archive": {
         "exclude": [

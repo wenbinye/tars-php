@@ -37,7 +37,7 @@ class ResponseFactoryTest extends TestCase
         $request->getRequestPacketBuilder()->setStatus(['a' => 1])
             ->setContext(['b' => 1]);
         $returnValues = $tarsRpcPacker->packResponse($request->getMethod(), ['hello, world'], $request->getVersion());
-        $serverResponse = new ServerResponse($request, $returnValues, ErrorCode::SERVER_SUCCESS);
+        $serverResponse = new ServerResponse($request, $returnValues);
 
         $responseFactory = new ResponseFactory($packer);
         $response = $responseFactory->create($serverResponse->getBody(), $request);

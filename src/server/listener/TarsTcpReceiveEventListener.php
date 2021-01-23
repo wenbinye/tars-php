@@ -63,7 +63,7 @@ class TarsTcpReceiveEventListener implements EventListenerInterface, LoggerAware
             $request = $this->serverRequestFactory->create($event->getData());
             $connectionInfo = $server->getConnectionInfo($event->getClientId());
 
-            if (!$connectionInfo) {
+            if (null === $connectionInfo) {
                 $this->logger->error(static::TAG.'cannot get connection info');
 
                 return;

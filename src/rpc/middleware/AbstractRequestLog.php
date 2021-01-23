@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc\middleware;
 
+use kuiper\helper\Arrays;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use wenbinye\tars\rpc\ErrorCode;
@@ -37,7 +38,7 @@ abstract class AbstractRequestLog implements LoggerAwareInterface
     public const MAIN = '$remote_addr [$time_local] "$request" $status $body_bytes_sent "$referer" rt=$request_time';
 
     /**
-     * @var string
+     * @var string|callable
      */
     private $format;
 
@@ -52,61 +53,95 @@ abstract class AbstractRequestLog implements LoggerAwareInterface
     private $maxBodySize;
 
     /**
-     * RequestLogMiddleware constructor.
+     * @var string
      */
-    public function __construct(string $template = self::MAIN, array $extra = ['params'], int $maxBodySize = 4096)
-    {
+    private $dateFormat;
+
+    /**
+     * @var callable|null
+     */
+    private $requestFilter;
+
+    /**
+     * RequestLogMiddleware constructor.
+     *
+     * @param string|callable $template
+     * @param array           $extra
+     * @param int             $maxBodySize
+     * @param string          $dateFormat
+     * @param callable|null   $requestFilter
+     */
+    public function __construct(
+        $template = self::MAIN,
+        array $extra = ['params'],
+        int $maxBodySize = 4096,
+        string $dateFormat = '%d/%b/%Y:%H:%M:%S %z',
+        ?callable $requestFilter = null
+    ) {
         $this->format = $template;
         $this->extra = $extra;
         $this->maxBodySize = $maxBodySize;
+        $this->dateFormat = $dateFormat;
+        $this->requestFilter = $requestFilter;
     }
 
     protected function handle(RequestInterface $request, callable $next): ResponseInterface
     {
         $start = microtime(true);
+        $response = null;
         try {
             $response = $next($request);
-            $this->writeLog($request, $response, (microtime(true) - $start) * 1000);
 
             return $response;
-        } catch (\Throwable $e) {
-            $this->writeLog($request, null, (microtime(true) - $start) * 1000);
-            throw $e;
+        } finally {
+            if (null === $this->requestFilter
+                || call_user_func($this->requestFilter, $request, $response)) {
+                $responseTime = (microtime(true) - $start) * 1000;
+                $this->format($this->prepareMessageContext($request, $response, $responseTime));
+            }
         }
     }
 
-    protected function writeLog(RequestInterface $request, ?ResponseInterface $response, float $responseTime): void
+    protected function prepareMessageContext(RequestInterface $request, ?ResponseInterface $response, float $responseTime): array
     {
-        $time = sprintf('%.2f', $responseTime);
+        $time = round($responseTime, 2);
 
         $statusCode = isset($response) ? $response->getReturnCode() : ErrorCode::UNKNOWN;
         $responseBodySize = isset($response) ? strlen($response->getBody()) : 0;
-        $message = strtr($this->format, [
-            '$remote_addr' => RequestAttribute::getRemoteAddress($request) ?? '-',
-            '$time_local' => strftime('%d/%b/%Y:%H:%M:%S %z'),
-            '$referer' => $this->getReferer($request),
-            '$request' => $this->formatRequest($request, $response),
-            '$request_id' => $request->getRequestId(),
-            '$servant' => $request->getServantName(),
-            '$method' => $request->getFuncName(),
-            '$status' => $statusCode,
-            '$body_bytes_sent' => $responseBodySize,
-            '$request_time' => $time,
-        ]);
+        $message = [
+            'remote_addr' => RequestAttribute::getRemoteAddress($request) ?? '-',
+            'time_local' => strftime($this->dateFormat),
+            'referer' => $this->getReferer($request),
+            'request' => $this->formatRequest($request, $response),
+            'request_id' => $request->getRequestId(),
+            'servant' => $request->getServantName(),
+            'method' => $request->getFuncName(),
+            'status' => $statusCode,
+            'body_bytes_sent' => $responseBodySize,
+            'request_time' => $time,
+        ];
         $extra = [];
         foreach ($this->extra as $name) {
             if ('params' === $name) {
-                $param = json_encode($this->getParameters($request));
-                $extra['params'] = is_string($param) && strlen($param) > $this->maxBodySize
+                $param = str_replace('"', "'", (string) json_encode($this->getParameters($request)));
+                $extra['params'] = strlen($param) > $this->maxBodySize
                     ? sprintf('%s...%d more', substr($param, 0, $this->maxBodySize), strlen($param) - $this->maxBodySize)
                     : $param;
             }
         }
-        $extra = array_filter($extra);
-        if (ErrorCode::SERVER_SUCCESS === $statusCode) {
-            $this->logger->info($message, $extra);
-        } else {
-            $this->logger->error($message, $extra);
+        $message['extra'] = array_filter($extra);
+
+        return $message;
+    }
+
+    protected function format(array $messageContext): void
+    {
+        if (is_string($this->format)) {
+            $this->logger->info(strtr($this->format, Arrays::mapKeys($messageContext, function ($key): string {
+                return '$'.$key;
+            })), $messageContext['extra'] ?? []);
+        } elseif (is_callable($this->format)) {
+            $this->logger->info(call_user_func($this->format, $messageContext));
         }
     }
 
@@ -133,10 +168,7 @@ abstract class AbstractRequestLog implements LoggerAwareInterface
             $request->getVersion());
     }
 
-    /**
-     * @return mixed|string
-     */
-    protected function getReferer(RequestInterface $request)
+    protected function getReferer(RequestInterface $request): string
     {
         if ($request instanceof ClientRequestInterface) {
             $serverRequest = ServerRequestHolder::getRequest();
@@ -144,6 +176,8 @@ abstract class AbstractRequestLog implements LoggerAwareInterface
             return null !== $serverRequest ? $this->getReferer($serverRequest) : '';
         }
 
-        return $request->getContext()[AddRequestReferer::CONTEXT_KEY] ?? '';
+        $referer = $request->getContext()[AddRequestReferer::CONTEXT_KEY];
+
+        return isset($referer) ? (string) $referer : '';
     }
 }

@@ -37,7 +37,7 @@ module tars
          * @param id         对象名称
          * @param activeEp   存活endpoint列表
          * @param inactiveEp 非存活endpoint列表
-         * @return:  0-成功  others-失败
+         * @return  0-成功  others-失败
          */
         int findObjectById4Any(string id, out vector<EndpointF> activeEp, out vector<EndpointF> inactiveEp);
 
@@ -46,7 +46,7 @@ module tars
          * @param id         对象名称
          * @param activeEp   存活endpoint列表
          * @param inactiveEp 非存活endpoint列表
-         * @return:  0-成功  others-失败
+         * @return  0-成功  others-失败
          */
         int findObjectById4All(string id, out vector<EndpointF> activeEp, out vector<EndpointF> inactiveEp);
         
@@ -55,7 +55,7 @@ module tars
          * @param id         对象名称
          * @param activeEp   存活endpoint列表
          * @param inactiveEp 非存活endpoint列表
-         * @return:  0-成功  others-失败
+         * @return  0-成功  others-失败
          */
         int findObjectByIdInSameGroup(string id, out vector<EndpointF> activeEp, out vector<EndpointF> inactiveEp);
 
@@ -65,7 +65,7 @@ module tars
          * @param id         对象名称
          * @param activeEp   存活endpoint列表
          * @param inactiveEp 非存活endpoint列表
-         * @return:  0-成功  others-失败
+         * @return  0-成功  others-失败
          */
         int findObjectByIdInSameStation(string id, string sStation, out vector<EndpointF> activeEp, out vector<EndpointF> inactiveEp);
         
@@ -75,7 +75,7 @@ module tars
         * @param setId      set全称,格式为setname.setarea.setgroup
         * @param activeEp   存活endpoint列表
         * @param inactiveEp 非存活endpoint列表
-        * @return:  0-成功  others-失败
+        * @return  0-成功  others-失败
         */
         int findObjectByIdInSameSet(string id, string setId, out vector<EndpointF> activeEp, out vector<EndpointF> inactiveEp);
 
