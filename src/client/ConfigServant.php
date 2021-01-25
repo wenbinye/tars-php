@@ -38,7 +38,7 @@ interface ConfigServant
      *
      * @return int
      */
-    public function ListConfig(string $app, string $server, array &$vf): int;
+    public function ListConfig(string $app, string $server, ?array &$vf): int;
 
     /**
      * 读取配置文件.
@@ -61,7 +61,7 @@ interface ConfigServant
      *
      * @return int
      */
-    public function loadConfig(string $app, string $server, string $filename, string &$config): int;
+    public function loadConfig(string $app, string $server, string $filename, ?string &$config): int;
 
     /**
      * 根据host读取文件.
@@ -84,7 +84,7 @@ interface ConfigServant
      *
      * @return int
      */
-    public function loadConfigByHost(string $appServerName, string $filename, string $host, string &$config): int;
+    public function loadConfigByHost(string $appServerName, string $filename, string $host, ?string &$config): int;
 
     /**
      * 检查配置文件是否服务TC_Config格式.
@@ -108,7 +108,7 @@ interface ConfigServant
      *
      * @return int
      */
-    public function checkConfig(string $appServerName, string $filename, string $host, string &$result): int;
+    public function checkConfig(string $appServerName, string $filename, string $host, ?string &$result): int;
 
     /**
      * 读取服务所在节点的配置文件列表.
@@ -126,7 +126,7 @@ interface ConfigServant
      *
      * @return int
      */
-    public function ListConfigByInfo(ConfigInfo $configInfo, array &$vf): int;
+    public function ListConfigByInfo(ConfigInfo $configInfo, ?array &$vf): int;
 
     /**
      * 读取配置文件.
@@ -144,7 +144,7 @@ interface ConfigServant
      *
      * @return int
      */
-    public function loadConfigByInfo(ConfigInfo $configInfo, string &$config): int;
+    public function loadConfigByInfo(ConfigInfo $configInfo, ?string &$config): int;
 
     /**
      * 检查配置文件是否符合TC_Config格式.
@@ -162,7 +162,7 @@ interface ConfigServant
      *
      * @return int
      */
-    public function checkConfigByInfo(ConfigInfo $configInfo, string &$result): int;
+    public function checkConfigByInfo(ConfigInfo $configInfo, ?string &$result): int;
 
     /**
      * 获取服务的所有配置文件列表，.
@@ -180,5 +180,5 @@ interface ConfigServant
      *
      * @return int
      */
-    public function ListAllConfigByInfo(GetConfigListInfo $configInfo, array &$vf): int;
+    public function ListAllConfigByInfo(GetConfigListInfo $configInfo, ?array &$vf): int;
 }

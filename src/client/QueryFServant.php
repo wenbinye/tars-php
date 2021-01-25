@@ -51,7 +51,7 @@ interface QueryFServant
      *
      * @return int
      */
-    public function findObjectById4Any(string $id, array &$activeEp, array &$inactiveEp): int;
+    public function findObjectById4Any(string $id, ?array &$activeEp, ?array &$inactiveEp): int;
 
     /**
      * @tars-param id         对象名称
@@ -70,7 +70,7 @@ interface QueryFServant
      *
      * @return int
      */
-    public function findObjectById4All(string $id, array &$activeEp, array &$inactiveEp): int;
+    public function findObjectById4All(string $id, ?array &$activeEp, ?array &$inactiveEp): int;
 
     /**
      * @tars-param id         对象名称
@@ -89,7 +89,7 @@ interface QueryFServant
      *
      * @return int
      */
-    public function findObjectByIdInSameGroup(string $id, array &$activeEp, array &$inactiveEp): int;
+    public function findObjectByIdInSameGroup(string $id, ?array &$activeEp, ?array &$inactiveEp): int;
 
     /**
      * @tars-param id         对象名称
@@ -110,7 +110,7 @@ interface QueryFServant
      *
      * @return int
      */
-    public function findObjectByIdInSameStation(string $id, string $sStation, array &$activeEp, array &$inactiveEp): int;
+    public function findObjectByIdInSameStation(string $id, string $sStation, ?array &$activeEp, ?array &$inactiveEp): int;
 
     /**
      * @tars-param id         对象名称
@@ -132,5 +132,5 @@ interface QueryFServant
      *
      * @return int
      */
-    public function findObjectByIdInSameSet(string $id, string $setId, array &$activeEp, array &$inactiveEp): int;
+    public function findObjectByIdInSameSet(string $id, string $setId, ?array &$activeEp, ?array &$inactiveEp): int;
 }

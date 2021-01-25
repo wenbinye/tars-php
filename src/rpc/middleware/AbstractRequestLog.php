@@ -176,7 +176,7 @@ abstract class AbstractRequestLog implements LoggerAwareInterface
             return null !== $serverRequest ? $this->getReferer($serverRequest) : '';
         }
 
-        $referer = $request->getContext()[AddRequestReferer::CONTEXT_KEY];
+        $referer = $request->getContext()[AddRequestReferer::CONTEXT_KEY] ?? null;
 
         return isset($referer) ? (string) $referer : '';
     }
