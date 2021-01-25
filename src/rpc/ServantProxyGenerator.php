@@ -61,9 +61,11 @@ class ServantProxyGenerator implements ServantProxyGeneratorInterface
 
     private function createParameter(\ReflectionParameter $parameter): array
     {
+        $parameterType = $parameter->getType();
+
         return array_filter([
             'name' => $parameter->getName(),
-            'type' => ($parameter->allowsNull() ? '?' : '').$parameter->getType(),
+            'type' => isset($parameterType) ? ($parameter->allowsNull() ? '?' : '').$parameterType : null,
             'PassedByReference' => $parameter->isPassedByReference(),
         ]);
     }
