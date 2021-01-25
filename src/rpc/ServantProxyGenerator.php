@@ -63,7 +63,7 @@ class ServantProxyGenerator implements ServantProxyGeneratorInterface
     {
         return array_filter([
             'name' => $parameter->getName(),
-            'type' => (string) $parameter->getType(),
+            'type' => ($parameter->allowsNull() ? '?' : '').$parameter->getType(),
             'PassedByReference' => $parameter->isPassedByReference(),
         ]);
     }
