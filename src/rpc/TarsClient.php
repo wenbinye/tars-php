@@ -63,8 +63,8 @@ class TarsClient implements TarsClientInterface, LoggerAwareInterface
     protected function send(ClientRequestInterface $request): array
     {
         $connection = $this->connectionFactory->create($request->getServantName());
-        $request = $request->withAttribute(RequestAttribute::SERVER_ADDR,
-            $connection->getAddress()->getAddress());
+        /** @noinspection CallableParameterUseCaseInTypeContextInspection */
+        $request = RequestAttribute::setServerAddress($request, $connection->getAddressHolder());
         $response = $this->buildMiddlewareStack(function (ClientRequestInterface $request) use ($connection): ResponseInterface {
             $rawContent = $connection->send($request);
 

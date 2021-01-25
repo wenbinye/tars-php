@@ -104,9 +104,6 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
         return $this->resource;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getAddress(): ServerAddress
     {
         try {
@@ -116,7 +113,10 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
         }
     }
 
-    public function getServerAddressHolder(): ServerAddressHolderInterface
+    /**
+     * {@inheritdoc}
+     */
+    public function getAddressHolder(): ServerAddressHolderInterface
     {
         return $this->serverAddressHolder;
     }

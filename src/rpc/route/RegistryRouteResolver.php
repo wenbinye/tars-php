@@ -48,8 +48,13 @@ class RegistryRouteResolver implements RouteResolverInterface
             }
 
             $addresses = array_map(static function (EndpointF $endpoint): ServerAddress {
-                return new ServerAddress($endpoint->istcp > 0 ? 'tcp' : 'udp',
-                    $endpoint->host, $endpoint->port, $endpoint->timeout, $endpoint->weight ?? 100);
+                return new ServerAddress(
+                    $endpoint->istcp > 0 ? 'tcp' : 'udp',
+                    $endpoint->host,
+                    $endpoint->port,
+                    $endpoint->timeout,
+                    $endpoint->weight > 0 ? $endpoint->weight : 100
+                );
             }, $endpoints);
             $this->cache->set($servantName, $addresses, $this->ttl);
         }

@@ -80,7 +80,8 @@ class TarsTcpReceiveEventListener implements EventListenerInterface, LoggerAware
                 $this->logger->warning(static::TAG.'cannot find adapter match servant, check config file');
                 throw new RequestException(RequestPacket::fromRequest($request), 'Unknown servant '.$request->getServantName(), ErrorCode::SERVER_NO_SERVANT_ERR);
             }
-            $request = $request->withAttribute(RequestAttribute::CLIENT_IP, $connectionInfo->getRemoteIp());
+            /** @var ServerRequestInterface $request */
+            $request = RequestAttribute::setRemoteAddress($request, $connectionInfo->getRemoteIp());
 
             ServerRequestHolder::setRequest($request);
             $response = $this->requestHandler->handle($request);

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc\message;
 
+use wenbinye\tars\rpc\route\ServerAddressHolderInterface;
+
 class RequestAttribute
 {
     public const CLIENT_IP = '__IP';
@@ -17,9 +19,30 @@ class RequestAttribute
         return $request->getAttribute(self::CLIENT_IP);
     }
 
+    public static function setRemoteAddress(RequestInterface $request, string $remoteAddress): RequestInterface
+    {
+        return $request->withAttribute(self::CLIENT_IP, $remoteAddress);
+    }
+
     public static function getServerAddress(RequestInterface $request): ?string
     {
-        return $request->getAttribute(self::SERVER_ADDR);
+        $attribute = $request->getAttribute(self::SERVER_ADDR);
+        if ($attribute instanceof ServerAddressHolderInterface) {
+            return $attribute->get()->getAddress();
+        } else {
+            return (string) $attribute;
+        }
+    }
+
+    /**
+     * @param RequestInterface                    $request
+     * @param ServerAddressHolderInterface|string $address
+     *
+     * @return RequestInterface
+     */
+    public static function setServerAddress(RequestInterface $request, $address): RequestInterface
+    {
+        return $request->withAttribute(self::SERVER_ADDR, $address);
     }
 
     public static function getRequestTime(RequestInterface $request): int

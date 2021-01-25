@@ -60,7 +60,7 @@ class RequestLogTest extends TestCase
         $requestLog->setLogger($logger);
         $this->prepareRequest($requestLog);
         // var_export($logger->records);
-        $this->assertCount(0, $logger->records);
+        $this->assertCount(1, $logger->records);
     }
 
     /**
