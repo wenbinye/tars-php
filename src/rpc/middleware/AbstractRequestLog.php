@@ -116,6 +116,7 @@ abstract class AbstractRequestLog implements LoggerAwareInterface
             'request_id' => $request->getRequestId(),
             'servant' => $request->getServantName(),
             'method' => $request->getFuncName(),
+            'server_addr' => RequestAttribute::getServerAddress($request) ?? '-',
             'status' => $statusCode,
             'body_bytes_sent' => $responseBodySize,
             'request_time' => $time,
