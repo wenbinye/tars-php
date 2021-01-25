@@ -124,7 +124,8 @@ abstract class AbstractRequestLog implements LoggerAwareInterface
         $extra = [];
         foreach ($this->extra as $name) {
             if ('params' === $name) {
-                $param = str_replace('"', "'", (string) json_encode($this->getParameters($request)));
+                $param = str_replace('"', "'", (string) json_encode($this->getParameters($request),
+                    JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
                 $extra['params'] = strlen($param) > $this->maxBodySize
                     ? sprintf('%s...%d more', substr($param, 0, $this->maxBodySize), strlen($param) - $this->maxBodySize)
                     : $param;
