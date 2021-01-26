@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace wenbinye\tars\rpc\middleware;
 
 use kuiper\helper\Arrays;
+use kuiper\swoole\monolog\CoroutineIdProcessor;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use wenbinye\tars\rpc\ErrorCode;
@@ -53,9 +54,9 @@ abstract class AbstractRequestLog implements LoggerAwareInterface
     private $maxBodySize;
 
     /**
-     * @var string
+     * @var callable
      */
-    private $dateFormat;
+    private $dateFormatter;
 
     /**
      * @var callable|null
@@ -63,26 +64,44 @@ abstract class AbstractRequestLog implements LoggerAwareInterface
     private $requestFilter;
 
     /**
+     * @var CoroutineIdProcessor
+     */
+    private $pidProcessor;
+
+    /**
      * RequestLogMiddleware constructor.
      *
      * @param string|callable $template
      * @param array           $extra
      * @param int             $maxBodySize
-     * @param string          $dateFormat
+     * @param string|callable $dateFormat
      * @param callable|null   $requestFilter
      */
     public function __construct(
         $template = self::MAIN,
-        array $extra = ['params'],
+        array $extra = ['params', 'pid'],
         int $maxBodySize = 4096,
-        string $dateFormat = '%d/%b/%Y:%H:%M:%S %z',
+        $dateFormat = '%d/%b/%Y:%H:%M:%S %z',
         ?callable $requestFilter = null
     ) {
         $this->format = $template;
         $this->extra = $extra;
         $this->maxBodySize = $maxBodySize;
-        $this->dateFormat = $dateFormat;
         $this->requestFilter = $requestFilter;
+        $this->pidProcessor = new CoroutineIdProcessor();
+        if (is_string($dateFormat)) {
+            if (substr_count($dateFormat, '%') >= 2) {
+                $this->dateFormatter = static function () use ($dateFormat) {
+                    return strftime($dateFormat);
+                };
+            } else {
+                $this->dateFormatter = static function () use ($dateFormat) {
+                    return date_create()->format($dateFormat);
+                };
+            }
+        } elseif (is_callable($dateFormat)) {
+            $this->dateFormatter = $dateFormat;
+        }
     }
 
     protected function handle(RequestInterface $request, callable $next): ResponseInterface
@@ -110,8 +129,10 @@ abstract class AbstractRequestLog implements LoggerAwareInterface
         $responseBodySize = isset($response) ? strlen($response->getBody()) : 0;
         $message = [
             'remote_addr' => RequestAttribute::getRemoteAddress($request) ?? '-',
-            'time_local' => strftime($this->dateFormat),
+            'time_local' => call_user_func($this->dateFormatter),
             'referer' => $this->getReferer($request),
+            'callee_servant' => $this->getCalleeServant($request),
+            'callee_method' => $this->getCalleeMethod($request),
             'request' => $this->formatRequest($request, $response),
             'request_id' => $request->getRequestId(),
             'servant' => $request->getServantName(),
@@ -129,6 +150,8 @@ abstract class AbstractRequestLog implements LoggerAwareInterface
                 $extra['params'] = strlen($param) > $this->maxBodySize
                     ? sprintf('%s...%d more', substr($param, 0, $this->maxBodySize), strlen($param) - $this->maxBodySize)
                     : $param;
+            } elseif ('pid' === $name) {
+                $extra = call_user_func($this->pidProcessor, $extra);
             }
         }
         $message['extra'] = array_filter($extra);
@@ -181,5 +204,27 @@ abstract class AbstractRequestLog implements LoggerAwareInterface
         $referer = $request->getContext()[AddRequestReferer::CONTEXT_KEY] ?? null;
 
         return isset($referer) ? (string) $referer : '';
+    }
+
+    private function getCalleeServant(RequestInterface $request): string
+    {
+        if ($request instanceof ClientRequestInterface) {
+            $serverRequest = ServerRequestHolder::getRequest();
+
+            return null !== $serverRequest ? $serverRequest->getServantName() : '';
+        }
+
+        return '';
+    }
+
+    private function getCalleeMethod(RequestInterface $request): string
+    {
+        if ($request instanceof ClientRequestInterface) {
+            $serverRequest = ServerRequestHolder::getRequest();
+
+            return null !== $serverRequest ? $serverRequest->getFuncName() : '';
+        }
+
+        return '';
     }
 }
