@@ -7,12 +7,11 @@ namespace wenbinye\tars\server\listener;
 use kuiper\event\EventListenerInterface;
 use kuiper\logger\LoggerFactoryInterface;
 use kuiper\swoole\event\WorkerStartEvent;
-use kuiper\swoole\task\QueueInterface;
+use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Webmozart\Assert\Assert;
-use wenbinye\tars\server\task\LogRotate;
 
 class StartLogRotate implements EventListenerInterface, LoggerAwareInterface
 {
@@ -21,21 +20,22 @@ class StartLogRotate implements EventListenerInterface, LoggerAwareInterface
     protected const TAG = '['.__CLASS__.'] ';
 
     /**
-     * @var QueueInterface
-     */
-    private $taskQueue;
-
-    /**
      * @var LoggerFactoryInterface
      */
     private $loggerFactory;
 
     /**
-     * WorkerStartEventListener constructor.
+     * @var int[]
      */
-    public function __construct(QueueInterface $taskQueue, LoggerFactoryInterface $loggerFactory)
+    private $fileInodes;
+
+    /**
+     * WorkerStartEventListener constructor.
+     *
+     * @param LoggerFactoryInterface $loggerFactory
+     */
+    public function __construct(LoggerFactoryInterface $loggerFactory)
     {
-        $this->taskQueue = $taskQueue;
         $this->loggerFactory = $loggerFactory;
     }
 
@@ -45,13 +45,32 @@ class StartLogRotate implements EventListenerInterface, LoggerAwareInterface
     public function __invoke($event): void
     {
         Assert::isInstanceOf($event, WorkerStartEvent::class);
-        /** @var WorkerStartEvent $event */
-        if (0 === $event->getWorkerId()) {
-            $this->taskQueue->put(new LogRotate());
-        }
+        $this->checkLogFile();
+        /* @var WorkerStartEvent $event */
+        $event->getServer()->tick(10000, function (): void {
+            $this->checkLogFile();
+        });
+    }
+
+    private function checkLogFile(): void
+    {
+        clearstatcache();
         foreach ($this->loggerFactory->getLoggers() as $logger) {
-            if ($logger instanceof Logger) {
-                foreach ($logger->getHandlers() as $handler) {
+            if (!($logger instanceof Logger)) {
+                continue;
+            }
+            foreach ($logger->getHandlers() as $handler) {
+                if (!($handler instanceof StreamHandler)) {
+                    continue;
+                }
+                $fileExists = file_exists($handler->getUrl());
+                if (!isset($this->fileInodes[$handler->getUrl()])) {
+                    if (!$fileExists) {
+                        continue;
+                    }
+                    $this->fileInodes[$handler->getUrl()] = fileinode($handler->getUrl());
+                }
+                if (!$fileExists || $this->fileInodes[$handler->getUrl()] !== fileinode($handler->getUrl())) {
                     $handler->close();
                 }
             }

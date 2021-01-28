@@ -46,7 +46,6 @@ use wenbinye\tars\server\Config;
 use wenbinye\tars\server\listener\BootstrapEventListener;
 use wenbinye\tars\server\PropertyLoader;
 use wenbinye\tars\server\ServerProperties;
-use wenbinye\tars\server\task\LogRotateProcessor;
 
 /**
  * @Configuration()
@@ -154,26 +153,6 @@ class FoundationConfiguration implements DefinitionConfiguration
         }
 
         return new LoggerFactory($container, $loggingConfig);
-    }
-
-    /**
-     * @Bean()
-     * @Inject({"options" = "application.logging.rotate"})
-     */
-    public function logRotateProcessor(
-        ServerProperties $serverProperties,
-        LoggerFactoryInterface $loggerFactory,
-        ?array $options): LogRotateProcessor
-    {
-        $options = ($options ?? []) + [
-            'log-path' => [$serverProperties->getAppLogPath()],
-            'suffix' => '',
-        ];
-
-        $logRotateProcessor = new LogRotateProcessor((array) $options['log-path'], $options['suffix']);
-        $logRotateProcessor->setLogger($loggerFactory->create(LogRotateProcessor::class));
-
-        return $logRotateProcessor;
     }
 
     /**

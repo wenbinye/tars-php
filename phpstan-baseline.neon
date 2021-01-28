@@ -146,11 +146,6 @@ parameters:
 			path: src/server/listener/StartLogRotate.php
 
 		-
-			message: "#^Method wenbinye\\\\tars\\\\server\\\\task\\\\LogRotateProcessor\\:\\:process\\(\\) should return mixed but return statement is missing\\.$#"
-			count: 1
-			path: src/server/task/LogRotateProcessor.php
-
-		-
 			message: "#^Method wenbinye\\\\tars\\\\server\\\\task\\\\ReportTaskProcessor\\:\\:process\\(\\) should return mixed but return statement is missing\\.$#"
 			count: 1
 			path: src/server/task/ReportTaskProcessor.php

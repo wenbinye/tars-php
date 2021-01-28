@@ -74,7 +74,7 @@ abstract class AbstractRequestLog implements LoggerAwareInterface
      * @param string|callable $template
      * @param array           $extra
      * @param int             $maxBodySize
-     * @param string|callable $dateFormat
+     * @param mixed           $dateFormat
      * @param callable|null   $requestFilter
      */
     public function __construct(
@@ -91,11 +91,11 @@ abstract class AbstractRequestLog implements LoggerAwareInterface
         $this->pidProcessor = new CoroutineIdProcessor();
         if (is_string($dateFormat)) {
             if (substr_count($dateFormat, '%') >= 2) {
-                $this->dateFormatter = static function () use ($dateFormat) {
+                $this->dateFormatter = static function () use ($dateFormat): string {
                     return strftime($dateFormat);
                 };
             } else {
-                $this->dateFormatter = static function () use ($dateFormat) {
+                $this->dateFormatter = static function () use ($dateFormat): string {
                     return date_create()->format($dateFormat);
                 };
             }

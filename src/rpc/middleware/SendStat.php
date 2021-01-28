@@ -39,8 +39,7 @@ class SendStat implements ClientMiddlewareInterface
 
             return $response;
         } catch (TimedOutException $e) {
-            $request = $request->withAttribute(RequestAttribute::SERVER_ADDR,
-                $e->getConnection()->getAddress()->getAddress());
+            $request = RequestAttribute::setServerAddress($request, $e->getConnection()->getAddressHolder());
             $this->stat->timedOut(new Response(ResponsePacket::builder()->build(), $request, []),
                 (int) (1000 * (microtime(true) - $time)));
             throw $e;
