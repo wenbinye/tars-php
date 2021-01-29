@@ -432,7 +432,10 @@ class ServerProperties
 
     public function setBasePath(string $basePath): void
     {
-        $this->basePath = rtrim($basePath, '/');
+        if (!is_dir($basePath)) {
+            throw new \InvalidArgumentException("basepath '$basePath' does not exist");
+        }
+        $this->basePath = rtrim(realpath($basePath), '/');
     }
 
     public function getSourcePath(): string
@@ -447,7 +450,10 @@ class ServerProperties
 
     public function setDataPath(string $dataPath): void
     {
-        $this->dataPath = rtrim($dataPath, '/');
+        if (!is_dir($dataPath)) {
+            throw new \InvalidArgumentException("datapath '$dataPath' does not exist");
+        }
+        $this->dataPath = rtrim(realpath($dataPath), '/');
     }
 
     public function getLogPath(): string
@@ -457,7 +463,10 @@ class ServerProperties
 
     public function setLogPath(string $logPath): void
     {
-        $this->logPath = rtrim($logPath, '/');
+        if (!is_dir($logPath)) {
+            throw new \InvalidArgumentException("logpath '$logPath' does not exist");
+        }
+        $this->logPath = rtrim(realpath($logPath), '/');
     }
 
     public function getAppLogPath(): string

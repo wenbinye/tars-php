@@ -49,6 +49,7 @@ class ServerStopCommand extends Command implements ContainerAwareInterface
     {
         if ($this->serverProperties->isExternalMode()
             && file_exists($this->serverProperties->getServerPidFile())) {
+            $this->stopService($input);
             $pid = (int) file_get_contents($this->serverProperties->getServerPidFile());
             if (function_exists('posix_kill')) {
                 posix_kill($pid, SIGTERM);
@@ -56,9 +57,23 @@ class ServerStopCommand extends Command implements ContainerAwareInterface
                 exec("kill -TERM $pid");
             }
             unlink($this->serverProperties->getServerPidFile());
+        } else {
+            $this->serverManager->stop();
         }
-        $this->serverManager->stop();
 
         return 0;
+    }
+
+    private function stopService(InputInterface $input): void
+    {
+        $confPath = $this->serverProperties->getSupervisorConfPath();
+        if (null === $confPath || !is_dir($confPath)) {
+            throw new \RuntimeException('tars.application.server.supervisor_conf_path cannot be empty when start_mode is external');
+        }
+        $serviceName = $this->serverProperties->getServerName();
+        $configFile = $confPath.'/'.$serviceName.$this->serverProperties->getSupervisorConfExtension();
+        @unlink($configFile);
+        $supervisorctl = $this->serverProperties->getSupervisorctl() ?? 'supervisorctl';
+        system("$supervisorctl update ".$serviceName);
     }
 }

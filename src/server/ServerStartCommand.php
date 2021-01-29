@@ -78,19 +78,23 @@ class ServerStartCommand extends Command implements ContainerAwareInterface
         $serviceName = $this->serverProperties->getServerName();
         $configFile = $confPath.'/'.$serviceName.$this->serverProperties->getSupervisorConfExtension();
         $configContent = strtr('[program:{server_name}]
+directory={cwd}
 command={php} {script_file} --config={conf_file} start --server
-startsecs=10', [
+startsecs=10
+', [
+            '{cwd}' => getcwd(),
             '{server_name}' => $serviceName,
             '{php}' => PHP_BINARY,
-            '{script_file}' => $_SERVER['SCRIPT_FILENAME'],
-            '{conf_file}' => ServerApplication::getInstance()->getConfigFile(),
+            '{script_file}' => realpath($_SERVER['SCRIPT_FILENAME']),
+            '{conf_file}' => realpath(ServerApplication::getInstance()->getConfigFile()),
         ]);
         $supervisorctl = $this->serverProperties->getSupervisorctl() ?? 'supervisorctl';
         if (!file_exists($configFile) || file_get_contents($configFile) !== $configContent) {
             file_put_contents($configFile, $configContent);
-            system("$supervisorctl update");
+            system("$supervisorctl update ".$serviceName);
+        } else {
+            system("$supervisorctl start ".$serviceName);
         }
-        system("$supervisorctl start ".$serviceName);
         @cli_set_process_title($serviceName.' server process');
         pcntl_exec('/bin/sleep', ['2147483647']);
     }
