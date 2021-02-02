@@ -450,7 +450,7 @@ class ServerProperties
 
     public function setDataPath(string $dataPath): void
     {
-        if (!is_dir($dataPath)) {
+        if (!is_dir($dataPath) && !mkdir($dataPath) && !is_dir($dataPath)) {
             throw new \InvalidArgumentException("datapath '$dataPath' does not exist");
         }
         $this->dataPath = rtrim(realpath($dataPath), '/');
@@ -463,7 +463,7 @@ class ServerProperties
 
     public function setLogPath(string $logPath): void
     {
-        if (!is_dir($logPath)) {
+        if (!is_dir($logPath) && !mkdir($logPath) && !is_dir($logPath)) {
             throw new \InvalidArgumentException("logpath '$logPath' does not exist");
         }
         $this->logPath = rtrim(realpath($logPath), '/');
@@ -487,7 +487,7 @@ class ServerProperties
      */
     public function setAdapters(array $adapters): void
     {
-        usort($adapters, function (AdapterProperties $a, AdapterProperties $b) {
+        usort($adapters, static function (AdapterProperties $a, AdapterProperties $b) {
             if ($b->getServerType() === $a->getServerType()) {
                 return 0;
             }

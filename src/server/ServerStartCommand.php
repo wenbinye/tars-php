@@ -95,7 +95,6 @@ startsecs=10
         } else {
             system("$supervisorctl start ".$serviceName);
         }
-        @cli_set_process_title($serviceName.' server process');
         pcntl_exec('/bin/sleep', ['2147483647']);
     }
 }
