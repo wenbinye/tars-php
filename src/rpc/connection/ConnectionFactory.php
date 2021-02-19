@@ -29,7 +29,11 @@ class ConnectionFactory implements ConnectionFactoryInterface, LoggerAwareInterf
     /**
      * @var array
      */
-    private $clientSettings;
+    private $defaultOptions;
+    /**
+     * @var array
+     */
+    private $servantOptions;
 
     /**
      * @var PoolInterface[]
@@ -38,20 +42,27 @@ class ConnectionFactory implements ConnectionFactoryInterface, LoggerAwareInterf
 
     /**
      * ConnectionFactory constructor.
+     *
+     * @param PoolFactoryInterface                $poolFactory
+     * @param ServerAddressHolderFactoryInterface $serverAddressHolderFactory
+     * @param LoggerInterface|null                $logger
+     * @param array                               $options
      */
     public function __construct(
         PoolFactoryInterface $poolFactory,
         ServerAddressHolderFactoryInterface $serverAddressHolderFactory,
-        ?LoggerInterface $logger)
+        ?LoggerInterface $logger,
+        array $options = [])
     {
         $this->poolFactory = $poolFactory;
         $this->serverAddressHolderFactory = $serverAddressHolderFactory;
         $this->setLogger($logger ?? new NullLogger());
+        $this->defaultOptions = $options;
     }
 
-    public function setClientSetting(string $servantName, array $setting): void
+    public function setOption(string $servantName, array $option): void
     {
-        $this->clientSettings[$servantName] = $setting;
+        $this->servantOptions[$servantName] = $option;
     }
 
     /**
@@ -67,9 +78,7 @@ class ConnectionFactory implements ConnectionFactoryInterface, LoggerAwareInterf
                 $routeHolder = $this->serverAddressHolderFactory->create($servantName);
                 /** @var ConnectionInterface $conn */
                 $conn = new $connectionClass($routeHolder, $this->logger);
-                if (isset($this->clientSettings[$servantName])) {
-                    $conn->setOptions($this->clientSettings[$servantName]);
-                }
+                $conn->setOptions(array_merge($this->defaultOptions, $this->servantOptions[$servantName] ?? []));
 
                 return $conn;
             };

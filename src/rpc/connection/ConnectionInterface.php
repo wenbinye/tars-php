@@ -44,5 +44,13 @@ interface ConnectionInterface
      */
     public function send(RequestInterface $request): string;
 
+    /**
+     * @return string
+     */
+    public function recv(): string;
+
+    /**
+     * @param array $options
+     */
     public function setOptions(array $options): void;
 }

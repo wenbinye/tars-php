@@ -13,10 +13,13 @@ class SwooleTcpConnection extends AbstractConnection
 {
     protected const TAG = '['.__CLASS__.'] ';
 
+    public const CONNECT_TIMEOUT = 'connect_timeout';
+    public const RECV_TIMEOUT = 'recv_timeout';
+
     /**
      * @var array
      */
-    private $settings = [
+    protected $settings = [
         ServerSetting::OPEN_LENGTH_CHECK => 1,
         ServerSetting::PACKAGE_LENGTH_TYPE => 'N',
         ServerSetting::PACKAGE_MAX_LENGTH => 2000000,
@@ -43,7 +46,7 @@ class SwooleTcpConnection extends AbstractConnection
         $client = $this->createSwooleClient();
         $client->set($this->settings);
         $address = $this->getAddress();
-        if (!$client->connect($address->getHost(), $address->getPort(), $address->getTimeout() / 1000)) {
+        if (!$client->connect($address->getHost(), $address->getPort(), $this->settings[self::CONNECT_TIMEOUT] ?? 5.0)) {
             $this->onConnectionError(ErrorCode::fromValue(ErrorCode::TARS_SOCKET_CONNECT_FAILED));
         }
 
@@ -59,21 +62,27 @@ class SwooleTcpConnection extends AbstractConnection
         }
     }
 
-    protected function afterSend(): void
-    {
-        $this->disconnect();
-    }
-
     protected function doSend(RequestInterface $request): string
     {
         /** @var Client $client */
         $client = $this->getResource();
-        if (!$client->send($request->getBody())) {
+        if (false === $client->send($request->getBody())) {
             $this->onConnectionError(ErrorCode::fromValue(ErrorCode::TARS_SOCKET_CONNECT_FAILED));
+        }
+
+        return $this->recv();
+    }
+
+    public function recv(): string
+    {
+        $client = $this->getResource();
+        if (null === $client) {
+            return '';
         }
         $response = $client->recv();
         $errCode = $client->errCode;
         if ('' === $response || false === $response) {
+            $this->destroyResource();
             $this->onConnectionError(ErrorCode::fromValue(ErrorCode::TARS_SOCKET_RECEIVE_FAILED),
                 isset($errCode) ? socket_strerror($errCode) : null);
         }

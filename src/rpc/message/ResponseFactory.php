@@ -6,6 +6,7 @@ namespace wenbinye\tars\rpc\message;
 
 use wenbinye\tars\protocol\PackerInterface;
 use wenbinye\tars\rpc\ErrorCode;
+use wenbinye\tars\rpc\exception\RequestIdMismatchException;
 use wenbinye\tars\rpc\message\tup\ResponsePacket;
 use wenbinye\tars\rpc\TarsRpcPacker;
 
@@ -26,7 +27,7 @@ class ResponseFactory implements ResponseFactoryInterface
         $responsePacket = ResponsePacket::parse($response, $request->getVersion());
         $requestId = $responsePacket->getRequestId();
         if ($requestId > 0 && $requestId !== $request->getRequestId()) {
-            throw new \InvalidArgumentException("request id not match, got {$requestId}, expected ".$request->getRequestId());
+            throw new RequestIdMismatchException("request id not match, got {$requestId}, expected ".$request->getRequestId());
         }
         $returnValues = [];
         if (ErrorCode::SERVER_SUCCESS === $responsePacket->getResultCode()) {

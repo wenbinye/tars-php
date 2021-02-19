@@ -8,6 +8,7 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use wenbinye\tars\rpc\connection\ConnectionFactoryInterface;
+use wenbinye\tars\rpc\exception\RequestIdMismatchException;
 use wenbinye\tars\rpc\exception\ServerException;
 use wenbinye\tars\rpc\message\ClientRequestFactoryInterface;
 use wenbinye\tars\rpc\message\ClientRequestInterface;
@@ -67,8 +68,14 @@ class TarsClient implements TarsClientInterface, LoggerAwareInterface
         $request = RequestAttribute::setServerAddress($request, $connection->getAddressHolder());
         $response = $this->buildMiddlewareStack(function (ClientRequestInterface $request) use ($connection): ResponseInterface {
             $rawContent = $connection->send($request);
+            try {
+                return $this->responseFactory->create($rawContent, $request);
+            } catch (RequestIdMismatchException $e) {
+                // 可能会有响应不匹配的情况，再尝试一次
+                $rawContent = $connection->recv();
 
-            return $this->responseFactory->create($rawContent, $request);
+                return $this->responseFactory->create($rawContent, $request);
+            }
         })->__invoke($request);
         if (!$response->isSuccess()) {
             throw new ServerException($response);

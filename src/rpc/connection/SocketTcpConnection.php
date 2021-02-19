@@ -13,6 +13,11 @@ class SocketTcpConnection extends AbstractConnection
     protected const TAG = '['.__CLASS__.'] ';
 
     /**
+     * @var array
+     */
+    private $settings;
+
+    /**
      * {@inheritdoc}
      *
      * @throws exception\CommunicationException
@@ -46,14 +51,20 @@ class SocketTcpConnection extends AbstractConnection
      */
     protected function doSend(RequestInterface $request): string
     {
-        $time = microtime(true);
         $socket = $this->getResource();
         $requestData = $request->getBody();
         if (!\socket_write($socket, $requestData, strlen($requestData))) {
             $this->onConnectionError(ErrorCode::fromValue(ErrorCode::TARS_SOCKET_SEND_FAILED));
         }
 
-        $timeout = $request->getTimeout();
+        return $this->recv();
+    }
+
+    public function recv(): string
+    {
+        $socket = $this->getResource();
+        $time = microtime(true);
+        $timeout = ($this->settings[SwooleTcpConnection::RECV_TIMEOUT] ?? 5.0) * 10000;
         $responseLength = 0;
         $response = null;
         while (true) {
@@ -89,5 +100,6 @@ class SocketTcpConnection extends AbstractConnection
 
     public function setOptions(array $options): void
     {
+        $this->settings = $options;
     }
 }
