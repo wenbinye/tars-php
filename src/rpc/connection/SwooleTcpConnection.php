@@ -20,14 +20,16 @@ class SwooleTcpConnection extends AbstractConnection
      * @var array
      */
     protected $settings = [
-        ServerSetting::OPEN_LENGTH_CHECK => 1,
+        ServerSetting::OPEN_LENGTH_CHECK => true,
         ServerSetting::PACKAGE_LENGTH_TYPE => 'N',
-        ServerSetting::PACKAGE_MAX_LENGTH => 2000000,
+        'package_length_offset' => 0,
+        'package_body_offset' => 0,
+        ServerSetting::PACKAGE_MAX_LENGTH => 10485760,
     ];
 
     public function setOptions(array $options): void
     {
-        $this->settings = $options;
+        $this->settings = array_merge($this->settings, $options);
     }
 
     /**
@@ -57,7 +59,7 @@ class SwooleTcpConnection extends AbstractConnection
     {
         /** @var Client|null $client */
         $client = $this->getResource();
-        if (null !== $client) {
+        if (null !== $client && $client->isConnected()) {
             $client->close();
         }
     }
@@ -82,7 +84,7 @@ class SwooleTcpConnection extends AbstractConnection
         $response = $client->recv();
         $errCode = $client->errCode;
         if ('' === $response || false === $response) {
-            $this->destroyResource();
+            $this->disconnect();
             $this->onConnectionError(ErrorCode::fromValue(ErrorCode::TARS_SOCKET_RECEIVE_FAILED),
                 isset($errCode) ? socket_strerror($errCode) : null);
         }

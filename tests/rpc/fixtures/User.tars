@@ -1,0 +1,15 @@
+module test {
+    struct Address {
+        0 require string name;
+    };
+
+    struct User {
+        0 require string name;
+        1 require int userId;
+        2 require Address address;
+    };
+
+    interface User {
+        vector<User> findAll();
+    };
+};

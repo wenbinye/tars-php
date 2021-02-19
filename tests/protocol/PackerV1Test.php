@@ -41,7 +41,14 @@ class PackerV1Test extends TestCase
         //$putString = \TUPAPI::putString(1, "Hello World", 1);
         $putString = \TUPAPI::getString((string) 1, $s, false, 1);
         // $result = $this->packer->unpack($type, '', $s, Version::TARS);
-        // var_export([$putString]);
+        var_export([$putString]);
         $this->assertTrue(true);
+    }
+
+    public function testPackInt()
+    {
+        $putString = \TUPAPI::putString('abc', 'HelloWorld123456');
+        file_put_contents('/tmp/a.data', $putString);
+        var_export($putString);
     }
 }

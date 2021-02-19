@@ -28,7 +28,7 @@ class SwooleCoroutineTcpConnection extends SwooleTcpConnection
         $response = $client->recv($this->settings[self::RECV_TIMEOUT] ?? 5.0);
         $errCode = $client->errCode;
         if ('' === $response || false === $response) {
-            $this->destroyResource();
+            $this->disconnect();
             $this->onConnectionError(ErrorCode::fromValue(ErrorCode::TARS_SOCKET_RECEIVE_FAILED),
                 isset($errCode) ? socket_strerror($errCode) : null);
         }
