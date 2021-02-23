@@ -275,8 +275,17 @@ class ConfigLoader implements ConfigLoaderInterface
             'handler' => [
                 'class' => StreamHandler::class,
                 'constructor' => [
-                    'stream' => sprintf('%s/%s.log', $serverProperties->getAppLogPath(), $serverProperties->getServer()),
+                    'stream' => sprintf('%s/default.log', $serverProperties->getAppLogPath()),
                     'level' => $loggerLevel,
+                ],
+            ],
+        ];
+        $handlers[] = [
+            'handler' => [
+                'class' => StreamHandler::class,
+                'constructor' => [
+                    'stream' => sprintf('%s/error.log', $serverProperties->getAppLogPath()),
+                    'level' => Logger::ERROR,
                 ],
             ],
         ];
