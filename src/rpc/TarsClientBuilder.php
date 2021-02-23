@@ -16,6 +16,7 @@ use wenbinye\tars\protocol\Packer;
 use wenbinye\tars\protocol\PackerInterface;
 use wenbinye\tars\rpc\connection\ConnectionFactory;
 use wenbinye\tars\rpc\connection\ConnectionFactoryInterface;
+use wenbinye\tars\rpc\lb\Algorithm;
 use wenbinye\tars\rpc\message\ClientRequestFactory;
 use wenbinye\tars\rpc\message\ClientRequestFactoryInterface;
 use wenbinye\tars\rpc\message\MethodMetadataFactory;
@@ -252,7 +253,7 @@ class TarsClientBuilder implements LoggerAwareInterface
     public function getServerAddressHolderFactory(): ServerAddressHolderFactoryInterface
     {
         if (null === $this->serverAddressHolderFactory) {
-            $this->serverAddressHolderFactory = new ServerAddressHolderFactory($this->getRouteResolver(), null, $this->logger);
+            $this->serverAddressHolderFactory = new ServerAddressHolderFactory($this->getRouteResolver(), Algorithm::ROUND_ROBIN, $this->logger);
         }
 
         return $this->serverAddressHolderFactory;

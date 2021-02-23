@@ -8,8 +8,10 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use wenbinye\tars\rpc\exception\RetryableException;
 use wenbinye\tars\rpc\message\ClientRequestInterface;
+use wenbinye\tars\rpc\message\RequestAttribute;
 use wenbinye\tars\rpc\message\RequestInterface;
 use wenbinye\tars\rpc\message\ResponseInterface;
+use wenbinye\tars\rpc\route\RefreshableServerAddressHolderInterface;
 use wenbinye\tars\rpc\route\RegistryRouteResolver;
 
 class Retry implements ClientMiddlewareInterface, LoggerAwareInterface
@@ -69,6 +71,10 @@ class Retry implements ClientMiddlewareInterface, LoggerAwareInterface
     {
         if (null !== $this->routeResolver) {
             $this->routeResolver->clear($request->getServantName());
+        }
+        $address = $request->getAttribute(RequestAttribute::SERVER_ADDR);
+        if ($address instanceof RefreshableServerAddressHolderInterface) {
+            $address->refresh(true);
         }
     }
 }
