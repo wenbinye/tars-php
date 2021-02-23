@@ -25,7 +25,7 @@ class SwooleCoroutineTcpConnection extends SwooleTcpConnection
         if (null === $client) {
             return '';
         }
-        $response = $client->recv($this->settings[self::RECV_TIMEOUT] ?? 5.0);
+        $response = $client->recv($this->settings[self::RECV_TIMEOUT]);
         $errCode = $client->errCode;
         if ('' === $response || false === $response) {
             $this->disconnect();

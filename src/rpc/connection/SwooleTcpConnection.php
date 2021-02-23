@@ -24,6 +24,8 @@ class SwooleTcpConnection extends AbstractConnection
         ServerSetting::PACKAGE_LENGTH_TYPE => 'N',
         'package_length_offset' => 0,
         'package_body_offset' => 0,
+        self::CONNECT_TIMEOUT => 5.0,
+        self::RECV_TIMEOUT => 5.0,
         ServerSetting::PACKAGE_MAX_LENGTH => 10485760,
     ];
 
@@ -48,7 +50,7 @@ class SwooleTcpConnection extends AbstractConnection
         $client = $this->createSwooleClient();
         $client->set($this->settings);
         $address = $this->getAddress();
-        if (!$client->connect($address->getHost(), $address->getPort(), $this->settings[self::CONNECT_TIMEOUT] ?? 5.0)) {
+        if (!$client->connect($address->getHost(), $address->getPort(), $this->settings[self::CONNECT_TIMEOUT])) {
             $this->onConnectionError(ErrorCode::fromValue(ErrorCode::TARS_SOCKET_CONNECT_FAILED));
         }
 
