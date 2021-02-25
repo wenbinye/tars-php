@@ -84,6 +84,8 @@ class FoundationConfiguration implements DefinitionConfiguration
     }
 
     /**
+     * @Bean
+     *
      * @return AnnotationReaderInterface
      */
     public function annotationReader(PoolFactoryInterface $poolFactory): AnnotationReaderInterface
