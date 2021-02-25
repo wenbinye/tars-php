@@ -8,7 +8,6 @@ use DI\Annotation\Inject;
 use function DI\autowire;
 use DI\Definition\FactoryDefinition;
 use DI\Definition\ObjectDefinition;
-use function DI\factory;
 use function DI\get;
 use function DI\value;
 use kuiper\annotations\AnnotationReader;
@@ -24,6 +23,7 @@ use kuiper\event\EventDispatcherAwareInterface;
 use kuiper\helper\PropertyResolverInterface;
 use kuiper\logger\LoggerFactory;
 use kuiper\logger\LoggerFactoryInterface;
+use kuiper\swoole\annotation\PooledAnnotationReader;
 use kuiper\swoole\pool\PoolFactory;
 use kuiper\swoole\pool\PoolFactoryInterface;
 use kuiper\swoole\task\DispatcherInterface;
@@ -76,12 +76,19 @@ class FoundationConfiguration implements DefinitionConfiguration
         return [
             Config::class => value(Config::getInstance()),
             PropertyResolverInterface::class => get(Config::class),
-            AnnotationReaderInterface::class => factory([AnnotationReader::class, 'getInstance']),
             QueueInterface::class => autowire(Queue::class),
             DispatcherInterface::class => get(QueueInterface::class),
             MethodMetadataFactoryInterface::class => autowire(MethodMetadataFactory::class),
             PsrEventDispatcher::class => get(EventDispatcherInterface::class),
         ];
+    }
+
+    /**
+     * @return AnnotationReaderInterface
+     */
+    public function annotationReader(PoolFactoryInterface $poolFactory): AnnotationReaderInterface
+    {
+        return new PooledAnnotationReader($poolFactory);
     }
 
     /**
