@@ -126,7 +126,7 @@ abstract class AbstractRequestLog implements LoggerAwareInterface
         $time = round($responseTime, 2);
 
         $statusCode = isset($response) ? $response->getReturnCode() : ErrorCode::UNKNOWN;
-        $responseBodySize = isset($response) ? strlen($response->getBody()) : 0;
+        $responseBodySize = isset($response) ? strlen($response->getBody()) : -1;
         $message = [
             'remote_addr' => RequestAttribute::getRemoteAddress($request) ?? '-',
             'time_local' => call_user_func($this->dateFormatter),
