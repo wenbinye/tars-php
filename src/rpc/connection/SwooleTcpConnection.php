@@ -87,6 +87,7 @@ class SwooleTcpConnection extends AbstractConnection
         if (is_string($response) && '' !== $response) {
             return $response;
         }
+        $this->logger->error(self::TAG.'receive fail, response='.json_encode($response));
         $this->onConnectionError(ErrorCode::fromValue(ErrorCode::TARS_SOCKET_RECEIVE_FAILED),
             isset($client->errCode) ? socket_strerror($client->errCode) : null);
     }

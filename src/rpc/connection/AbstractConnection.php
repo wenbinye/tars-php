@@ -151,6 +151,7 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
     protected function onConnectionError(ErrorCode $errorCode, string $message = null): void
     {
         $exception = $this->createException($errorCode, $message);
+        $this->logger->error(self::TAG."error=$errorCode ".get_class($exception).' '.$exception->getMessage());
         $this->disconnect();
         $this->refreshAddress();
 

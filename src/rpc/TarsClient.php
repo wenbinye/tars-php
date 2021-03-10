@@ -71,10 +71,7 @@ class TarsClient implements TarsClientInterface, LoggerAwareInterface
             try {
                 return $this->responseFactory->create($rawContent, $request);
             } catch (RequestIdMismatchException $e) {
-                // 可能会有响应不匹配的情况，再尝试一次
-                $rawContent = $connection->recv();
-
-                return $this->responseFactory->create($rawContent, $request);
+                return $this->checkAndReceive($connection, $request);
             }
         })->__invoke($request);
         if (!$response->isSuccess()) {
@@ -96,5 +93,25 @@ class TarsClient implements TarsClientInterface, LoggerAwareInterface
     protected function createRequest($servant, string $method, array $args): ClientRequestInterface
     {
         return $this->requestFactory->createRequest($servant, $method, $args);
+    }
+
+    /**
+     * 可能会有响应不匹配的情况，再尝试一次
+     *
+     * @param connection\ConnectionInterface $connection
+     * @param ClientRequestInterface         $request
+     *
+     * @return ResponseInterface
+     */
+    protected function checkAndReceive(
+        connection\ConnectionInterface $connection, ClientRequestInterface $request): ResponseInterface
+    {
+        try {
+            $rawContent = $connection->recv();
+
+            return $this->responseFactory->create($rawContent, $request);
+        } catch (RequestIdMismatchException $e) {
+            return $this->checkAndReceive($connection, $request);
+        }
     }
 }
