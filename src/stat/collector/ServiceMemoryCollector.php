@@ -10,7 +10,7 @@ class ServiceMemoryCollector extends AbstractAvgCollector
     {
         exec("ps -e -ww -o 'rsz,cmd' | grep {$this->getServerName()} | grep -v grep | awk '{count += $1}; END {print count}'",
             $serverMemInfo);
-        if ($serverMemInfo[0]) {
+        if (isset($serverMemInfo[0])) {
             return [
                 'appMemoryUsage' => $serverMemInfo[0],
             ];
