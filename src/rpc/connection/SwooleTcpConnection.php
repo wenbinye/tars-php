@@ -77,7 +77,7 @@ class SwooleTcpConnection extends AbstractConnection
         return $this->recv();
     }
 
-    protected function doRecv(): string
+    protected function doRecv()
     {
         return $this->getResource()->recv();
     }

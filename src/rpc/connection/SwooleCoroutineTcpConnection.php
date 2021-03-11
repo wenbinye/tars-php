@@ -18,7 +18,7 @@ class SwooleCoroutineTcpConnection extends SwooleTcpConnection
         return new Client(SWOOLE_TCP);
     }
 
-    protected function doRecv(): string
+    protected function doRecv()
     {
         return $this->getResource()->recv($this->settings[self::RECV_TIMEOUT]);
     }
