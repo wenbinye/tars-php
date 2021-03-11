@@ -134,11 +134,11 @@ class ConfigLoader implements ConfigLoaderInterface
                     'config-file' => $config->get('tars.application.server.env_file'),
                     'middleware' => [
                         'client' => [
+                            RequestLog::class,
                             ErrorHandler::class,
                             AddRequestReferer::class,
                             SendStat::class,
                             Retry::class,
-                            RequestLog::class,
                         ],
                         'servant' => [
                             ServerRequestLog::class,

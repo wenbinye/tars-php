@@ -14,6 +14,7 @@ use wenbinye\tars\rpc\exception\ConnectFailedException;
 use wenbinye\tars\rpc\exception\ConnectionClosedException;
 use wenbinye\tars\rpc\exception\ConnectionException;
 use wenbinye\tars\rpc\exception\ResolveAddressFailedException;
+use wenbinye\tars\rpc\exception\TimedOutException;
 use wenbinye\tars\rpc\message\RequestInterface;
 use wenbinye\tars\rpc\route\RefreshableServerAddressHolderInterface;
 use wenbinye\tars\rpc\route\ServerAddress;
@@ -27,6 +28,7 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
 
     private const ERROR_EXCEPTIONS = [
         ErrorCode::TARS_SOCKET_CLOSED => ConnectionClosedException::class,
+        ErrorCode::TARS_SOCKET_TIMEOUT => TimedOutException::class,
         ErrorCode::TARS_SOCKET_CONNECT_FAILED => ConnectFailedException::class,
         ErrorCode::TARS_SOCKET_RECEIVE_FAILED => ConnectFailedException::class,
     ];
