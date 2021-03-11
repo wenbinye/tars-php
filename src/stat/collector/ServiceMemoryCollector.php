@@ -12,7 +12,7 @@ class ServiceMemoryCollector extends AbstractAvgCollector
             $serverMemInfo);
         if ($serverMemInfo[0]) {
             return [
-                $this->getServerName().'.memoryUsage' => $serverMemInfo[0],
+                'appMemoryUsage' => $serverMemInfo[0],
             ];
         }
 

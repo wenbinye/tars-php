@@ -77,18 +77,26 @@ class SwooleTcpConnection extends AbstractConnection
         return $this->recv();
     }
 
+    protected function doRecv(): string
+    {
+        return $this->getResource()->recv();
+    }
+
     public function recv(): string
     {
         $client = $this->getResource();
         if (null === $client) {
             return '';
         }
-        $response = $client->recv();
+        $response = $this->doRecv();
         if (is_string($response) && '' !== $response) {
             return $response;
         }
-        $this->logger->error(self::TAG.'receive fail, response='.json_encode($response));
-        $this->onConnectionError(ErrorCode::fromValue(ErrorCode::TARS_SOCKET_RECEIVE_FAILED),
-            isset($client->errCode) ? socket_strerror($client->errCode) : null);
+        if ('' === $response) {
+            $this->onConnectionError(ErrorCode::fromValue(ErrorCode::TARS_SOCKET_CLOSED));
+        } else {
+            $this->onConnectionError(ErrorCode::fromValue(ErrorCode::TARS_SOCKET_RECEIVE_FAILED),
+                isset($client->errCode) ? socket_strerror($client->errCode) : null);
+        }
     }
 }

@@ -20,6 +20,8 @@ use wenbinye\tars\rpc\message\ReturnValueInterface;
 class TarsClient implements TarsClientInterface, LoggerAwareInterface
 {
     use MiddlewareSupport;
+    protected const TAG = '['.__CLASS__.'] ';
+
     /**
      * @var ConnectionFactoryInterface
      */
@@ -71,7 +73,7 @@ class TarsClient implements TarsClientInterface, LoggerAwareInterface
             try {
                 return $this->responseFactory->create($rawContent, $request);
             } catch (RequestIdMismatchException $e) {
-                return $this->checkAndReceive($connection, $request);
+                return $this->checkAndReceive($connection, $request, $e);
             }
         })->__invoke($request);
         if (!$response->isSuccess()) {
@@ -100,18 +102,20 @@ class TarsClient implements TarsClientInterface, LoggerAwareInterface
      *
      * @param connection\ConnectionInterface $connection
      * @param ClientRequestInterface         $request
+     * @param RequestIdMismatchException     $e
      *
      * @return ResponseInterface
      */
     protected function checkAndReceive(
-        connection\ConnectionInterface $connection, ClientRequestInterface $request): ResponseInterface
+        connection\ConnectionInterface $connection, ClientRequestInterface $request, RequestIdMismatchException $e): ResponseInterface
     {
+        $this->logger->error(static::TAG.$e->getMessage());
         try {
             $rawContent = $connection->recv();
 
             return $this->responseFactory->create($rawContent, $request);
         } catch (RequestIdMismatchException $e) {
-            return $this->checkAndReceive($connection, $request);
+            return $this->checkAndReceive($connection, $request, $e);
         }
     }
 }

@@ -28,7 +28,8 @@ use wenbinye\tars\rpc\route\Route;
 use wenbinye\tars\rpc\TarsClient;
 use wenbinye\tars\server\listener\StartLogRotate;
 use wenbinye\tars\server\listener\WorkerKeepAlive;
-use wenbinye\tars\stat\collector\MemoryUsageCollector;
+use wenbinye\tars\stat\collector\ServiceMemoryCollector;
+use wenbinye\tars\stat\collector\WorkerNumCollector;
 
 class ConfigLoader implements ConfigLoaderInterface
 {
@@ -144,7 +145,8 @@ class ConfigLoader implements ConfigLoaderInterface
                         ],
                     ],
                     'collectors' => [
-                        MemoryUsageCollector::class,
+                        ServiceMemoryCollector::class,
+                        WorkerNumCollector::class,
                     ],
                 ],
                 'logging' => [

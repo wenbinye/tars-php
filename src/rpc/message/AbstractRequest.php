@@ -74,4 +74,10 @@ abstract class AbstractRequest implements RequestInterface
 
         return $copy;
     }
+
+    public function __toString(): string
+    {
+        return sprintf('%s[%d] to %s.%s', static::class,
+            $this->getRequestId(), $this->getServantName(), $this->getFuncName());
+    }
 }

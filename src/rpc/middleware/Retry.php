@@ -59,7 +59,7 @@ class Retry implements ClientMiddlewareInterface, LoggerAwareInterface
                     throw $e;
                 }
                 $this->resetAddress($request);
-                $this->logger->debug(static::TAG.'retry request because '.$e->getMessage());
+                $this->logger->warning(static::TAG."retry $request: ".get_class($e).' '.$e->getMessage());
                 usleep($this->initialInterval * (2 ** ($this->retries - $retries)));
                 --$retries;
             }

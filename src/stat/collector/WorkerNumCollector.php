@@ -8,11 +8,11 @@ class WorkerNumCollector extends AbstractAvgCollector
 {
     public function getValues(): array
     {
-        exec("ps wwaux | grep {$this->getServerName()} | grep 'worker process' | grep -v grep | wc -l",
+        exec("ps wwaux | grep {$this->getServerName()} | grep -v grep | wc -l",
             $swooleWorkerNum);
         if (isset($swooleWorkerNum[0])) {
             return [
-                $this->getServerName().'.workerNum' => $swooleWorkerNum[0],
+                'workerNum' => $swooleWorkerNum[0],
             ];
         }
 

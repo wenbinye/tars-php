@@ -80,7 +80,6 @@ class Stat implements StatInterface, LoggerAwareInterface
             $entries[] = $entry;
         }
         if ($msg->count() > 0) {
-            $this->logger->debug(static::TAG.'send stat', ['msg' => $msg]);
             try {
                 $this->statClient->reportMicMsg($msg, true);
             } finally {
