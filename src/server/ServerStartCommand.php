@@ -80,7 +80,7 @@ class ServerStartCommand extends Command implements ContainerAwareInterface
         $configContent = strtr('[program:{server_name}]
 directory={cwd}
 command={php} {script_file} --config={conf_file} start --server
-startsecs=10
+startsecs=5
 ', [
             '{cwd}' => getcwd(),
             '{server_name}' => $serviceName,
@@ -95,6 +95,6 @@ startsecs=10
         } else {
             system("$supervisorctl start ".$serviceName);
         }
-        pcntl_exec('/bin/sleep', ['2147483647']);
+        pcntl_exec('/bin/sleep', [2147000000 + $this->server->getServerConfig()->getPort()->getPort()]);
     }
 }
