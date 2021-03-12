@@ -21,11 +21,6 @@ interface ConnectionInterface
     public function disconnect(): void;
 
     /**
-     * Reopen connection.
-     */
-    public function reconnect(): void;
-
-    /**
      * Checks if the connection is considered open.
      */
     public function isConnected(): bool;

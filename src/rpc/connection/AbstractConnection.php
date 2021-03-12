@@ -75,6 +75,7 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
     public function connect(): void
     {
         if (!$this->isConnected()) {
+            $this->refreshAddress();
             $this->resource = $this->createResource();
         }
     }
@@ -88,14 +89,6 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
             $this->destroyResource();
             $this->resource = null;
         }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function reconnect(): void
-    {
-        $this->disconnect();
     }
 
     /**
@@ -128,7 +121,6 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
      */
     public function send(RequestInterface $request): string
     {
-        $this->refreshAddress();
         $this->connect();
         $this->beforeSend();
         try {
@@ -154,7 +146,6 @@ abstract class AbstractConnection implements ConnectionInterface, LoggerAwareInt
     {
         $exception = $this->createException($errorCode, $message);
         $this->disconnect();
-        $this->refreshAddress();
 
         CommunicationException::throwError($exception);
     }

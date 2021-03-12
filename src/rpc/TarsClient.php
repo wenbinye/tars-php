@@ -109,7 +109,7 @@ class TarsClient implements TarsClientInterface, LoggerAwareInterface
     protected function checkAndReceive(
         connection\ConnectionInterface $connection, ClientRequestInterface $request, RequestIdMismatchException $e): ResponseInterface
     {
-        $this->logger->error(static::TAG.$e->getMessage());
+        $this->logger->warning(static::TAG.$e->getMessage());
         try {
             $rawContent = $connection->recv();
 

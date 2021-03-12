@@ -13,12 +13,8 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Webmozart\Assert\Assert;
 
-class StartLogRotate implements EventListenerInterface, LoggerAwareInterface
+class ReopenLogFile implements EventListenerInterface
 {
-    use LoggerAwareTrait;
-
-    protected const TAG = '['.__CLASS__.'] ';
-
     /**
      * @var LoggerFactoryInterface
      */
@@ -45,14 +41,14 @@ class StartLogRotate implements EventListenerInterface, LoggerAwareInterface
     public function __invoke($event): void
     {
         Assert::isInstanceOf($event, WorkerStartEvent::class);
-        $this->checkLogFile();
+        $this->tryReopen();
         /* @var WorkerStartEvent $event */
         $event->getServer()->tick(10000, function (): void {
-            $this->checkLogFile();
+            $this->tryReopen();
         });
     }
 
-    private function checkLogFile(): void
+    public function tryReopen(): void
     {
         clearstatcache();
         foreach ($this->loggerFactory->getLoggers() as $logger) {

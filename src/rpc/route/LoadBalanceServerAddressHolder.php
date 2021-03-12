@@ -71,6 +71,8 @@ class LoadBalanceServerAddressHolder implements RefreshableServerAddressHolderIn
             if (empty($addresses)) {
                 throw new InvalidArgumentException("Servant {$this->servantName} address list is empty");
             }
+            // 随机排序
+            shuffle($addresses);
             $this->loadBalance = $this->createLoadBalance($addresses, array_map(static function (ServerAddress $route): int {
                 return $route->getWeight();
             }, $addresses));
