@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server;
 
+use kuiper\swoole\constants\ServerSetting;
 use kuiper\swoole\constants\ServerType;
 use Symfony\Component\Validator\Constraints as Assert;
 use wenbinye\tars\rpc\route\Route;
@@ -12,6 +13,13 @@ use wenbinye\tars\server\annotation\ConfigItem;
 
 class ServerProperties
 {
+    private const DEFAULT_SETTINGS = [
+        ServerSetting::OPEN_LENGTH_CHECK => true,
+        ServerSetting::PACKAGE_LENGTH_TYPE => 'N',
+        'package_length_offset' => 0,
+        'package_body_offset' => 0,
+    ];
+
     /**
      * The App namespace.
      *
@@ -191,7 +199,7 @@ class ServerProperties
      */
     public function getServerSettings(): array
     {
-        return $this->serverSettings;
+        return array_merge(self::DEFAULT_SETTINGS, $this->serverSettings);
     }
 
     /**
