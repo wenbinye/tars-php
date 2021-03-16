@@ -63,7 +63,7 @@ class TarsClient implements TarsClientInterface, LoggerAwareInterface
         return new TarsClientBuilder();
     }
 
-    protected function send(ClientRequestInterface $request): array
+    public function send(ClientRequestInterface $request): array
     {
         $connection = $this->connectionFactory->create($request->getServantName());
         /** @noinspection CallableParameterUseCaseInTypeContextInspection */
@@ -92,7 +92,7 @@ class TarsClient implements TarsClientInterface, LoggerAwareInterface
      *
      * @return ClientRequestInterface
      */
-    protected function createRequest($servant, string $method, array $args): ClientRequestInterface
+    public function createRequest($servant, string $method, array $args): ClientRequestInterface
     {
         return $this->requestFactory->createRequest($servant, $method, $args);
     }

@@ -15,6 +15,12 @@ class ServerResponse extends AbstractResponse
      */
     private $responsePacketBuilder;
 
+    /**
+     * ServerResponse constructor.
+     *
+     * @param RequestInterface       $request
+     * @param ReturnValueInterface[] $returnValues
+     */
     public function __construct(RequestInterface $request, array $returnValues)
     {
         $this->responsePacketBuilder = ResponsePacket::builder();

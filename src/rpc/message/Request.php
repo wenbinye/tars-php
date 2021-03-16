@@ -20,7 +20,7 @@ class Request extends AbstractRequest implements ClientRequestInterface
      * @param int                     $requestId
      * @param object                  $servant
      * @param MethodMetadataInterface $methodMetadata
-     * @param array                   $parameters
+     * @param ParameterInterface[]    $parameters
      */
     public function __construct(
         int $requestId,
@@ -40,7 +40,6 @@ class Request extends AbstractRequest implements ClientRequestInterface
     private function packParameters(): array
     {
         $ret = [];
-        /** @var ParameterInterface $parameter */
         foreach ($this->parameters as $parameter) {
             $key = $this->isCurrentVersion() ? $parameter->getName() : $parameter->getOrder();
             $ret[$key] = $parameter->getPayload();

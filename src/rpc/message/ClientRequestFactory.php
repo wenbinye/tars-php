@@ -80,13 +80,13 @@ class ClientRequestFactory implements ClientRequestFactoryInterface
     public function createRequest($servant, string $method, array $parameters): ClientRequestInterface
     {
         $methodMetadata = $this->methodMetadataFactory->create($servant, $method);
-        $parameters = $this->tarsRpcPacker->packRequest($methodMetadata, $parameters, $this->version);
+        $paramObjs = $this->tarsRpcPacker->packRequest($methodMetadata, $parameters, $this->version);
 
         $request = new Request(
             $this->requestIdGenerator->generate(),
             $servant,
             $methodMetadata,
-            $parameters);
+            $paramObjs);
         $request->getRequestPacketBuilder()
             ->setVersion($this->version)
             ->setPacketType($this->packetType)

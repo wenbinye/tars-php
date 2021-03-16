@@ -14,6 +14,8 @@ class RequestAttribute
 
     public const TIME = '__TIME';
 
+    public const TIMEOUT = '__TIMEOUT';
+
     public static function getRemoteAddress(RequestInterface $request): ?string
     {
         return $request->getAttribute(self::CLIENT_IP);
@@ -43,6 +45,16 @@ class RequestAttribute
     public static function setServerAddress(RequestInterface $request, $address): RequestInterface
     {
         return $request->withAttribute(self::SERVER_ADDR, $address);
+    }
+
+    public static function getRequestTimeout(RequestInterface $request): ?float
+    {
+        return $request->getAttribute(self::TIMEOUT);
+    }
+
+    public static function setRequestTimeout(RequestInterface $request, float $timeout): RequestInterface
+    {
+        return $request->withAttribute(self::TIMEOUT, $timeout);
     }
 
     public static function getRequestTime(RequestInterface $request): int

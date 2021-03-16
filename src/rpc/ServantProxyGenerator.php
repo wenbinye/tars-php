@@ -24,6 +24,8 @@ class ServantProxyGenerator implements ServantProxyGeneratorInterface
      */
     private $eval;
 
+    private static $SERVANT_INTERFACES = [];
+
     public function __construct(AnnotationReaderInterface $annotationReader, bool $eval = true)
     {
         $this->annotationReader = $annotationReader;
@@ -149,7 +151,11 @@ class ServantProxyGenerator implements ServantProxyGeneratorInterface
             '$this->client = $client;'
         );
 
+        $methodCreateExecutor = 'createExecutor';
         foreach ($class->getMethods() as $reflectionMethod) {
+            if ($reflectionMethod->getName() === $methodCreateExecutor) {
+                $methodCreateExecutor = null;
+            }
             /** @var TarsReturnType|null $returnType */
             $returnType = $this->annotationReader->getMethodAnnotation($reflectionMethod, TarsReturnType::class);
             $methodBody = $this->createBody($reflectionMethod, $returnType);
@@ -165,8 +171,25 @@ class ServantProxyGenerator implements ServantProxyGeneratorInterface
             $methodGenerator->setReturnType($reflectionMethod->getReturnType());
             $phpClass->addMethodFromGenerator($methodGenerator);
         }
+        if (null !== $methodCreateExecutor) {
+            $phpClass->addMethodFromGenerator(new MethodGenerator(
+                $methodCreateExecutor,
+                [
+                    ['name' => 'method', 'type' => 'string'],
+                ],
+                MethodGenerator::FLAG_PUBLIC,
+                'return new \\'.RpcExecutor::class.'($this, $this->client, $method);'
+            ));
+        }
+        $className = ltrim($phpClass->getNamespaceName().'\\'.$phpClass->getName(), '\\');
+        self::$SERVANT_INTERFACES[$className] = $class;
 
         return $phpClass;
+    }
+
+    public static function getServantInterface(string $servantProxyClass): ?\ReflectionClass
+    {
+        return self::$SERVANT_INTERFACES[$servantProxyClass] ?? null;
     }
 
     private function createDocBlock(string $servantName): string

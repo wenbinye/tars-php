@@ -7,6 +7,7 @@ namespace wenbinye\tars\rpc\connection;
 use kuiper\swoole\constants\ServerSetting;
 use Swoole\Client;
 use wenbinye\tars\rpc\ErrorCode;
+use wenbinye\tars\rpc\message\RequestAttribute;
 use wenbinye\tars\rpc\message\RequestInterface;
 
 class SwooleTcpConnection extends AbstractConnection
@@ -74,21 +75,26 @@ class SwooleTcpConnection extends AbstractConnection
             $this->onConnectionError(ErrorCode::fromValue(ErrorCode::TARS_SOCKET_CONNECT_FAILED));
         }
 
-        return $this->recv();
+        return $this->recv(RequestAttribute::getRequestTimeout($request));
     }
 
-    protected function doRecv()
+    /**
+     * @param float|null $timeout
+     *
+     * @return string|false
+     */
+    protected function doRecv(?float $timeout)
     {
         return $this->getResource()->recv();
     }
 
-    public function recv(): string
+    public function recv(float $timeout = null): string
     {
         $client = $this->getResource();
         if (null === $client) {
             return '';
         }
-        $response = $this->doRecv();
+        $response = $this->doRecv($timeout);
         if (is_string($response) && '' !== $response) {
             return $response;
         }

@@ -60,11 +60,11 @@ class SocketTcpConnection extends AbstractConnection
         return $this->recv();
     }
 
-    public function recv(): string
+    public function recv(float $timeout = null): string
     {
         $socket = $this->getResource();
         $time = microtime(true);
-        $timeout = ($this->settings[SwooleTcpConnection::RECV_TIMEOUT] ?? 5.0) * 10000;
+        $timeout = ($timeout ?? 5.0) * 10000;
         $responseLength = 0;
         $response = null;
         while (true) {

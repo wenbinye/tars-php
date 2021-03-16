@@ -11,15 +11,15 @@ use wenbinye\tars\protocol\annotation\TarsServant;
 /**
  * @TarsServant(name="PHPTest.PHPTcpServer.obj")
  */
-interface HelloServant
+interface OutputParamServant
 {
     /**
-     * @TarsParameter(name="message", type="string")
+     * @TarsParameter(name="message", type="string", out=true)
      * @TarsReturnType(type="string")
      *
      * @param string $message
      *
      * @return string
      */
-    public function hello(string $message): string;
+    public function hello(string &$message): string;
 }

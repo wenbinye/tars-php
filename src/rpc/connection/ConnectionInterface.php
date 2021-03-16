@@ -40,9 +40,11 @@ interface ConnectionInterface
     public function send(RequestInterface $request): string;
 
     /**
+     * @param float|null $timeout
+     *
      * @return string
      */
-    public function recv(): string;
+    public function recv(float $timeout = null): string;
 
     /**
      * @param array $options
