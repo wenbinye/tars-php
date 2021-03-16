@@ -45,6 +45,11 @@ class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
     private $monitor;
 
     /**
+     * @var int
+     */
+    private $masterPid;
+
+    /**
      * KeepAliveTaskHandler constructor.
      */
     public function __construct(
@@ -75,17 +80,10 @@ class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
             return;
         }
         $server = $task->getServer();
-        if ($this->serverProperties->isExternalMode()) {
-            if (!file_exists($this->serverProperties->getServerPidFile())) {
-                return;
-            }
-            $pid = (int) file_get_contents($this->serverProperties->getServerPidFile());
-        } else {
-            $pid = $server->getMasterPid();
-        }
-        $this->sendServerInfo($pid);
-        $server->tick($this->clientProperties->getKeepAliveInterval(), function () use ($pid): void {
-            $this->sendServerInfo($pid);
+        $this->masterPid = $server->getMasterPid();
+        $this->sendServerInfo();
+        $server->tick($this->clientProperties->getKeepAliveInterval(), function (): void {
+            $this->sendServerInfo();
         });
         $server->tick($this->clientProperties->getReportInterval(), function (): void {
             $this->sendStat();
@@ -95,8 +93,12 @@ class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
         });
     }
 
-    public function sendServerInfo(int $pid): void
+    public function sendServerInfo(): void
     {
+        $pid = $this->getServerPid();
+        if (null === $pid) {
+            return;
+        }
         try {
             // TODO 健康检查
             $serverInfo = new ServerInfo();
@@ -130,6 +132,19 @@ class ReportTaskProcessor implements ProcessorInterface, LoggerAwareInterface
             $this->monitor->monitor();
         } catch (\Exception $e) {
             $this->logger->error(static::TAG.'send monitor fail', ['error' => $e->getMessage()]);
+        }
+    }
+
+    private function getServerPid(): ?int
+    {
+        if ($this->serverProperties->isExternalMode()) {
+            if (!file_exists($this->serverProperties->getServerPidFile())) {
+                return null;
+            }
+
+            return (int) file_get_contents($this->serverProperties->getServerPidFile());
+        } else {
+            return $this->masterPid;
         }
     }
 }
