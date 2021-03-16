@@ -45,3 +45,5 @@ ServerProperties 对象读取配置中 `tars.application.server` 配置项。
 | application.tars.middleware.client  | TARS RPC 客户端中间件 |
 | application.tars.middleware.servant | RPC 服务中间件        |
 | application.listeners          | 事件监听器            |
+| application.tars.connection_options | 连接配置  |
+| application.tars.servant_options | 服务连接配置 |

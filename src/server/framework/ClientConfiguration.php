@@ -83,7 +83,6 @@ class ClientConfiguration implements DefinitionConfiguration
                 ->constructorParameter(1, get('tarsRegistryCache')),
             ServerAddressHolderFactoryInterface::class => autowire(ServerAddressHolderFactory::class)
                 ->constructorParameter(1, RoundRobin::class),
-            ConnectionFactoryInterface::class => autowire(ConnectionFactory::class),
 
             ServantProxyGeneratorInterface::class => autowire(ServantProxyGenerator::class),
             ErrorHandlerInterface::class => autowire(DefaultErrorHandler::class),
@@ -106,7 +105,34 @@ class ClientConfiguration implements DefinitionConfiguration
 
     /**
      * @Bean
-     * @Inject({"routeList" = "application.tars.routes"})
+     * @Inject({
+     *     "options": "application.tars.connection_options",
+     *     "servantOptions": "application.tars.servant_options"
+     * })
+     *
+     * @return ConnectionFactoryInterface
+     */
+    public function connectionFactory(PoolFactoryInterface $poolFactory,
+                                      ServerAddressHolderFactoryInterface $serverAddressHolderFactory,
+                                      LoggerFactoryInterface $loggerFactory,
+                                      ?array $options,
+                                      ?array $servantOptions): ConnectionFactoryInterface
+    {
+        $connectionFactory = new ConnectionFactory(
+            $poolFactory, $serverAddressHolderFactory, $loggerFactory->create(ConnectionFactory::class), $options ?? []
+        );
+        if (!empty($servantOptions)) {
+            foreach ($servantOptions as $servant => $option) {
+                $connectionFactory->setOption($servant, $option);
+            }
+        }
+
+        return $connectionFactory;
+    }
+
+    /**
+     * @Bean
+     * @Inject({"routeList": "application.tars.routes"})
      */
     public function inMemoryRouteResolver(
         ClientProperties $clientProperties,
