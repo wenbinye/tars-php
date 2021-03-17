@@ -93,6 +93,11 @@ class TypeConverter implements TypeConverterInterface
                 if (isset($data[$field['name']])
                 && $this->acceptEmptyString($data[$field['name']], $field)) {
                     $obj->{$field['name']} = $this->convert($data[$field['name']], $field['typeObj']);
+                } else {
+                    // 出现过包不完整情况，导致 vector 类型字段没有默认值，在强类型时容易出错
+                    if ($field['typeObj']->isVector()) {
+                        $obj->{$field['name']} = [];
+                    }
                 }
             }
 

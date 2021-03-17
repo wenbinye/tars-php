@@ -51,4 +51,11 @@ class PackerV1Test extends TestCase
         file_put_contents('/tmp/a.data', $putString);
         var_export($putString);
     }
+
+    public function testUnpackPartialData()
+    {
+        $putString = \TUPAPI::putString('abc', 'HelloWorld123456');
+        file_put_contents('/tmp/a.data', $putString);
+        var_export($putString);
+    }
 }

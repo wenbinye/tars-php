@@ -4,10 +4,18 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc;
 
+use kuiper\annotations\AnnotationReader;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\Test\TestLogger;
+use wenbinye\tars\protocol\Packer;
+use wenbinye\tars\rpc\connection\ConnectionFactoryInterface;
+use wenbinye\tars\rpc\connection\ConnectionInterface;
+use wenbinye\tars\rpc\connection\TestConnection;
 use wenbinye\tars\rpc\connection\TestConnectionFactory;
+use wenbinye\tars\rpc\fixtures\Company;
+use wenbinye\tars\rpc\fixtures\CompanyServant;
 use wenbinye\tars\rpc\message\ClientRequestInterface;
+use wenbinye\tars\rpc\message\ServerResponse;
 use wenbinye\tars\rpc\middleware\History;
 use wenbinye\tars\rpc\middleware\Retry;
 use wenbinye\tars\rpc\route\RegistryRouteResolver;
@@ -100,5 +108,37 @@ class TarsClientTest extends TestCase
         $this->assertEquals($reqs[0]['request']->getStatus(), [
             'jaeger-debug-id' => '1',
         ]);
+    }
+
+    /**
+     * @throws \Doctrine\Common\Annotations\AnnotationException
+     * @throws \wenbinye\tars\protocol\exception\SyntaxErrorException
+     */
+    public function testPartialUnpack()
+    {
+        /** @var CompanyServant $client */
+        $client = TarsClient::builder()
+            ->setConnectionFactory(new class() implements ConnectionFactoryInterface {
+                public function create(string $servantName): ConnectionInterface
+                {
+                    return new TestConnection(function ($request) {
+                        $rpcPacker = new TarsRpcPacker(new Packer(AnnotationReader::getInstance()));
+                        $returnValues = [
+                            new Company(),
+                        ];
+                        $response = (new ServerResponse($request,
+                            $rpcPacker->packResponse($request->getMethod(), $returnValues, $request->getVersion())))
+                            ->getBody();
+
+                        return substr($response, 0, -1);
+
+                        return $response;
+                    });
+                }
+            })
+            ->createProxy(CompanyServant::class);
+
+        $ret = $client->find();
+        var_export($ret);
     }
 }
