@@ -79,13 +79,14 @@ class ServerStartCommand extends Command implements ContainerAwareInterface
         $configFile = $confPath.'/'.$serviceName.$this->serverProperties->getSupervisorConfExtension();
         $configContent = strtr('[program:{server_name}]
 directory={cwd}
-command={php} {script_file} --config={conf_file} start --server
+command={php} {script_file} --config={conf_file} start --server > {log_file} 2>&1
 startsecs=5
 ', [
             '{cwd}' => getcwd(),
             '{server_name}' => $serviceName,
             '{php}' => PHP_BINARY,
             '{script_file}' => realpath($_SERVER['SCRIPT_FILENAME']),
+            '{log_file}' => $this->serverProperties->getAppLogPath().'/'.$serviceName.'.log',
             '{conf_file}' => realpath(ServerApplication::getInstance()->getConfigFile()),
         ]);
         $supervisorctl = $this->serverProperties->getSupervisorctl() ?? 'supervisorctl';

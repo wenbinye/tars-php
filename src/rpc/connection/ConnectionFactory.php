@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc\connection;
 
+use kuiper\helper\Arrays;
 use kuiper\swoole\coroutine\Coroutine;
 use kuiper\swoole\pool\PoolFactoryInterface;
 use kuiper\swoole\pool\PoolInterface;
@@ -78,7 +79,7 @@ class ConnectionFactory implements ConnectionFactoryInterface, LoggerAwareInterf
                 $routeHolder = $this->serverAddressHolderFactory->create($servantName);
                 /** @var ConnectionInterface $conn */
                 $conn = new $connectionClass($routeHolder, $this->logger);
-                $conn->setOptions(array_merge($this->defaultOptions, $this->servantOptions[$servantName] ?? []));
+                $conn->setOptions(Arrays::filter(array_merge($this->defaultOptions, $this->servantOptions[$servantName] ?? [])));
 
                 return $conn;
             };
