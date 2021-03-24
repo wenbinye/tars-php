@@ -18,6 +18,7 @@ class ServerProperties
         ServerSetting::PACKAGE_LENGTH_TYPE => 'N',
         'package_length_offset' => 0,
         'package_body_offset' => 0,
+        ServerSetting::PACKAGE_MAX_LENGTH => 10485760,
     ];
 
     /**
