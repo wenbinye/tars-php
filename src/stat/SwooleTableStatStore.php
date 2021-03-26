@@ -65,7 +65,9 @@ class SwooleTableStatStore implements StatStoreAdapter
 
     public function delete(StatEntry $entry): void
     {
-        $this->statTable->del($this->getKey($entry->getUniqueId()));
+        $key = $this->getKey($entry->getUniqueId(), false);
+        $this->statTable->del($key);
+        $this->keyTable->del($key);
     }
 
     /**
@@ -89,10 +91,10 @@ class SwooleTableStatStore implements StatStoreAdapter
         }
     }
 
-    private function getKey(string $entry): string
+    private function getKey(string $entry, bool $create = true): string
     {
         $key = md5($entry);
-        if (!$this->keyTable->exist($key)) {
+        if ($create && !$this->keyTable->exist($key)) {
             $this->keyTable->set($key, [self::KEY_ENTRY => $entry]);
         }
 

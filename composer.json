@@ -27,7 +27,6 @@
         "ext-sockets": "*",
         "doctrine/annotations": "^1.8",
         "php-di/php-di": "^6.0",
-        "psr/container": "^1.0",
         "psr/event-dispatcher": "^1.0",
         "psr/http-factory": "^1.0",
         "psr/http-server-handler": "^1.0",

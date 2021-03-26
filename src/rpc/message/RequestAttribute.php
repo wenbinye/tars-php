@@ -31,9 +31,13 @@ class RequestAttribute
         $attribute = $request->getAttribute(self::SERVER_ADDR);
         if ($attribute instanceof ServerAddressHolderInterface) {
             return $attribute->get()->getAddress();
-        } else {
+        }
+
+        if (isset($attribute)) {
             return (string) $attribute;
         }
+
+        return null;
     }
 
     /**
