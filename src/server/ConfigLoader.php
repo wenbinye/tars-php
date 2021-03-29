@@ -114,6 +114,7 @@ class ConfigLoader implements ConfigLoaderInterface
             'application' => [
                 'name' => $serverProperties->getServerName(),
                 'base-path' => $serverProperties->getBasePath(),
+                'data-path' => $serverProperties->getDataPath(),
                 'server' => [
                     'enable-php-server' => $config->getBool('tars.application.server.enable_php_server', false),
                 ],
