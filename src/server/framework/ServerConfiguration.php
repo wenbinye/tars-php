@@ -91,7 +91,9 @@ class ServerConfiguration implements DefinitionConfiguration
             $ports[$port] = new ServerPort($adapter->getEndpoint()->getHost(), $port, $adapter->getServerType());
         }
 
-        $serverConfig = new ServerConfig($serverProperties->getServerName(), $serverProperties->getServerSettings(), array_values($ports));
+        $settings = array_merge($serverProperties->getServerSettings(),
+            Config::getInstance()->get('application.swoole', []));
+        $serverConfig = new ServerConfig($serverProperties->getServerName(), $settings, array_values($ports));
         $serverConfig->setMasterPidFile($serverProperties->getDataPath().'/master.pid');
 
         return $serverConfig;
