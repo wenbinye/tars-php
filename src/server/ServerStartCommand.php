@@ -75,20 +75,40 @@ class ServerStartCommand extends Command implements ContainerAwareInterface, Log
         file_put_contents($this->serverProperties->getServerPidFile(), getmypid());
     }
 
+    public static function withFileLock(string $filePrefix, callable $callback): bool
+    {
+        $lockFile = $filePrefix.'.lock';
+        $fp = fopen($lockFile, 'wb+');
+        if (false !== $fp && flock($fp, LOCK_EX)) {  // 进行排它型锁定
+            try {
+                $callback();
+            } finally {
+                flock($fp, LOCK_UN);    // 释放锁定
+                fclose($fp);
+                @unlink($lockFile);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
     private function startService(InputInterface $input): void
     {
         $confPath = $this->serverProperties->getSupervisorConfPath();
         if (null === $confPath || !is_dir($confPath)) {
             throw new \RuntimeException('tars.application.server.supervisor_conf_path cannot be empty when start_mode is external');
         }
-        $env = $this->serverProperties->getEnv() ?? '';
-        if (Text::isNotEmpty($this->serverProperties->getEmalloc())) {
-            $env = (!empty($env) ? ',' : '')
-                .sprintf('USE_ZEND_ALLOC="0",LD_PRELOAD="%s"', $this->serverProperties->getEmalloc());
-        }
         $serviceName = $this->serverProperties->getServerName();
         $configFile = $confPath.'/'.$serviceName.$this->serverProperties->getSupervisorConfExtension();
-        $configContent = strtr('[program:{server_name}]
+        $ret = self::withFileLock($configFile, function () use ($serviceName, $configFile) {
+            $env = $this->serverProperties->getEnv() ?? '';
+            if (Text::isNotEmpty($this->serverProperties->getEmalloc())) {
+                $env = (!empty($env) ? ',' : '')
+                    .sprintf('USE_ZEND_ALLOC="0",LD_PRELOAD="%s"', $this->serverProperties->getEmalloc());
+            }
+            $configContent = strtr('[program:{server_name}]
 directory={cwd}
 environment={env}
 command={php} {script_file} --config={conf_file} start --server
@@ -96,26 +116,30 @@ stdout_logfile={log_file}
 redirect_stderr=true
 startsecs=5
 ', [
-            '{cwd}' => getcwd(),
-            '{server_name}' => $serviceName,
-            '{php}' => PHP_BINARY,
-            '{env}' => $env,
-            '{script_file}' => realpath($_SERVER['SCRIPT_FILENAME']),
-            '{log_file}' => $this->serverProperties->getAppLogPath().'/'.$serviceName.'.log',
-            '{conf_file}' => realpath(ServerApplication::getInstance()->getConfigFile()),
-        ]);
-        $supervisorctl = $this->serverProperties->getSupervisorctl() ?? 'supervisorctl';
-        if (!file_exists($configFile) || file_get_contents($configFile) !== $configContent) {
-            $this->logger->info(static::TAG."create supervisor config $configFile");
-            file_put_contents($configFile, $configContent);
-            system("$supervisorctl reread", $ret);
-            $this->logger->info(static::TAG."reload $configFile with exit code $ret");
-            system("$supervisorctl add $serviceName", $ret);
-            $this->logger->info(static::TAG."start $serviceName with exit code $ret");
-        } else {
-            system("$supervisorctl start ".$serviceName, $ret);
-            $this->logger->info(static::TAG."start $serviceName with exit code $ret");
+                '{cwd}' => getcwd(),
+                '{server_name}' => $serviceName,
+                '{php}' => PHP_BINARY,
+                '{env}' => $env,
+                '{script_file}' => realpath($_SERVER['SCRIPT_FILENAME']),
+                '{log_file}' => $this->serverProperties->getAppLogPath().'/'.$serviceName.'.log',
+                '{conf_file}' => realpath(ServerApplication::getInstance()->getConfigFile()),
+            ]);
+            $supervisorctl = $this->serverProperties->getSupervisorctl() ?? 'supervisorctl';
+            if (!file_exists($configFile) || (file_get_contents($configFile) !== $configContent)) {
+                $this->logger->info(static::TAG."create supervisor config $configFile");
+                file_put_contents($configFile, $configContent);
+                system("$supervisorctl reread", $ret);
+                $this->logger->info(static::TAG."reload $configFile with exit code $ret");
+                system("$supervisorctl add $serviceName", $ret);
+                $this->logger->info(static::TAG."start $serviceName with exit code $ret");
+            } else {
+                system("$supervisorctl start ".$serviceName, $ret);
+                $this->logger->info(static::TAG."start $serviceName with exit code $ret");
+            }
+            pcntl_exec('/bin/sleep', [2147000000 + $this->server->getServerConfig()->getPort()->getPort()]);
+        });
+        if (!$ret) {
+            $this->logger->error(static::TAG.'fail to obtain file lock');
         }
-        pcntl_exec('/bin/sleep', [2147000000 + $this->server->getServerConfig()->getPort()->getPort()]);
     }
 }

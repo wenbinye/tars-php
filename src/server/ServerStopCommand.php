@@ -77,15 +77,21 @@ class ServerStopCommand extends Command implements ContainerAwareInterface, Logg
         }
         $serviceName = $this->serverProperties->getServerName();
         $configFile = $confPath.'/'.$serviceName.$this->serverProperties->getSupervisorConfExtension();
-        if (file_exists($configFile) && filemtime($configFile) < time() - 60) {
-            $this->logger->info(static::TAG."remove supervisor config $configFile");
-            @rename($configFile, $configFile.'.disabled');
-        }
-        $supervisorctl = $this->serverProperties->getSupervisorctl() ?? 'supervisorctl';
-        system("$supervisorctl stop ".$serviceName, $ret);
-        $this->logger->info(static::TAG."stop $serviceName with exit code $ret");
+        $ret = ServerStartCommand::withFileLock($configFile, function () use ($serviceName, $configFile) {
+            $supervisorctl = $this->serverProperties->getSupervisorctl() ?? 'supervisorctl';
+            system("$supervisorctl stop ".$serviceName, $ret);
+            $this->logger->info(static::TAG."stop $serviceName with exit code $ret");
 
-        system("$supervisorctl remove ".$serviceName, $ret);
-        $this->logger->info(static::TAG."remove $serviceName with exit code $ret");
+            system("$supervisorctl remove ".$serviceName, $ret);
+            $this->logger->info(static::TAG."remove $serviceName with exit code $ret");
+
+            if (file_exists($configFile)) {
+                $this->logger->info(static::TAG."remove supervisor config $configFile");
+                @rename($configFile, $configFile.'.disabled');
+            }
+        });
+        if (!$ret) {
+            $this->logger->error(static::TAG.'fail to obtain file lock');
+        }
     }
 }
