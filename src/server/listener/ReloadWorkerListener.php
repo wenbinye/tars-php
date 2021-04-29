@@ -6,14 +6,20 @@ namespace wenbinye\tars\server\listener;
 
 use kuiper\event\EventListenerInterface;
 use kuiper\swoole\event\StartEvent;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use Webmozart\Assert\Assert;
 use wenbinye\tars\server\ServerProperties;
 
 /**
  * 服务启动一段时间后自动重新启动服务，缓解内存泄漏问题.
  */
-class ReloadWorkerListener implements EventListenerInterface
+class ReloadWorkerListener implements EventListenerInterface, LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
+    protected const TAG = '['.__CLASS__.'] ';
+
     /**
      * @var ServerProperties
      */
@@ -37,8 +43,10 @@ class ReloadWorkerListener implements EventListenerInterface
         Assert::isInstanceOf($event, StartEvent::class);
         /* @var StartEvent $event */
         if ($this->serverProperties->getReloadInterval() > 0) {
+            $this->logger->info(static::TAG.'workers will reload in '.$this->serverProperties->getReloadInterval().' seconds');
             $server = $event->getServer();
             $server->after($this->serverProperties->getReloadInterval() * 1000, function () use ($server) {
+                $this->logger->info(static::TAG.'workers reloading');
                 $server->reload();
             });
         }

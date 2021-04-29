@@ -93,6 +93,10 @@ class ServerApplication
 
     public function getContainer(): ContainerInterface
     {
+        if (null === $this->container) {
+            $this->container = $this->createContainer();
+        }
+
         return $this->container;
     }
 
@@ -114,13 +118,12 @@ class ServerApplication
         }
         $app = new Application(Config::getInstance()->getString('application.name', self::APP_NAME));
 
-        $container = $this->createContainer();
+        $container = $this->getContainer();
         $commandLoader = new FactoryCommandLoader($this->getCommandMap($container));
         $app->setCommandLoader($commandLoader);
         $app->setDefaultCommand(ServerStartCommand::COMMAND_NAME);
 
         $container->get(EventDispatcherInterface::class)->dispatch(new BootstrapEvent($app));
-        $this->container = $container;
 
         return $app;
     }
