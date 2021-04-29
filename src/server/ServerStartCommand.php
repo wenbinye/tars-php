@@ -10,14 +10,19 @@ use kuiper\helper\Text;
 use kuiper\swoole\coroutine\Coroutine;
 use kuiper\swoole\server\ServerInterface;
 use kuiper\swoole\server\SwooleServer;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class ServerStartCommand extends Command implements ContainerAwareInterface
+class ServerStartCommand extends Command implements ContainerAwareInterface, LoggerAwareInterface
 {
     use ContainerAwareTrait;
+    use LoggerAwareTrait;
+
+    protected const TAG = '['.__CLASS__.'] ';
 
     public const COMMAND_NAME = 'start';
 
@@ -101,10 +106,15 @@ startsecs=5
         ]);
         $supervisorctl = $this->serverProperties->getSupervisorctl() ?? 'supervisorctl';
         if (!file_exists($configFile) || file_get_contents($configFile) !== $configContent) {
+            $this->logger->info(static::TAG."create supervisor config $configFile");
             file_put_contents($configFile, $configContent);
-            system("$supervisorctl update ".$serviceName);
+            system("$supervisorctl reread", $ret);
+            $this->logger->info(static::TAG."reload $configFile with exit code $ret");
+            system("$supervisorctl add $serviceName", $ret);
+            $this->logger->info(static::TAG."start $serviceName with exit code $ret");
         } else {
-            system("$supervisorctl start ".$serviceName);
+            system("$supervisorctl start ".$serviceName, $ret);
+            $this->logger->info(static::TAG."start $serviceName with exit code $ret");
         }
         pcntl_exec('/bin/sleep', [2147000000 + $this->server->getServerConfig()->getPort()->getPort()]);
     }
