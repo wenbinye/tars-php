@@ -8,6 +8,7 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use wenbinye\tars\rpc\exception\RetryableException;
 use wenbinye\tars\rpc\message\ClientRequestInterface;
+use wenbinye\tars\rpc\message\Request;
 use wenbinye\tars\rpc\message\RequestAttribute;
 use wenbinye\tars\rpc\message\RequestInterface;
 use wenbinye\tars\rpc\message\ResponseInterface;
@@ -59,7 +60,9 @@ class Retry implements ClientMiddlewareInterface, LoggerAwareInterface
                     throw $e;
                 }
                 $this->resetAddress($request);
-                $this->logger->warning(static::TAG."retry $request: ".get_class($e).' '.$e->getMessage());
+                /** @var Request $request */
+                $requestString = (string) $request;
+                $this->logger->warning(static::TAG."retry $requestString: ".get_class($e).' '.$e->getMessage());
                 usleep($this->initialInterval * (2 ** ($this->retries - $retries)));
                 --$retries;
             }

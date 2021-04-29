@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\rpc;
 
+use wenbinye\tars\rpc\message\ClientRequestInterface;
 use wenbinye\tars\rpc\message\RequestAttribute;
 
 class RpcExecutor
@@ -90,6 +91,7 @@ class RpcExecutor
         if (null !== $this->timeout) {
             $request = RequestAttribute::setRequestTimeout($request, $this->timeout);
         }
+        /* @var ClientRequestInterface $request */
         if (null !== $this->status) {
             $request = $request->withStatus(array_merge($this->status, $request->getStatus()));
         }

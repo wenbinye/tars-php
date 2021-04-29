@@ -24,6 +24,9 @@ class ServantProxyGenerator implements ServantProxyGeneratorInterface
      */
     private $eval;
 
+    /**
+     * @var \ReflectionClass[]
+     */
     private static $SERVANT_INTERFACES = [];
 
     public function __construct(AnnotationReaderInterface $annotationReader, bool $eval = true)

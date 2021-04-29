@@ -6,32 +6,12 @@ parameters:
 			path: src/deploy/PackageConfig.php
 
 		-
-			message: "#^Static method TUPAPI\\:\\:encode\\(\\) invoked with 10 parameters, 0 required\\.$#"
-			count: 1
-			path: src/protocol/Packer.php
-
-		-
 			message: "#^Static method TUPAPI\\:\\:decode\\(\\) invoked with 1 parameter, 0 required\\.$#"
 			count: 1
 			path: src/protocol/Packer.php
 
 		-
-			message: "#^Static method TUPAPI\\:\\:putVector\\(\\) invoked with 3 parameters, 2 required\\.$#"
-			count: 1
-			path: src/protocol/Packer.php
-
-		-
-			message: "#^Static method TUPAPI\\:\\:putMap\\(\\) invoked with 3 parameters, 2 required\\.$#"
-			count: 1
-			path: src/protocol/Packer.php
-
-		-
-			message: "#^Static method TUPAPI\\:\\:putStruct\\(\\) invoked with 3 parameters, 0 required\\.$#"
-			count: 1
-			path: src/protocol/Packer.php
-
-		-
-			message: "#^Static method TUPAPI\\:\\:getVector\\(\\) invoked with 5 parameters, 3 required\\.$#"
+			message: "#^Static method TUPAPI\\:\\:encode\\(\\) invoked with 10 parameters, 0 required\\.$#"
 			count: 1
 			path: src/protocol/Packer.php
 
@@ -46,18 +26,38 @@ parameters:
 			path: src/protocol/Packer.php
 
 		-
+			message: "#^Static method TUPAPI\\:\\:getVector\\(\\) invoked with 5 parameters, 3 required\\.$#"
+			count: 1
+			path: src/protocol/Packer.php
+
+		-
+			message: "#^Static method TUPAPI\\:\\:putMap\\(\\) invoked with 3 parameters, 2 required\\.$#"
+			count: 1
+			path: src/protocol/Packer.php
+
+		-
+			message: "#^Static method TUPAPI\\:\\:putStruct\\(\\) invoked with 3 parameters, 0 required\\.$#"
+			count: 1
+			path: src/protocol/Packer.php
+
+		-
+			message: "#^Static method TUPAPI\\:\\:putVector\\(\\) invoked with 3 parameters, 2 required\\.$#"
+			count: 1
+			path: src/protocol/Packer.php
+
+		-
 			message: "#^Variable property access on mixed\\.$#"
 			count: 2
 			path: src/protocol/Packer.php
 
 		-
-			message: "#^Variable property access on mixed\\.$#"
+			message: "#^Class TARS_Map constructor invoked with 3 parameters, 2 required\\.$#"
 			count: 1
 			path: src/protocol/TypeConverter.php
 
 		-
-			message: "#^Class TARS_Map constructor invoked with 3 parameters, 2 required\\.$#"
-			count: 1
+			message: "#^Variable property access on mixed\\.$#"
+			count: 2
 			path: src/protocol/TypeConverter.php
 
 		-
@@ -91,6 +91,11 @@ parameters:
 			path: src/rpc/connection/SwooleCoroutineTcpConnection.php
 
 		-
+			message: "#^Method wenbinye\\\\tars\\\\rpc\\\\connection\\\\SwooleTcpConnection\\:\\:recv\\(\\) should return string but return statement is missing\\.$#"
+			count: 1
+			path: src/rpc/connection/SwooleTcpConnection.php
+
+		-
 			message: "#^Method wenbinye\\\\tars\\\\rpc\\\\message\\\\MethodMetadataFactory\\:\\:getTarsServantAnnotation\\(\\) has parameter \\$reflectionClass with generic class ReflectionClass but does not specify its types\\: T$#"
 			count: 1
 			path: src/rpc/message/MethodMetadataFactory.php
@@ -106,12 +111,12 @@ parameters:
 			path: src/rpc/message/tup/RequestPacket.php
 
 		-
-			message: "#^Static method TUPAPI\\:\\:decodeReqPacket\\(\\) invoked with 1 parameter, 0 required\\.$#"
+			message: "#^Static method TUPAPI\\:\\:decode\\(\\) invoked with 2 parameters, 0 required\\.$#"
 			count: 1
 			path: src/rpc/message/tup/ResponsePacket.php
 
 		-
-			message: "#^Static method TUPAPI\\:\\:decode\\(\\) invoked with 2 parameters, 0 required\\.$#"
+			message: "#^Static method TUPAPI\\:\\:decodeReqPacket\\(\\) invoked with 1 parameter, 0 required\\.$#"
 			count: 1
 			path: src/rpc/message/tup/ResponsePacket.php
 
@@ -143,7 +148,7 @@ parameters:
 		-
 			message: "#^Call to an undefined method kuiper\\\\logger\\\\LoggerFactoryInterface\\:\\:getLoggers\\(\\)\\.$#"
 			count: 1
-			path: src/server/listener/StartLogRotate.php
+			path: src/server/listener/ReopenLogFile.php
 
 		-
 			message: "#^Method wenbinye\\\\tars\\\\server\\\\task\\\\ReportTaskProcessor\\:\\:process\\(\\) should return mixed but return statement is missing\\.$#"
