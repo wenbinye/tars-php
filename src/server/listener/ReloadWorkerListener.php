@@ -45,7 +45,7 @@ class ReloadWorkerListener implements EventListenerInterface, LoggerAwareInterfa
         if ($this->serverProperties->getReloadInterval() > 0) {
             $this->logger->info(static::TAG.'workers will reload in '.$this->serverProperties->getReloadInterval().' seconds');
             $server = $event->getServer();
-            $server->after($this->serverProperties->getReloadInterval() * 1000, function () use ($server) {
+            $server->tick($this->serverProperties->getReloadInterval() * 1000, function () use ($server) {
                 $this->logger->info(static::TAG.'workers reloading');
                 $server->reload();
             });
