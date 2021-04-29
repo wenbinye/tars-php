@@ -39,6 +39,7 @@ class ServerStopCommand extends Command implements ContainerAwareInterface, Logg
      * @var ServerEventFactory
      */
     private $serverEventFactory;
+
     /**
      * @var ServerInterface
      */
@@ -52,19 +53,25 @@ class ServerStopCommand extends Command implements ContainerAwareInterface, Logg
     /**
      * ServerStartCommand constructor.
      *
-     * @param ServerManager    $serverManager
-     * @param ServerProperties $serverProperties
+     * @param ServerManager            $serverManager
+     * @param ServerProperties         $serverProperties
+     * @param ServerInterface          $server
+     * @param ServerEventFactory       $serverEventFactory
+     * @param EventDispatcherInterface $eventDispatcher
      */
     public function __construct(
         ServerManager $serverManager,
         ServerProperties $serverProperties,
         ServerInterface $server,
+        ServerEventFactory $serverEventFactory,
         EventDispatcherInterface $eventDispatcher)
     {
         parent::__construct(self::COMMAND_NAME);
         $this->serverManager = $serverManager;
         $this->serverProperties = $serverProperties;
         $this->server = $server;
+        $this->serverEventFactory = $serverEventFactory;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     protected function configure(): void
