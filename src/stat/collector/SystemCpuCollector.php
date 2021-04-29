@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\stat\collector;
 
-class SystemCpuCollector extends AbstractAvgCollector
+class SystemCpuCollector extends AbstractCollector
 {
     public function getValues(): array
     {

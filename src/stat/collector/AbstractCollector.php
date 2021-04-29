@@ -6,12 +6,17 @@ namespace wenbinye\tars\stat\collector;
 
 use wenbinye\tars\server\ServerProperties;
 
-abstract class AbstractAvgCollector implements CollectorInterface
+abstract class AbstractCollector implements CollectorInterface
 {
     /**
      * @var ServerProperties
      */
     private $serverProperties;
+
+    /**
+     * @var string
+     */
+    protected $policy = 'Max';
 
     public function __construct(ServerProperties $serverProperties)
     {
@@ -30,6 +35,6 @@ abstract class AbstractAvgCollector implements CollectorInterface
 
     public function getPolicy(): string
     {
-        return 'Avg';
+        return $this->policy;
     }
 }

@@ -6,6 +6,7 @@ namespace wenbinye\tars\server;
 
 use kuiper\di\ContainerAwareInterface;
 use kuiper\di\ContainerAwareTrait;
+use kuiper\helper\Text;
 use kuiper\swoole\coroutine\Coroutine;
 use kuiper\swoole\server\ServerInterface;
 use kuiper\swoole\server\SwooleServer;
@@ -75,10 +76,16 @@ class ServerStartCommand extends Command implements ContainerAwareInterface
         if (null === $confPath || !is_dir($confPath)) {
             throw new \RuntimeException('tars.application.server.supervisor_conf_path cannot be empty when start_mode is external');
         }
+        $env = $this->serverProperties->getEnv() ?? '';
+        if (Text::isNotEmpty($this->serverProperties->getEmalloc())) {
+            $env = (!empty($env) ? ',' : '')
+                .sprintf('USE_ZEND_ALLOC="0",LD_PRELOAD="%s"', $this->serverProperties->getEmalloc());
+        }
         $serviceName = $this->serverProperties->getServerName();
         $configFile = $confPath.'/'.$serviceName.$this->serverProperties->getSupervisorConfExtension();
         $configContent = strtr('[program:{server_name}]
 directory={cwd}
+environment={env}
 command={php} {script_file} --config={conf_file} start --server
 stdout_logfile={log_file}
 redirect_stderr=true
@@ -87,6 +94,7 @@ startsecs=5
             '{cwd}' => getcwd(),
             '{server_name}' => $serviceName,
             '{php}' => PHP_BINARY,
+            '{env}' => $env,
             '{script_file}' => realpath($_SERVER['SCRIPT_FILENAME']),
             '{log_file}' => $this->serverProperties->getAppLogPath().'/'.$serviceName.'.log',
             '{conf_file}' => realpath(ServerApplication::getInstance()->getConfigFile()),

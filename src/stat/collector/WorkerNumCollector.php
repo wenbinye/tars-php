@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\stat\collector;
 
-class WorkerNumCollector extends AbstractAvgCollector
+class WorkerNumCollector extends AbstractCollector
 {
+    protected $policy = 'Min';
+
     public function getValues(): array
     {
         exec("ps wwaux | grep {$this->getServerName()} | grep -v grep | wc -l",

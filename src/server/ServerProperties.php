@@ -18,6 +18,8 @@ class ServerProperties
         ServerSetting::PACKAGE_LENGTH_TYPE => 'N',
         'package_length_offset' => 0,
         'package_body_offset' => 0,
+        ServerSetting::MAX_WAIT_TIME => 60,
+        ServerSetting::RELOAD_ASYNC => true,
         ServerSetting::PACKAGE_MAX_LENGTH => 10485760,
     ];
 
@@ -127,6 +129,16 @@ class ServerProperties
      * @var string
      */
     private $notifyServantName = 'tars.tarsnotify.NotifyObj';
+    /**
+     * @var string|null
+     */
+    private $env;
+    /**
+     * @ConfigItem
+     *
+     * @var string|null
+     */
+    private $emalloc;
     /**
      * @ConfigItem()
      *
@@ -337,6 +349,46 @@ class ServerProperties
     public function setNotifyServantName(string $notifyServantName): void
     {
         $this->notifyServantName = $notifyServantName;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getEnv(): ?string
+    {
+        return $this->env;
+    }
+
+    /**
+     * @param string|null $env
+     *
+     * @return ServerProperties
+     */
+    public function setEnv(?string $env): ServerProperties
+    {
+        $this->env = $env;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getEmalloc(): ?string
+    {
+        return $this->emalloc;
+    }
+
+    /**
+     * @param string|null $emalloc
+     *
+     * @return ServerProperties
+     */
+    public function setEmalloc(?string $emalloc): ServerProperties
+    {
+        $this->emalloc = $emalloc;
+
+        return $this;
     }
 
     /**
