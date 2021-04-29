@@ -129,6 +129,13 @@ class ServerProperties
      * @var string
      */
     private $notifyServantName = 'tars.tarsnotify.NotifyObj';
+
+    /**
+     * @ConfigItem
+     *
+     * @var int|null
+     */
+    private $reloadInterval;
     /**
      * @var string|null
      */
@@ -253,6 +260,24 @@ class ServerProperties
     public function setLogSize(int $logSize): void
     {
         $this->logSize = $logSize;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getReloadInterval(): ?int
+    {
+        return $this->reloadInterval;
+    }
+
+    /**
+     * @param string|int|null $reloadInterval
+     */
+    public function setReloadInterval($reloadInterval): void
+    {
+        if (isset($reloadInterval)) {
+            $this->reloadInterval = (int) $reloadInterval;
+        }
     }
 
     /**

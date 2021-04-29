@@ -26,6 +26,7 @@ use wenbinye\tars\rpc\middleware\SendStat;
 use wenbinye\tars\rpc\middleware\ServerRequestLog;
 use wenbinye\tars\rpc\route\Route;
 use wenbinye\tars\rpc\TarsClient;
+use wenbinye\tars\server\listener\ReloadWorkerListener;
 use wenbinye\tars\server\listener\ReopenLogFile;
 use wenbinye\tars\server\listener\WorkerKeepAlive;
 use wenbinye\tars\stat\collector\ServiceMemoryCollector;
@@ -120,6 +121,7 @@ class ConfigLoader implements ConfigLoaderInterface
                 ],
                 'listeners' => [
                     StartEventListener::class,
+                    ReloadWorkerListener::class,
                     ManagerStartEventListener::class,
                     WorkerStartEventListener::class,
                     TaskEventListener::class,
