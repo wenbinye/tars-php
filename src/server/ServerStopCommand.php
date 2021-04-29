@@ -6,7 +6,10 @@ namespace wenbinye\tars\server;
 
 use kuiper\di\ContainerAwareInterface;
 use kuiper\di\ContainerAwareTrait;
+use kuiper\swoole\event\ServerEventFactory;
+use kuiper\swoole\server\ServerInterface;
 use kuiper\swoole\ServerManager;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\Console\Command\Command;
@@ -33,16 +36,35 @@ class ServerStopCommand extends Command implements ContainerAwareInterface, Logg
     private $serverProperties;
 
     /**
+     * @var ServerEventFactory
+     */
+    private $serverEventFactory;
+    /**
+     * @var ServerInterface
+     */
+    private $server;
+
+    /**
+     * @var EventDispatcherInterface
+     */
+    private $eventDispatcher;
+
+    /**
      * ServerStartCommand constructor.
      *
      * @param ServerManager    $serverManager
      * @param ServerProperties $serverProperties
      */
-    public function __construct(ServerManager $serverManager, ServerProperties $serverProperties)
+    public function __construct(
+        ServerManager $serverManager,
+        ServerProperties $serverProperties,
+        ServerInterface $server,
+        EventDispatcherInterface $eventDispatcher)
     {
         parent::__construct(self::COMMAND_NAME);
         $this->serverManager = $serverManager;
         $this->serverProperties = $serverProperties;
+        $this->server = $server;
     }
 
     protected function configure(): void
@@ -78,6 +100,10 @@ class ServerStopCommand extends Command implements ContainerAwareInterface, Logg
         $serviceName = $this->serverProperties->getServerName();
         $configFile = $confPath.'/'.$serviceName.$this->serverProperties->getSupervisorConfExtension();
         $ret = ServerStartCommand::withFileLock($configFile, function () use ($serviceName, $configFile) {
+            $shutdownEvent = $this->serverEventFactory->create('shutdown', [$this->server]);
+            if (null !== $shutdownEvent) {
+                $this->eventDispatcher->dispatch($shutdownEvent);
+            }
             $supervisorctl = $this->serverProperties->getSupervisorctl() ?? 'supervisorctl';
             system("$supervisorctl stop ".$serviceName, $ret);
             $this->logger->info(static::TAG."stop $serviceName with exit code $ret");

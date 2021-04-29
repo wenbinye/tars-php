@@ -114,7 +114,6 @@ environment={env}
 command={php} {script_file} --config={conf_file} start --server
 stdout_logfile={log_file}
 redirect_stderr=true
-startsecs=5
 ', [
                 '{cwd}' => getcwd(),
                 '{server_name}' => $serviceName,
