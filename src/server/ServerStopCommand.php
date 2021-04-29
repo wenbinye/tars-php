@@ -72,8 +72,10 @@ class ServerStopCommand extends Command implements ContainerAwareInterface
         }
         $serviceName = $this->serverProperties->getServerName();
         $configFile = $confPath.'/'.$serviceName.$this->serverProperties->getSupervisorConfExtension();
-        @unlink($configFile);
+        if (file_exists($configFile) && filemtime($configFile) < time() - 60) {
+            @rename($configFile, $configFile.'.disabled');
+        }
         $supervisorctl = $this->serverProperties->getSupervisorctl() ?? 'supervisorctl';
-        system("$supervisorctl update ".$serviceName);
+        system("$supervisorctl remove ".$serviceName);
     }
 }
