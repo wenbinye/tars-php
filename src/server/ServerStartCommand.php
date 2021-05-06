@@ -79,19 +79,21 @@ class ServerStartCommand extends Command implements ContainerAwareInterface, Log
     {
         $lockFile = $filePrefix.'.lock';
         $fp = fopen($lockFile, 'wb+');
-        if (false !== $fp && flock($fp, LOCK_EX)) {  // 进行排它型锁定
-            try {
+        try {
+            if (false !== $fp && flock($fp, LOCK_EX)) {  // 进行排它型锁定
                 $callback();
-            } finally {
+
+                return true;
+            }
+
+            return false;
+        } finally {
+            if (false !== $fp) {
                 flock($fp, LOCK_UN);    // 释放锁定
                 fclose($fp);
                 @unlink($lockFile);
             }
-
-            return true;
         }
-
-        return false;
     }
 
     private function startService(InputInterface $input): void
@@ -103,6 +105,9 @@ class ServerStartCommand extends Command implements ContainerAwareInterface, Log
         $serviceName = $this->serverProperties->getServerName();
         $configFile = $confPath.'/'.$serviceName.$this->serverProperties->getSupervisorConfExtension();
         $ret = self::withFileLock($configFile, function () use ($serviceName, $configFile) {
+            if (file_exists($configFile.'.disabled')) {
+                @unlink($configFile.'.disabled');
+            }
             $env = $this->serverProperties->getEnv() ?? '';
             if (Text::isNotEmpty($this->serverProperties->getEmalloc())) {
                 $env = (!empty($env) ? ',' : '')
