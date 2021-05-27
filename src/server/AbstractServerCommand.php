@@ -17,7 +17,7 @@ abstract class AbstractServerCommand extends Command implements ContainerAwareIn
 
     protected const TAG = '['.__CLASS__.'] ';
 
-    protected function withFileLock(string $filePrefix, callable $callback): void
+    protected function withFileLock(string $filePrefix, callable $callback): bool
     {
         $lockFile = $filePrefix.'.lock';
         if (file_exists($lockFile) && filemtime($lockFile) < time() - 360) {
@@ -44,11 +44,13 @@ abstract class AbstractServerCommand extends Command implements ContainerAwareIn
                     throw new \RuntimeException("Cannot delete lock file $lockFile");
                 }
 
-                return;
+                return true;
             }
             sleep(1);
             --$timeout;
         }
         $this->logger->error(static::TAG."Fail to obtain lock file $lockFile");
+
+        return false;
     }
 }

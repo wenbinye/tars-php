@@ -75,7 +75,7 @@ class ServerStartCommand extends AbstractServerCommand
         }
         $serviceName = $this->serverProperties->getServerName();
         $configFile = $confPath.'/'.$serviceName.$this->serverProperties->getSupervisorConfExtension();
-        $this->withFileLock($configFile, function () use ($serviceName, $configFile) {
+        $success = $this->withFileLock($configFile, function () use ($serviceName, $configFile) {
             if (file_exists($configFile.'.disabled')) {
                 @unlink($configFile.'.disabled');
             }
@@ -111,7 +111,9 @@ redirect_stderr=true
                 system("$supervisorctl start ".$serviceName, $ret);
                 $this->logger->info(static::TAG."start $serviceName with exit code $ret");
             }
-            pcntl_exec('/bin/sleep', [2147000000 + $this->server->getServerConfig()->getPort()->getPort()]);
         });
+        if ($success) {
+            pcntl_exec('/bin/sleep', [2147000000 + $this->server->getServerConfig()->getPort()->getPort()]);
+        }
     }
 }
