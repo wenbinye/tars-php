@@ -26,11 +26,12 @@ abstract class AbstractServerCommand extends Command implements ContainerAwareIn
             unlink($lockFile);
         }
         $timeout = 60;
+        $fp = fopen($lockFile, 'wb+');
         while ($timeout > 0) {
-            $fp = fopen($lockFile, 'wb+');
             if (false === $fp) {
                 $this->logger->error(static::TAG."Cannot create lock file $lockFile");
-            } elseif (!flock($fp, LOCK_EX | LOCK_NB)) { // 进行排它型锁定
+            } elseif (flock($fp, LOCK_EX | LOCK_NB)) { // 进行排它型锁定
+                $this->logger->info(static::TAG."obtain lock file $lockFile");
                 try {
                     $callback();
                 } catch (\Exception $e) {
@@ -38,6 +39,7 @@ abstract class AbstractServerCommand extends Command implements ContainerAwareIn
                 }
                 flock($fp, LOCK_UN);    // 释放锁定
                 fclose($fp);
+                $this->logger->info(static::TAG."release lock file $lockFile");
                 if (file_exists($lockFile) && !unlink($lockFile)) {
                     throw new \RuntimeException("Cannot delete lock file $lockFile");
                 }

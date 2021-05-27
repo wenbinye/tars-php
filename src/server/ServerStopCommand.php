@@ -73,16 +73,17 @@ class ServerStopCommand extends AbstractServerCommand
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        if ($this->serverProperties->isExternalMode()
-            && file_exists($this->serverProperties->getServerPidFile())) {
+        if ($this->serverProperties->isExternalMode()) {
             $this->stopService($input);
-            $pid = (int) file_get_contents($this->serverProperties->getServerPidFile());
-            if (function_exists('posix_kill')) {
-                posix_kill($pid, SIGTERM);
-            } else {
-                exec("kill -TERM $pid");
+            if (file_exists($this->serverProperties->getServerPidFile())) {
+                $pid = (int) file_get_contents($this->serverProperties->getServerPidFile());
+                if (function_exists('posix_kill')) {
+                    posix_kill($pid, SIGTERM);
+                } else {
+                    exec("kill -TERM $pid");
+                }
+                @unlink($this->serverProperties->getServerPidFile());
             }
-            @unlink($this->serverProperties->getServerPidFile());
         } else {
             $this->serverManager->stop();
         }
