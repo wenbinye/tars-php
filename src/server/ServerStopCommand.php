@@ -4,23 +4,15 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server;
 
-use kuiper\di\ContainerAwareInterface;
-use kuiper\di\ContainerAwareTrait;
 use kuiper\swoole\event\ServerEventFactory;
 use kuiper\swoole\server\ServerInterface;
 use kuiper\swoole\ServerManager;
 use Psr\EventDispatcher\EventDispatcherInterface;
-use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerAwareTrait;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class ServerStopCommand extends Command implements ContainerAwareInterface, LoggerAwareInterface
+class ServerStopCommand extends AbstractServerCommand
 {
-    use ContainerAwareTrait;
-    use LoggerAwareTrait;
-
     protected const TAG = '['.__CLASS__.'] ';
 
     public const COMMAND_NAME = 'stop';
@@ -106,7 +98,7 @@ class ServerStopCommand extends Command implements ContainerAwareInterface, Logg
         }
         $serviceName = $this->serverProperties->getServerName();
         $configFile = $confPath.'/'.$serviceName.$this->serverProperties->getSupervisorConfExtension();
-        $ret = ServerStartCommand::withFileLock($configFile, function () use ($serviceName, $configFile) {
+        $this->withFileLock($configFile, function () use ($serviceName, $configFile) {
             $shutdownEvent = $this->serverEventFactory->create('shutdown', [$this->server]);
             if (null !== $shutdownEvent) {
                 $this->eventDispatcher->dispatch($shutdownEvent);
@@ -123,8 +115,5 @@ class ServerStopCommand extends Command implements ContainerAwareInterface, Logg
                 @rename($configFile, $configFile.'.disabled');
             }
         });
-        if (!$ret) {
-            $this->logger->error(static::TAG.'fail to obtain file lock');
-        }
     }
 }

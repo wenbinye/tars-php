@@ -4,24 +4,16 @@ declare(strict_types=1);
 
 namespace wenbinye\tars\server;
 
-use kuiper\di\ContainerAwareInterface;
-use kuiper\di\ContainerAwareTrait;
 use kuiper\helper\Text;
 use kuiper\swoole\coroutine\Coroutine;
 use kuiper\swoole\server\ServerInterface;
 use kuiper\swoole\server\SwooleServer;
-use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerAwareTrait;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class ServerStartCommand extends Command implements ContainerAwareInterface, LoggerAwareInterface
+class ServerStartCommand extends AbstractServerCommand
 {
-    use ContainerAwareTrait;
-    use LoggerAwareTrait;
-
     protected const TAG = '['.__CLASS__.'] ';
 
     public const COMMAND_NAME = 'start';
@@ -75,27 +67,6 @@ class ServerStartCommand extends Command implements ContainerAwareInterface, Log
         file_put_contents($this->serverProperties->getServerPidFile(), getmypid());
     }
 
-    public static function withFileLock(string $filePrefix, callable $callback): bool
-    {
-        $lockFile = $filePrefix.'.lock';
-        $fp = fopen($lockFile, 'wb+');
-        try {
-            if (false !== $fp && flock($fp, LOCK_EX)) {  // 进行排它型锁定
-                $callback();
-
-                return true;
-            }
-
-            return false;
-        } finally {
-            if (false !== $fp) {
-                flock($fp, LOCK_UN);    // 释放锁定
-                fclose($fp);
-                @unlink($lockFile);
-            }
-        }
-    }
-
     private function startService(InputInterface $input): void
     {
         $confPath = $this->serverProperties->getSupervisorConfPath();
@@ -104,7 +75,7 @@ class ServerStartCommand extends Command implements ContainerAwareInterface, Log
         }
         $serviceName = $this->serverProperties->getServerName();
         $configFile = $confPath.'/'.$serviceName.$this->serverProperties->getSupervisorConfExtension();
-        $ret = self::withFileLock($configFile, function () use ($serviceName, $configFile) {
+        $this->withFileLock($configFile, function () use ($serviceName, $configFile) {
             if (file_exists($configFile.'.disabled')) {
                 @unlink($configFile.'.disabled');
             }
@@ -142,8 +113,5 @@ redirect_stderr=true
             }
             pcntl_exec('/bin/sleep', [2147000000 + $this->server->getServerConfig()->getPort()->getPort()]);
         });
-        if (!$ret) {
-            $this->logger->error(static::TAG.'fail to obtain file lock');
-        }
     }
 }
