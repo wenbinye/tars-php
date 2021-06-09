@@ -19,13 +19,13 @@ class RoundRobinTest extends TestCase
         var_export($ret);
     }
 
-    public function testNegativeWeight()
+    public function notestNegativeWeight()
     {
         $hosts = ['a', 'b', 'c'];
         $rr = new RoundRobin($hosts, [0, 1, 1]);
         $ret = array_map(function () use ($rr) {
             return $rr->select();
         }, range(1, 5));
-        var_export($ret);
+        // var_export($ret);
     }
 }

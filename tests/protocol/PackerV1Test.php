@@ -45,14 +45,14 @@ class PackerV1Test extends TestCase
         $this->assertTrue(true);
     }
 
-    public function testPackInt()
+    public function notestPackInt()
     {
         $putString = \TUPAPI::putString('abc', 'HelloWorld123456');
-        file_put_contents('/tmp/a.data', $putString);
-        var_export($putString);
+        // file_put_contents('/tmp/a.data', $putString);
+        // var_export($putString);
     }
 
-    public function testUnpackPartialData()
+    public function notestUnpackPartialData()
     {
         $putString = \TUPAPI::putString('abc', 'HelloWorld123456');
         file_put_contents('/tmp/a.data', $putString);

@@ -11,17 +11,24 @@ interface PackerInterface
     /**
      * Packs php data type to binary data.
      *
-     * @param string|int $name
-     * @param mixed      $data
+     * @param Type   $type
+     * @param string $name
+     * @param mixed  $data
+     * @param int    $version
+     *
+     * @return string
      */
-    public function pack(Type $type, $name, $data, int $version = Version::TUP): string;
+    public function pack(Type $type, string $name, $data, int $version = Version::TUP): string;
 
     /**
      * Unpacks binary data to php data type.
      *
-     * @param string|int $name
+     * @param Type   $type
+     * @param string $name
+     * @param string $payload
+     * @param int    $version
      *
      * @return mixed
      */
-    public function unpack(Type $type, $name, string &$payload, int $version = Version::TUP);
+    public function unpack(Type $type, string $name, string &$payload, int $version = Version::TUP);
 }

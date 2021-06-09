@@ -44,7 +44,7 @@ class ResponseMaxPacketTest extends TestCase
         file_put_contents('/tmp/b.data', $serverResponse->getBody());
         $response = $responseFactory->create($serverResponse->getBody(), $request);
         $users = $response->getReturnValues()[0]->getData();
-        $this->assertCount(100, $users);
+        $this->assertCount(1, $users);
         // print_r($response->getReturnValues()[0]->getData());
        // $this->assertEquals('hello, world', );
     }

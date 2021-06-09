@@ -107,7 +107,7 @@ class Packer implements PackerInterface, TypeParserInterface, TypeConverterInter
     /**
      * {@inheritdoc}
      */
-    public function unpack(Type $type, $name, string &$payload, int $version = Version::TUP)
+    public function unpack(Type $type, string $name, string &$payload, int $version = Version::TUP)
     {
         if ($type->isPrimitive()) {
             return $type->asPrimitiveType()->unpack($name, $payload, $version);

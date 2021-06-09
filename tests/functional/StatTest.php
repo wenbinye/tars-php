@@ -17,6 +17,7 @@ class StatTest extends FunctionalTestCase
     public function testSendStat()
     {
         $container = $this->getContainer();
+        /** @var RouteResolverInterface $routeResolver */
         $routeResolver = $container->get(RouteResolverInterface::class);
         $responseFactory = $container->get(ResponseFactoryInterface::class);
         $log = $container->get(LogServant::class);
@@ -26,7 +27,8 @@ class StatTest extends FunctionalTestCase
         $stat = $container->get(StatInterface::class);
 
         foreach (range(300, 600) as $time) {
-            $serverRequests = $request->withAttribute(RequestAttribute::SERVER_ADDR, $routeResolver->resolve($servantName)[0])
+            $serverRequests = $request->withAttribute(RequestAttribute::SERVER_ADDR,
+                $routeResolver->resolve($servantName)->getAddressList()[0]->getAddress())
                 ->withAttribute(RequestAttribute::TIME, time() - $time);
             $response = new ServerResponse($serverRequests, [], 0);
             $response = $responseFactory->create($response->getBody(), $serverRequests);

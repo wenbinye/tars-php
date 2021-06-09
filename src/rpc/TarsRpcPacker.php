@@ -106,7 +106,7 @@ class TarsRpcPacker
             $order = $parameter->order ?? ($i + 1);
             $paramData = null;
             if (!$parameter->out) {
-                $key = Tup::VERSION === $version ? $parameter->name : $order;
+                $key = Tup::VERSION === $version ? $parameter->name : (string) $order;
                 $type = $this->parser->parse($parameter->type, $method->getNamespace());
                 $paramData = $this->packer->unpack($type, $key, $data, $version);
             }
