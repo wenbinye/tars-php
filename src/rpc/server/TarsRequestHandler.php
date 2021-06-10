@@ -43,10 +43,11 @@ class TarsRequestHandler implements RequestHandlerInterface, LoggerAwareInterfac
     public function invoke(ServerRequestInterface $request): ResponseInterface
     {
         $parameters = [];
+        $out = [];
         foreach ($request->getParameters() as $parameter) {
             if ($parameter->isOut()) {
-                $var = null;
-                $parameters[] = &$var;
+                $out[] = null;
+                $parameters[] = &$out[count($out) - 1];
             } else {
                 $parameters[] = $parameter->getData();
             }
