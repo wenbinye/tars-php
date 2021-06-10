@@ -137,21 +137,23 @@ class TarsRpcPacker
             $type = $this->parser->parse($method->getReturnType()->type, $method->getNamespace());
             if (!$type->isVoid()) {
                 $ret = end($data);
+                $key = Tup::VERSION === $version ? '' : '0';
                 $result[] = new ReturnValue(
-                    null,
+                    $key,
                     $ret,
-                    $this->packer->pack($type, '', $ret, $version));
+                    $this->packer->pack($type, $key, $ret, $version));
             }
         }
         foreach ($method->getParameters() as $i => $parameter) {
             if (!$parameter->out) {
                 continue;
             }
+            $key = Tup::VERSION === $version ? $parameter->name : (string) ($i + 1);
             $type = $this->parser->parse($parameter->type, $method->getNamespace());
             $result[] = new ReturnValue(
-                $parameter->name,
+                $key,
                 $data[$i],
-                $this->packer->pack($type, $parameter->name, $data[$i], $version));
+                $this->packer->pack($type, $key, $data[$i], $version));
         }
 
         return $result;

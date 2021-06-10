@@ -8,7 +8,6 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use wenbinye\tars\protocol\PackerInterface;
-use wenbinye\tars\rpc\message\ParameterInterface;
 use wenbinye\tars\rpc\message\ResponseInterface;
 use wenbinye\tars\rpc\message\ServerRequestInterface;
 use wenbinye\tars\rpc\message\ServerResponse;
@@ -43,9 +42,15 @@ class TarsRequestHandler implements RequestHandlerInterface, LoggerAwareInterfac
 
     public function invoke(ServerRequestInterface $request): ResponseInterface
     {
-        $parameters = array_map(static function (ParameterInterface $parameter) {
-            return $parameter->isOut() ? null : $parameter->getData();
-        }, $request->getParameters());
+        $parameters = [];
+        foreach ($request->getParameters() as $parameter) {
+            if ($parameter->isOut()) {
+                $var = null;
+                $parameters[] = &$var;
+            } else {
+                $parameters[] = $parameter->getData();
+            }
+        }
         try {
             $parameters[] = call_user_func_array([$request->getServant(), $request->getFuncName()], $parameters);
 
