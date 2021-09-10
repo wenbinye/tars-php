@@ -7,6 +7,7 @@ namespace wenbinye\tars\server;
 use Dotenv\Dotenv;
 use kuiper\annotations\AnnotationReader;
 use kuiper\helper\Properties;
+use kuiper\swoole\event\WorkerExitEvent;
 use kuiper\swoole\listener\ManagerStartEventListener;
 use kuiper\swoole\listener\StartEventListener;
 use kuiper\swoole\listener\TaskEventListener;
@@ -124,6 +125,7 @@ class ConfigLoader implements ConfigLoaderInterface
                     ReloadWorkerListener::class,
                     ManagerStartEventListener::class,
                     WorkerStartEventListener::class,
+                    WorkerExitEvent::class,
                     TaskEventListener::class,
                     ReopenLogFile::class,
                     WorkerKeepAlive::class,
